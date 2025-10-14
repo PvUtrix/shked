@@ -4,58 +4,89 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { BookOpen, Plus, Edit, Trash2, User } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { BookOpen, Plus, Edit, Trash2, User, UserCheck } from 'lucide-react'
 
 interface Subject {
   id: string
   name: string
   description?: string
   instructor?: string
+  lectorId?: string
+  lector?: {
+    id: string
+    name?: string
+    firstName?: string
+    lastName?: string
+    email: string
+  }
   _count?: {
     schedules: number
+    homework: number
   }
+}
+
+interface Lector {
+  id: string
+  name?: string
+  firstName?: string
+  lastName?: string
+  email: string
 }
 
 export default function SubjectsPage() {
   const [subjects, setSubjects] = useState<Subject[]>([])
+  const [lectors, setLectors] = useState<Lector[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchSubjects()
+    fetchData()
   }, [])
 
-  const fetchSubjects = async () => {
+  const fetchData = async () => {
     try {
-      // В реальном приложении здесь был бы API запрос
-      // Пока используем статические данные
-      setSubjects([
-        {
-          id: '1',
-          name: 'Проектирование венчурного предприятия (Тьюториал)',
-          description: 'Тьюториал по проектированию венчурного предприятия',
-          instructor: 'Чикин В.Н., Бахчиев А.В.',
-          _count: { schedules: 5 }
-        },
-        {
-          id: '2',
-          name: 'Системное мышление',
-          description: 'Развитие системного мышления',
-          instructor: 'Бухарин М.А., Бодров В.К.',
-          _count: { schedules: 8 }
-        },
-        {
-          id: '3',
-          name: 'Коммерциализация R&D',
-          description: 'Коммерциализация исследований и разработок',
-          instructor: 'Антонец В.А., Буренин А.Г.',
-          _count: { schedules: 6 }
-        }
-      ])
+      // Получаем предметы
+      const subjectsResponse = await fetch('/api/subjects')
+      if (subjectsResponse.ok) {
+        const subjectsData = await subjectsResponse.json()
+        setSubjects(subjectsData.subjects || [])
+      }
+
+      // Получаем преподавателей
+      const lectorsResponse = await fetch('/api/users?role=lector')
+      if (lectorsResponse.ok) {
+        const lectorsData = await lectorsResponse.json()
+        setLectors(lectorsData.users || [])
+      }
     } catch (error) {
-      console.error('Ошибка при получении предметов:', error)
-      setSubjects([])
+      console.error('Ошибка при получении данных:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const assignLector = async (subjectId: string, lectorId: string) => {
+    try {
+      const response = await fetch('/api/subjects', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: subjectId,
+          lectorId: lectorId || null
+        }),
+      })
+
+      if (response.ok) {
+        await fetchData() // Обновляем данные
+      } else {
+        const error = await response.json()
+        alert(`Ошибка: ${error.message || 'Не удалось назначить преподавателя'}`)
+      }
+    } catch (error) {
+      console.error('Ошибка при назначении преподавателя:', error)
+      alert('Произошла ошибка при назначении преподавателя')
     }
   }
 
@@ -125,10 +156,46 @@ export default function SubjectsPage() {
                         <span className="text-gray-600">{subject.instructor}</span>
                       </div>
                     )}
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Занятий:</span>
-                      <span className="font-medium">{subject?._count?.schedules || 0}</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Занятий:</span>
+                        <span className="font-medium">{subject?._count?.schedules || 0}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Заданий:</span>
+                        <span className="font-medium">{subject?._count?.homework || 0}</span>
+                      </div>
                     </div>
+
+                    {/* Назначение преподавателя */}
+                    <div className="space-y-2 pt-2 border-t">
+                      <div className="flex items-center space-x-2">
+                        <UserCheck className="h-4 w-4 text-gray-400" />
+                        <span className="text-sm font-medium text-gray-700">Преподаватель:</span>
+                      </div>
+                      <Select
+                        value={subject?.lectorId || ''}
+                        onValueChange={(value) => assignLector(subject.id, value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Выберите преподавателя" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Без преподавателя</SelectItem>
+                          {lectors.map(lector => (
+                            <SelectItem key={lector.id} value={lector.id}>
+                              {lector.name || `${lector.firstName || ''} ${lector.lastName || ''}`.trim() || lector.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {subject?.lector && (
+                        <p className="text-xs text-gray-500">
+                          Назначен: {subject.lector.name || `${subject.lector.firstName || ''} ${subject.lector.lastName || ''}`.trim() || subject.lector.email}
+                        </p>
+                      )}
+                    </div>
+
                     <div className="pt-2">
                       <Button variant="outline" className="w-full" onClick={() => alert('Функция просмотра расписания по предмету будет реализована в следующей версии')}>
                         <BookOpen className="h-4 w-4 mr-2" />

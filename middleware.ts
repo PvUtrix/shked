@@ -14,6 +14,18 @@ export default withAuth(
         req.nextauth.token?.role !== 'student') {
       return new Response('Forbidden', { status: 403 })
     }
+    
+    // Проверка доступа к роутам преподавателя
+    if (req.nextUrl.pathname.startsWith('/lector') && 
+        req.nextauth.token?.role !== 'lector') {
+      return new Response('Forbidden', { status: 403 })
+    }
+    
+    // Проверка доступа к роутам ментора
+    if (req.nextUrl.pathname.startsWith('/mentor') && 
+        req.nextauth.token?.role !== 'mentor') {
+      return new Response('Forbidden', { status: 403 })
+    }
   },
   {
     callbacks: {
@@ -23,5 +35,5 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: ['/admin/:path*', '/student/:path*']
+  matcher: ['/admin/:path*', '/student/:path*', '/lector/:path*', '/mentor/:path*']
 }

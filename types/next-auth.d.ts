@@ -3,7 +3,7 @@ import NextAuth from 'next-auth'
 
 declare module 'next-auth' {
   interface User {
-    role: string
+    role: 'admin' | 'student' | 'lector' | 'mentor'
     groupId?: string
     firstName?: string
     lastName?: string
@@ -14,13 +14,13 @@ declare module 'next-auth' {
       id: string
       email: string
       name: string
-      role: string
+      role: 'admin' | 'student' | 'lector' | 'mentor'
       groupId?: string | undefined
     }
   }
 
   interface JWT {
-    role: string
+    role: 'admin' | 'student' | 'lector' | 'mentor'
     groupId?: string
   }
 }

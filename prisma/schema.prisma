@@ -47,6 +47,7 @@ model User {
   groupId       String?
   canHelp       String?     // Чем могу быть полезен
   lookingFor    String?     // Что ищу
+  mentorGroupIds Json?      // Группы для ментора (массив ID групп)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   accounts      Account[]
@@ -55,6 +56,7 @@ model User {
   group         Group?      @relation(fields: [groupId], references: [id])
   telegramUser  TelegramUser?
   homeworkSubmissions HomeworkSubmission[]
+  assignedSubjects Subject[] // Предметы для преподавателя
 
   @@map("users")
 }
@@ -88,10 +90,12 @@ model Subject {
   name        String     @unique
   description String?
   instructor  String?
+  lectorId    String?    // ID преподавателя
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   schedules   Schedule[]
   homework    Homework[]
+  lector      User?      @relation(fields: [lectorId], references: [id])
 
   @@map("subjects")
 }

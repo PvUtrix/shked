@@ -17,6 +17,8 @@ export async function GET(request: NextRequest) {
     const subjectId = searchParams.get('subjectId')
     const groupId = searchParams.get('groupId')
     const status = searchParams.get('status')
+    const lector = searchParams.get('lector') === 'true'
+    const mentor = searchParams.get('mentor') === 'true'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
 
@@ -37,6 +39,28 @@ export async function GET(request: NextRequest) {
     // Для студентов показываем только их группу
     if (session.user.role === 'student' && session.user.groupId) {
       where.groupId = session.user.groupId
+    }
+
+    // Для преподавателей показываем только их предметы
+    if (session.user.role === 'lector' || lector) {
+      where.subject = {
+        lectorId: session.user.id
+      }
+    }
+
+    // Для менторов показываем только их группы
+    if (session.user.role === 'mentor' || mentor) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { mentorGroupIds: true }
+      })
+      
+      if (user?.mentorGroupIds) {
+        const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
+        where.groupId = {
+          in: groupIds
+        }
+      }
     }
 
     const homework = await prisma.homework.findMany({
@@ -107,8 +131,21 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || session.user.role !== 'admin') {
+    // Проверяем права на создание домашнего задания
+    if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
+    // Для преподавателей проверяем, что предмет принадлежит им
+    if (session.user.role === 'lector') {
+      const subject = await prisma.subject.findUnique({
+        where: { id: body.subjectId },
+        select: { lectorId: true }
+      })
+
+      if (!subject || subject.lectorId !== session.user.id) {
+        return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
+      }
     }
 
     const body: HomeworkFormData = await request.json()

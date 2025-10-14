@@ -4,7 +4,8 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Users, UserPlus, Edit, Trash2 } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Users, UserPlus, Edit, Trash2, UserCheck } from 'lucide-react'
 
 interface Group {
   id: string
@@ -14,36 +15,100 @@ interface Group {
   year?: string
   _count?: {
     users: number
+    schedules: number
+    homework: number
   }
+}
+
+interface Mentor {
+  id: string
+  name?: string
+  firstName?: string
+  lastName?: string
+  email: string
 }
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([])
+  const [mentors, setMentors] = useState<Mentor[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchGroups()
+    fetchData()
   }, [])
 
-  const fetchGroups = async () => {
+  const fetchData = async () => {
     try {
-      // В реальном приложении здесь был бы API запрос
-      // Пока используем статические данные
-      setGroups([
-        {
-          id: '1',
-          name: 'ТехПред МФТИ 2025-27',
-          description: 'Магистратура Технологическое предпринимательство МФТИ 2025-27',
-          semester: '1 семестр',
-          year: '2025-27',
-          _count: { users: 47 }
-        }
-      ])
+      // Получаем группы
+      const groupsResponse = await fetch('/api/groups')
+      if (groupsResponse.ok) {
+        const groupsData = await groupsResponse.json()
+        setGroups(groupsData.groups || [])
+      }
+
+      // Получаем менторов
+      const mentorsResponse = await fetch('/api/users?role=mentor')
+      if (mentorsResponse.ok) {
+        const mentorsData = await mentorsResponse.json()
+        setMentors(mentorsData.users || [])
+      }
     } catch (error) {
-      console.error('Ошибка при получении групп:', error)
-      setGroups([])
+      console.error('Ошибка при получении данных:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const assignMentor = async (groupId: string, mentorId: string) => {
+    try {
+      // Получаем текущего ментора группы
+      const currentMentor = mentors.find(mentor => 
+        Array.isArray(mentor.mentorGroupIds) && mentor.mentorGroupIds.includes(groupId)
+      )
+
+      // Обновляем mentorGroupIds для старого ментора
+      if (currentMentor) {
+        const updatedGroupIds = Array.isArray(currentMentor.mentorGroupIds) 
+          ? currentMentor.mentorGroupIds.filter(id => id !== groupId)
+          : []
+        
+        await fetch('/api/users', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: currentMentor.id,
+            mentorGroupIds: updatedGroupIds
+          }),
+        })
+      }
+
+      // Обновляем mentorGroupIds для нового ментора
+      if (mentorId) {
+        const newMentor = mentors.find(mentor => mentor.id === mentorId)
+        if (newMentor) {
+          const updatedGroupIds = Array.isArray(newMentor.mentorGroupIds) 
+            ? [...newMentor.mentorGroupIds, groupId]
+            : [groupId]
+          
+          await fetch('/api/users', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: newMentor.id,
+              mentorGroupIds: updatedGroupIds
+            }),
+          })
+        }
+      }
+
+      await fetchData() // Обновляем данные
+    } catch (error) {
+      console.error('Ошибка при назначении ментора:', error)
+      alert('Произошла ошибка при назначении ментора')
     }
   }
 
@@ -105,22 +170,59 @@ export default function GroupsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Студентов:</span>
-                      <span className="font-medium">{group?._count?.users || 0}</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Студентов:</span>
+                        <span className="font-medium">{group?._count?.users || 0}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Занятий:</span>
+                        <span className="font-medium">{group?._count?.schedules || 0}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Заданий:</span>
+                        <span className="font-medium">{group?._count?.homework || 0}</span>
+                      </div>
+                      {group?.semester && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-500">Семестр:</span>
+                          <span className="font-medium">{group.semester}</span>
+                        </div>
+                      )}
+                      {group?.year && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-500">Год:</span>
+                          <span className="font-medium">{group.year}</span>
+                        </div>
+                      )}
                     </div>
-                    {group?.semester && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Семестр:</span>
-                        <span className="font-medium">{group.semester}</span>
+
+                    {/* Назначение ментора */}
+                    <div className="space-y-2 pt-2 border-t">
+                      <div className="flex items-center space-x-2">
+                        <UserCheck className="h-4 w-4 text-gray-400" />
+                        <span className="text-sm font-medium text-gray-700">Ментор:</span>
                       </div>
-                    )}
-                    {group?.year && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Год:</span>
-                        <span className="font-medium">{group.year}</span>
-                      </div>
-                    )}
+                      <Select
+                        value={mentors.find(mentor => 
+                          Array.isArray(mentor.mentorGroupIds) && mentor.mentorGroupIds.includes(group.id)
+                        )?.id || ''}
+                        onValueChange={(value) => assignMentor(group.id, value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Выберите ментора" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Без ментора</SelectItem>
+                          {mentors.map(mentor => (
+                            <SelectItem key={mentor.id} value={mentor.id}>
+                              {mentor.name || `${mentor.firstName || ''} ${mentor.lastName || ''}`.trim() || mentor.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <div className="pt-2">
                       <Button variant="outline" className="w-full" onClick={() => alert('Функция управления студентами будет реализована в следующей версии')}>
                         <Users className="h-4 w-4 mr-2" />

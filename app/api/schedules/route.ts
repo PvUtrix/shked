@@ -1,39 +1,98 @@
-
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-export const dynamic = "force-dynamic"
-
-export async function GET(request: Request) {
+// GET /api/schedules - получение списка расписания
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)
+    const subjectId = searchParams.get('subjectId')
     const groupId = searchParams.get('groupId')
+    const lector = searchParams.get('lector') === 'true'
+    const mentor = searchParams.get('mentor') === 'true'
+    const date = searchParams.get('date')
 
-    let whereClause = {}
-    
-    // Если пользователь студент, показываем только его группу
-    if (session.user.role === 'student' && session.user.groupId) {
-      whereClause = { groupId: session.user.groupId }
+    const where: any = {}
+
+    // Фильтрация по предмету
+    if (subjectId) {
+      where.subjectId = subjectId
     }
-    
-    // Если указана группа в параметрах, используем её
+
+    // Фильтрация по группе
     if (groupId) {
-      whereClause = { groupId }
+      where.groupId = groupId
+    }
+
+    // Фильтрация по дате
+    if (date) {
+      const startDate = new Date(date)
+      const endDate = new Date(startDate)
+      endDate.setDate(endDate.getDate() + 1)
+      
+      where.date = {
+        gte: startDate,
+        lt: endDate
+      }
+    }
+
+    // Для студентов показываем только их группу
+    if (session.user.role === 'student' && session.user.groupId) {
+      where.groupId = session.user.groupId
+    }
+
+    // Для преподавателей показываем только их предметы
+    if (session.user.role === 'lector' || lector) {
+      where.subject = {
+        lectorId: session.user.id
+      }
+    }
+
+    // Для менторов показываем только их группы
+    if (session.user.role === 'mentor' || mentor) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { mentorGroupIds: true }
+      })
+      
+      if (user?.mentorGroupIds) {
+        const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
+        where.groupId = {
+          in: groupIds
+        }
+      }
     }
 
     const schedules = await prisma.schedule.findMany({
-      where: whereClause,
+      where,
       include: {
-        subject: true,
-        group: true
+        subject: {
+          select: {
+            id: true,
+            name: true,
+            lector: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true
+              }
+            }
+          }
+        },
+        group: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
       },
       orderBy: [
         { date: 'asc' },
@@ -41,59 +100,10 @@ export async function GET(request: Request) {
       ]
     })
 
-    return NextResponse.json(schedules)
+    return NextResponse.json({ schedules })
+
   } catch (error) {
-    console.error('Ошибка при получении расписаний:', error)
-    return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
-    }
-
-    const body = await request.json()
-    const { subjectId, groupId, subgroupId, date, startTime, endTime, location, eventType, description } = body
-
-    if (!subjectId || !date || !startTime || !endTime) {
-      return NextResponse.json(
-        { error: 'Обязательные поля: subjectId, date, startTime, endTime' },
-        { status: 400 }
-      )
-    }
-
-    const scheduleDate = new Date(date)
-    const dayOfWeek = scheduleDate.getDay()
-
-    const schedule = await prisma.schedule.create({
-      data: {
-        subjectId,
-        groupId,
-        subgroupId,
-        date: scheduleDate,
-        dayOfWeek,
-        startTime,
-        endTime,
-        location,
-        eventType,
-        description
-      },
-      include: {
-        subject: true,
-        group: true
-      }
-    })
-
-    return NextResponse.json(schedule)
-  } catch (error) {
-    console.error('Ошибка при создании расписания:', error)
+    console.error('Ошибка при получении расписания:', error)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
