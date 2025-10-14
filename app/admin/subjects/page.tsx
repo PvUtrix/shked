@@ -74,7 +74,7 @@ export default function SubjectsPage() {
         },
         body: JSON.stringify({
           id: subjectId,
-          lectorId: lectorId || null
+          lectorId: lectorId === 'none' ? null : lectorId
         }),
       })
 
@@ -174,14 +174,14 @@ export default function SubjectsPage() {
                         <span className="text-sm font-medium text-gray-700">Преподаватель:</span>
                       </div>
                       <Select
-                        value={subject?.lectorId || ''}
+                        value={subject?.lectorId || 'none'}
                         onValueChange={(value) => assignLector(subject.id, value)}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Выберите преподавателя" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Без преподавателя</SelectItem>
+                          <SelectItem value="none">Без преподавателя</SelectItem>
                           {lectors.map(lector => (
                             <SelectItem key={lector.id} value={lector.id}>
                               {lector.name || `${lector.firstName || ''} ${lector.lastName || ''}`.trim() || lector.email}

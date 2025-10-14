@@ -85,8 +85,8 @@ export default function GroupsPage() {
         })
       }
 
-      // Обновляем mentorGroupIds для нового ментора
-      if (mentorId) {
+      // Обновляем mentorGroupIds для нового ментора (только если не "none")
+      if (mentorId && mentorId !== 'none') {
         const newMentor = mentors.find(mentor => mentor.id === mentorId)
         if (newMentor) {
           const updatedGroupIds = Array.isArray(newMentor.mentorGroupIds) 
@@ -214,7 +214,7 @@ export default function GroupsPage() {
                           <SelectValue placeholder="Выберите ментора" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Без ментора</SelectItem>
+                          <SelectItem value="none">Без ментора</SelectItem>
                           {mentors.map(mentor => (
                             <SelectItem key={mentor.id} value={mentor.id}>
                               {mentor.name || `${mentor.firstName || ''} ${mentor.lastName || ''}`.trim() || mentor.email}

@@ -219,7 +219,7 @@ export default function CreateHomeworkPage() {
                   <SelectValue placeholder="Выберите группу (опционально)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все группы</SelectItem>
+                  <SelectItem value="all">Все группы</SelectItem>
                   {groups.map(group => (
                     <SelectItem key={group.id} value={group.id}>
                       {group.name}
