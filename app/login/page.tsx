@@ -13,6 +13,10 @@ export default async function LoginPage() {
   if (session) {
     if (session.user.role === 'admin') {
       redirect('/admin')
+    } else if (session.user.role === 'lector') {
+      redirect('/lector')
+    } else if (session.user.role === 'mentor') {
+      redirect('/mentor')
     } else {
       redirect('/student')
     }
