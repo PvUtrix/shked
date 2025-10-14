@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 // import { useAnimationSettings } from '@/lib/stores/animation-store' // Временно отключен
-import { Settings, Database, Users, Bell, Shield, MessageSquare, Send, BarChart3, TestTube, Palette, Zap } from 'lucide-react'
+import { Settings, Database, Users, Bell, Shield, MessageSquare, Send, BarChart3, TestTube, Palette, Zap, AlertTriangle, RefreshCw } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function SettingsPage() {
   const [telegramConfig, setTelegramConfig] = useState({
@@ -26,6 +27,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [testMessage, setTestMessage] = useState('')
   const [broadcastMessage, setBroadcastMessage] = useState('')
+  const [resetEnabled, setResetEnabled] = useState(false)
+  const [resetting, setResetting] = useState(false)
   
   // Настройки анимаций - временно отключены
   // const {
@@ -54,6 +57,7 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchTelegramConfig()
     fetchTelegramStats()
+    checkResetStatus()
   }, [])
 
   const fetchTelegramConfig = async () => {
@@ -79,6 +83,55 @@ export default function SettingsPage() {
       }
     } catch (error) {
       console.error('Ошибка при получении статистики Telegram:', error)
+    }
+  }
+
+  const checkResetStatus = async () => {
+    try {
+      const response = await fetch('/api/admin/reset-status')
+      if (response.ok) {
+        const data = await response.json()
+        setResetEnabled(data.enabled)
+      }
+    } catch (error) {
+      console.error('Ошибка при проверке статуса сброса:', error)
+    }
+  }
+
+  const resetDatabase = async () => {
+    if (!confirm('⚠️ ВНИМАНИЕ! Это действие удалит ВСЕ данные из базы и восстановит демо-состояние.\n\nЭто действие необратимо! Продолжить?')) {
+      return
+    }
+
+    setResetting(true)
+    try {
+      const response = await fetch('/api/admin/reset-db', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        toast.success('База данных успешно сброшена!')
+        toast.info('Рекомендуется обновить страницу для применения изменений')
+        
+        // Предлагаем обновить страницу через 3 секунды
+        setTimeout(() => {
+          if (confirm('Обновить страницу для применения изменений?')) {
+            window.location.reload()
+          }
+        }, 3000)
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Ошибка при сбросе базы данных')
+      }
+    } catch (error) {
+      console.error('Ошибка при сбросе базы данных:', error)
+      toast.error('Ошибка при сбросе базы данных')
+    } finally {
+      setResetting(false)
     }
   }
 
@@ -538,6 +591,61 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Database Reset Section */}
+        {resetEnabled && (
+          <Card className="border-red-200 bg-red-50">
+            <CardHeader>
+              <CardTitle className="flex items-center text-red-800">
+                <AlertTriangle className="h-5 w-5 mr-2" />
+                Управление базой данных
+              </CardTitle>
+              <CardDescription className="text-red-700">
+                Опасные операции с базой данных (только для разработки!)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 bg-red-100 border border-red-300 rounded-lg">
+                  <div className="flex items-start">
+                    <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-medium text-red-800 mb-1">Сброс базы данных</h4>
+                      <p className="text-sm text-red-700 mb-3">
+                        Это действие удалит ВСЕ данные из базы и восстановит демо-состояние с тестовыми аккаунтами.
+                        Используйте только в среде разработки!
+                      </p>
+                      <div className="text-xs text-red-600 space-y-1">
+                        <p>• Удаляются все пользователи, группы, предметы, расписание</p>
+                        <p>• Создаются демо-аккаунты для всех ролей</p>
+                        <p>• Восстанавливается тестовое расписание и домашние задания</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={resetDatabase}
+                  disabled={resetting}
+                  variant="destructive"
+                  className="w-full"
+                >
+                  {resetting ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Сброс в процессе...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Сбросить базу данных
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="card-hover">
           <CardHeader>

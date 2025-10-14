@@ -12,7 +12,8 @@ import {
   Settings, 
   GraduationCap,
   UserCircle,
-  ClipboardList
+  ClipboardList,
+  UserCog
 } from 'lucide-react'
 
 const navItems = [
@@ -35,6 +36,11 @@ const navItems = [
     label: 'Домашние задания',
     href: '/admin/homework',
     icon: ClipboardList
+  },
+  {
+    label: 'Пользователи',
+    href: '/admin/users',
+    icon: UserCog
   },
   {
     label: 'Настройки',
