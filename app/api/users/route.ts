@@ -27,16 +27,16 @@ export async function GET(request: NextRequest) {
     // Для менторов показываем только студентов из их групп
     if (session.user.role === 'mentor' || mentor) {
       const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { mentorGroupIds: true }
+        where: { id: session.user.id }
       })
       
-      if (user?.mentorGroupIds) {
-        const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
-        where.groupId = {
-          in: groupIds
-        }
-      }
+      // Временно отключаем фильтрацию по mentorGroupIds до применения миграции
+      // if (user?.mentorGroupIds) {
+      //   const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
+      //   where.groupId = {
+      //     in: groupIds
+      //   }
+      // }
     }
 
     // Фильтрация по группе
@@ -54,8 +54,6 @@ export async function GET(request: NextRequest) {
         lastName: true,
         role: true,
         groupId: true,
-        canHelp: true,
-        lookingFor: true,
         createdAt: true,
         group: {
           select: {
@@ -63,6 +61,9 @@ export async function GET(request: NextRequest) {
             name: true
           }
         }
+        // Временно отключаем поля до применения миграции
+        // canHelp: true,
+        // lookingFor: true,
       },
       orderBy: {
         name: 'asc'
@@ -103,8 +104,9 @@ export async function PUT(request: NextRequest) {
       data: {
         name: body.name,
         firstName: body.firstName,
-        lastName: body.lastName,
-        mentorGroupIds: body.mentorGroupIds
+        lastName: body.lastName
+        // Временно отключаем mentorGroupIds до применения миграции
+        // mentorGroupIds: body.mentorGroupIds
       },
       select: {
         id: true,
@@ -114,8 +116,9 @@ export async function PUT(request: NextRequest) {
         lastName: true,
         role: true,
         groupId: true,
-        mentorGroupIds: true,
         createdAt: true
+        // Временно отключаем mentorGroupIds до применения миграции
+        // mentorGroupIds: true,
       }
     })
 

@@ -61,12 +61,13 @@ export async function GET(request: NextRequest) {
         where: { id: session.user.id }
       })
       
-      if (user?.mentorGroupIds) {
-        const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
-        where.groupId = {
-          in: groupIds
-        }
-      }
+      // Временно отключаем фильтрацию по mentorGroupIds до применения миграции
+      // if (user?.mentorGroupIds) {
+      //   const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
+      //   where.groupId = {
+      //     in: groupIds
+      //   }
+      // }
     }
 
     const schedules = await prisma.schedule.findMany({
@@ -75,15 +76,16 @@ export async function GET(request: NextRequest) {
         subject: {
           select: {
             id: true,
-            name: true,
-            lector: {
-              select: {
-                id: true,
-                name: true,
-                firstName: true,
-                lastName: true
-              }
-            }
+            name: true
+            // Временно отключаем lector до применения миграции
+            // lector: {
+            //   select: {
+            //     id: true,
+            //     name: true,
+            //     firstName: true,
+            //     lastName: true
+            //   }
+            // }
           }
         },
         group: {

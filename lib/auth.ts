@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name || undefined,
           firstName: user.firstName || undefined,
           lastName: user.lastName || undefined,
-          role: user.role,
+          role: user.role as 'admin' | 'student' | 'lector' | 'mentor',
           groupId: user.groupId || undefined
         }
       }
@@ -63,7 +63,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.sub!
-        session.user.role = token.role as string
+        session.user.role = token.role as 'admin' | 'student' | 'lector' | 'mentor'
         session.user.groupId = token.groupId as string | undefined
       }
       return session

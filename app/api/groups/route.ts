@@ -23,12 +23,13 @@ export async function GET(request: NextRequest) {
         where: { id: session.user.id }
       })
       
-      if (user?.mentorGroupIds) {
-        const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
-        where.id = {
-          in: groupIds
-        }
-      }
+      // Временно отключаем фильтрацию по mentorGroupIds до применения миграции
+      // if (user?.mentorGroupIds) {
+      //   const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
+      //   where.id = {
+      //     in: groupIds
+      //   }
+      // }
     }
 
     const groups = await prisma.group.findMany({

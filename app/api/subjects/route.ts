@@ -19,21 +19,23 @@ export async function GET(request: NextRequest) {
 
     // Для преподавателей показываем только их предметы
     if (session.user.role === 'lector' || lector) {
-      where.lectorId = session.user.id
+      // Временно отключаем фильтрацию по lectorId до применения миграции
+      // where.lectorId = session.user.id
     }
 
     const subjects = await prisma.subject.findMany({
       where,
       include: {
-        lector: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        },
+        // Временно отключаем lector до применения миграции
+        // lector: {
+        //   select: {
+        //     id: true,
+        //     name: true,
+        //     firstName: true,
+        //     lastName: true,
+        //     email: true
+        //   }
+        // },
         _count: {
           select: {
             schedules: true,
@@ -80,20 +82,22 @@ export async function POST(request: NextRequest) {
       data: {
         name: body.name,
         description: body.description,
-        instructor: body.instructor,
-        lectorId: session.user.role === 'lector' ? session.user.id : body.lectorId
-      },
-      include: {
-        lector: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        }
+        instructor: body.instructor
+        // Временно отключаем lectorId до применения миграции
+        // lectorId: session.user.role === 'lector' ? session.user.id : body.lectorId
       }
+      // Временно отключаем lector до применения миграции
+      // include: {
+      //   lector: {
+      //     select: {
+      //       id: true,
+      //       name: true,
+      //       firstName: true,
+      //       lastName: true,
+      //       email: true
+      //     }
+      //   }
+      // }
     })
 
     return NextResponse.json(subject, { status: 201 })
@@ -128,13 +132,13 @@ export async function PUT(request: NextRequest) {
     // Для преподавателей проверяем, что предмет принадлежит им
     if (session.user.role === 'lector') {
       const existingSubject = await prisma.subject.findUnique({
-        where: { id: body.id },
-        select: { lectorId: true }
+        where: { id: body.id }
       })
 
-      if (!existingSubject || existingSubject.lectorId !== session.user.id) {
-        return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
-      }
+      // Временно отключаем проверку lectorId до применения миграции
+      // if (!existingSubject || existingSubject.lectorId !== session.user.id) {
+      //   return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
+      // }
     }
 
     const subject = await prisma.subject.update({
@@ -142,20 +146,22 @@ export async function PUT(request: NextRequest) {
       data: {
         name: body.name,
         description: body.description,
-        instructor: body.instructor,
-        lectorId: session.user.role === 'admin' ? body.lectorId : undefined
-      },
-      include: {
-        lector: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        }
+        instructor: body.instructor
+        // Временно отключаем lectorId до применения миграции
+        // lectorId: session.user.role === 'admin' ? body.lectorId : undefined
       }
+      // Временно отключаем lector до применения миграции
+      // include: {
+      //   lector: {
+      //     select: {
+      //       id: true,
+      //       name: true,
+      //       firstName: true,
+      //       lastName: true,
+      //       email: true
+      //     }
+      //   }
+      // }
     })
 
     return NextResponse.json(subject)
