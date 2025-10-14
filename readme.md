@@ -8,7 +8,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-blue)
 ![Prisma](https://img.shields.io/badge/Prisma-6.7-2D3748)
 
-[Демо](https://shked.vercel.app) • [Документация](https://github.com/PvUtrix/shked/wiki) • [Сообщить об ошибке](https://github.com/PvUtrix/shked/issues) • [💝 Поддержать проект](https://www.tbank.ru/cf/ATFldP3BgtQ)
+[Демо](https://shked.innovators.moscow) • [Документация](https://github.com/PvUtrix/shked/wiki) • [Сообщить об ошибке](https://github.com/PvUtrix/shked/issues) • [💝 Поддержать проект](https://www.tbank.ru/cf/ATFldP3BgtQ)
 
 **Проект разработан студентом магистратуры МФТИ**
 [Павел Шершнёв](https://github.com/PvUtrix) • Основатель [Tango Vision](https://tangovision.ru) • Ex-CTO 4 стартапов • 6 лет в Citibank
