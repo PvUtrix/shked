@@ -13,6 +13,10 @@ export default async function HomePage() {
   if (session) {
     if (session.user.role === 'admin') {
       redirect('/admin')
+    } else if (session.user.role === 'lector') {
+      redirect('/lector')
+    } else if (session.user.role === 'mentor') {
+      redirect('/mentor')
     } else {
       redirect('/student')
     }
@@ -56,6 +60,78 @@ export default async function HomePage() {
                 </Link>
               </Button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* User Roles Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Роли пользователей
+            </h3>
+            <p className="text-lg text-white/70 max-w-2xl mx-auto">
+              Система поддерживает 4 типа пользователей с уникальными правами доступа
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white card-hover">
+              <CardHeader className="text-center">
+                <div className="h-12 w-12 mx-auto mb-4 bg-blue-500 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-lg">Администратор</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-white/70 text-center">
+                  Полный доступ к системе, управление пользователями, группами и предметами
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white card-hover">
+              <CardHeader className="text-center">
+                <div className="h-12 w-12 mx-auto mb-4 bg-green-500 rounded-full flex items-center justify-center">
+                  <GraduationCap className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-lg">Студент</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-white/70 text-center">
+                  Просмотр расписания, сдача домашних заданий, отслеживание оценок
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white card-hover">
+              <CardHeader className="text-center">
+                <div className="h-12 w-12 mx-auto mb-4 bg-purple-500 rounded-full flex items-center justify-center">
+                  <BookOpen className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-lg">Преподаватель</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-white/70 text-center">
+                  Управление предметами, создание ДЗ, проверка работ студентов
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white card-hover">
+              <CardHeader className="text-center">
+                <div className="h-12 w-12 mx-auto mb-4 bg-orange-500 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-lg">Ментор</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-white/70 text-center">
+                  Помощь студентам, мониторинг групп, консультации по обучению
+                </CardDescription>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
