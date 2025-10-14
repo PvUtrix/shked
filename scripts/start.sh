@@ -11,13 +11,12 @@ npx prisma migrate deploy
 
 # Генерация Prisma Client
 echo "Generating Prisma client..."
-if [ ! -d "/app/node_modules/.prisma/client" ]; then
-  echo "Prisma client not found, generating..."
-  npx prisma generate
-else
-  echo "Prisma client exists, checking if regeneration is needed..."
-  npx prisma generate
-fi
+export PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
+
+# Принудительная перегенерация для правильной архитектуры
+echo "Force regenerating Prisma client for correct architecture..."
+rm -rf /app/node_modules/.prisma/client 2>/dev/null || true
+npx prisma generate
 
 # Запуск приложения
 echo "Starting application..."

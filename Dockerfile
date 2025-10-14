@@ -20,7 +20,8 @@ COPY . .
 # Создание public директории если её нет
 RUN mkdir -p public
 
-# Генерация Prisma Client
+# Генерация Prisma Client с правильной архитектурой
+ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
 RUN npx prisma generate
 
 # Сборка Next.js приложения
