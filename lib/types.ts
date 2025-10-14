@@ -109,3 +109,40 @@ export const HOMEWORK_MATERIAL_TYPES = {
   link: 'Ссылка',
   other: 'Другое'
 } as const
+
+// Типы для предметов и групп
+export type Subject = {
+  id: string
+  name: string
+  instructor?: string
+  description?: string
+  lectorId?: string
+  createdAt: Date
+  updatedAt: Date
+  _count?: {
+    schedules?: number
+    homework?: number
+  }
+  lector?: {
+    id: string
+    name?: string
+    firstName?: string
+    lastName?: string
+    email: string
+  }
+}
+
+export type Group = {
+  id: string
+  name: string
+  description?: string
+  semester?: string
+  year?: string
+  createdAt: Date
+  updatedAt: Date
+  _count?: {
+    users?: number
+    schedules?: number
+    homework?: number
+  }
+}
