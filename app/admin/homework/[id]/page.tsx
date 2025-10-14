@@ -47,9 +47,10 @@ export default function AdminHomeworkDetailPage({ params }: { params: { id: stri
     }
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (date: string | Date) => {
     try {
-      return new Date(dateString).toLocaleDateString('ru-RU', {
+      const dateObj = typeof date === 'string' ? new Date(date) : date
+      return dateObj.toLocaleDateString('ru-RU', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -57,7 +58,7 @@ export default function AdminHomeworkDetailPage({ params }: { params: { id: stri
         minute: '2-digit'
       })
     } catch {
-      return dateString
+      return typeof date === 'string' ? date : date.toString()
     }
   }
 
