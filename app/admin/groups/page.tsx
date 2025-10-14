@@ -26,6 +26,7 @@ interface Mentor {
   firstName?: string
   lastName?: string
   email: string
+  mentorGroupIds?: string[]
 }
 
 export default function GroupsPage() {
