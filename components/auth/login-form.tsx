@@ -64,6 +64,8 @@ export function LoginForm() {
           <div className="space-y-1 text-xs">
             <p><strong>Админ:</strong> admin@shked.com / admin123</p>
             <p><strong>Студент:</strong> student123@demo.com / student123</p>
+            <p><strong>Преподаватель:</strong> lector@demo.com / lector123</p>
+            <p><strong>Ментор:</strong> mentor@demo.com / mentor123</p>
           </div>
         </div>
       </CardHeader>
