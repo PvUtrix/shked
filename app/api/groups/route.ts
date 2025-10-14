@@ -20,8 +20,7 @@ export async function GET(request: NextRequest) {
     // Для менторов показываем только их группы
     if (session.user.role === 'mentor' || mentor) {
       const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { mentorGroupIds: true }
+        where: { id: session.user.id }
       })
       
       if (user?.mentorGroupIds) {

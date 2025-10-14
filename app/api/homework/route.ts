@@ -136,6 +136,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
+    const body: HomeworkFormData = await request.json()
+    
     // Для преподавателей проверяем, что предмет принадлежит им
     if (session.user.role === 'lector') {
       const subject = await prisma.subject.findUnique({
@@ -147,8 +149,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
       }
     }
-
-    const body: HomeworkFormData = await request.json()
     
     // Валидация обязательных полей
     if (!body.title || !body.subjectId || !body.deadline) {
