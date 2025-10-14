@@ -53,6 +53,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+# Установка правильных прав доступа для всех файлов
+RUN chown -R nextjs:nodejs /app
+
 # Копирование скрипта запуска
 COPY --from=builder /app/scripts ./scripts
 RUN chmod +x ./scripts/start.sh
