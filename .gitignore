@@ -5,6 +5,13 @@ node_modules/
 
 # Testing
 /coverage
+/test-results/
+/playwright-report/
+/.playwright/
+*.spec.js
+*.spec.js.map
+*.test.js
+*.test.js.map
 
 # Next.js
 /.next/

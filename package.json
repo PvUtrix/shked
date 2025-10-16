@@ -57,7 +57,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:all": "npm run test && npm run test:e2e",
-    "playwright:install": "playwright install"
+    "playwright:install": "playwright install",
+    "fix:demo-student": "tsx scripts/fix-demo-student-group.ts"
   },
   "prisma": {
     "seed": "tsx --require dotenv/config scripts/seed.ts"

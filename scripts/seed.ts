@@ -58,11 +58,26 @@ async function main() {
       },
     })
 
-    // Демо студент для тестирования
+    // 2. Создание группы (создаем раньше, чтобы можно было назначить студента)
+    console.log('👥 Создание групп...')
+    const techPredGroup = await prisma.group.upsert({
+      where: { name: 'ТехПред МФТИ 2025-27' },
+      update: {},
+      create: {
+        name: 'ТехПред МФТИ 2025-27',
+        description: 'Магистратура Технологическое предпринимательство МФТИ 2025-27',
+        semester: '1 семестр',
+        year: '2025-27',
+      },
+    })
+
+    // Демо студент для тестирования (назначен в группу)
     const demoStudentPassword = await bcryptjs.hash('student123', 12)
     const demoStudent = await prisma.user.upsert({
       where: { email: 'student123@demo.com' },
-      update: {},
+      update: {
+        groupId: techPredGroup.id, // Обновляем группу для существующих пользователей
+      },
       create: {
         email: 'student123@demo.com',
         password: demoStudentPassword,
@@ -70,6 +85,7 @@ async function main() {
         lastName: 'Студент',
         name: 'Демо Студент',
         role: 'student',
+        groupId: techPredGroup.id, // Назначаем в группу
       },
     })
 
@@ -100,19 +116,6 @@ async function main() {
         lastName: 'Ментор',
         name: 'Демо Ментор',
         role: 'mentor',
-      },
-    })
-
-    // 2. Создание группы
-    console.log('👥 Создание групп...')
-    const techPredGroup = await prisma.group.upsert({
-      where: { name: 'ТехПред МФТИ 2025-27' },
-      update: {},
-      create: {
-        name: 'ТехПред МФТИ 2025-27',
-        description: 'Магистратура Технологическое предпринимательство МФТИ 2025-27',
-        semester: '1 семестр',
-        year: '2025-27',
       },
     })
 

@@ -35,11 +35,40 @@ curl https://shked.innovators.moscow/api/health
 {"status":"healthy","timestamp":"...","database":"connected"}
 ```
 
+## 🔧 Исправление демо-студента (ВАЖНО!)
+
+**Проблема:** Демо-студент не был назначен в группу, поэтому не мог видеть домашние задания.
+
+**Решение:** После деплоя нужно выполнить миграцию данных:
+
+### Вариант 1: Через скрипт Node.js (рекомендуется)
+```bash
+# Подключитесь к серверу
+ssh your-user@shked.innovators.moscow
+cd /path/to/smartschedule
+
+# Запустите скрипт
+npm run fix:demo-student
+```
+
+### Вариант 2: Через SQL (если нет доступа к Node.js)
+```bash
+# Подключитесь к PostgreSQL
+psql $DATABASE_URL
+
+# Выполните SQL из файла
+\i scripts/production-fix-demo-student.sql
+
+# Или скопируйте SQL команды вручную
+```
+
+---
+
 ## Проверка
 
-После перезапуска:
+После перезапуска И исправления демо-студента:
 1. Откройте https://shked.innovators.moscow
-2. Войдите под студентом
+2. Войдите под студентом (`student123@demo.com` / `student123`)
 3. Откройте любое домашнее задание
 4. ✅ Не должно быть ошибки 403
 
