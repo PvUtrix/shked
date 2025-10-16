@@ -1,48 +1,44 @@
 {
-  "types": {
-    "feat": {
-      "section": "✨ Новые функции",
-      "hidden": false
+  "types": [
+    {
+      "type": "feat",
+      "section": "✨ Новые функции"
     },
-    "fix": {
-      "section": "🐛 Исправления",
-      "hidden": false
+    {
+      "type": "fix", 
+      "section": "🐛 Исправления"
     },
-    "perf": {
-      "section": "⚡ Улучшения производительности",
-      "hidden": false
+    {
+      "type": "perf",
+      "section": "⚡ Улучшения производительности"
     },
-    "refactor": {
-      "section": "♻️ Рефакторинг",
-      "hidden": false
+    {
+      "type": "refactor",
+      "section": "♻️ Рефакторинг"
     },
-    "docs": {
-      "section": "📚 Документация",
-      "hidden": false
+    {
+      "type": "docs",
+      "section": "📚 Документация"
     },
-    "style": {
-      "section": "💄 Стили",
-      "hidden": false
+    {
+      "type": "style",
+      "section": "💄 Стили"
     },
-    "test": {
-      "section": "🧪 Тесты",
-      "hidden": false
+    {
+      "type": "test",
+      "section": "🧪 Тесты"
     },
-    "chore": {
-      "section": "🔧 Обслуживание",
-      "hidden": false
+    {
+      "type": "chore",
+      "section": "🔧 Обслуживание"
     },
-    "ci": {
-      "section": "👷 CI/CD",
-      "hidden": false
+    {
+      "type": "ci",
+      "section": "👷 CI/CD"
     },
-    "build": {
-      "section": "📦 Сборка",
-      "hidden": false
+    {
+      "type": "build",
+      "section": "📦 Сборка"
     }
-  },
-  "commitUrlFormat": "{{host}}/{{owner}}/{{repository}}/commit/{{hash}}",
-  "compareUrlFormat": "{{host}}/{{owner}}/{{repository}}/compare/{{previousTag}}...{{currentTag}}",
-  "issueUrlFormat": "{{host}}/{{owner}}/{{repository}}/issues/{{id}}",
-  "userUrlFormat": "{{host}}/{{user}}"
+  ]
 }
