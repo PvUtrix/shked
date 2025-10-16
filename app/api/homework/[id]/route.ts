@@ -22,6 +22,9 @@ export async function GET(
         subject: true,
         group: true,
         submissions: {
+          where: session.user.role === 'student' 
+            ? { userId: session.user.id }  // Студенты видят только свою сдачу
+            : undefined,  // Админы и преподаватели видят все сдачи
           include: {
             user: {
               select: {
@@ -44,12 +47,17 @@ export async function GET(
       )
     }
 
-    // Для студентов показываем только их группу
-    if (session.user.role === 'student' && homework.groupId !== session.user.groupId) {
-      return NextResponse.json(
-        { error: 'Доступ запрещен' },
-        { status: 403 }
-      )
+    // Для студентов проверяем доступ к заданию
+    if (session.user.role === 'student') {
+      // Студент может видеть задание если:
+      // 1. Задание для всех групп (groupId === null)
+      // 2. Задание для группы студента
+      if (homework.groupId && homework.groupId !== session.user.groupId) {
+        return NextResponse.json(
+          { error: 'Доступ запрещен' },
+          { status: 403 }
+        )
+      }
     }
 
     return NextResponse.json(homework)
