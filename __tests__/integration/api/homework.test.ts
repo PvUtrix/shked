@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { describe, it, expect, beforeEach, afterEach, afterAll, jest } from '@jest/globals'
 import { NextRequest } from 'next/server'
 import { GET, POST } from '@/app/api/homework/route'
 import { 

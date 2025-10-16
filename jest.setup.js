@@ -1,6 +1,9 @@
 // Подключаем matchers от @testing-library/jest-dom
 import '@testing-library/jest-dom'
 
+// Расширяем типы Jest для использования с testing-library
+/// <reference types="@testing-library/jest-dom" />
+
 // Мокаем Next.js router
 jest.mock('next/navigation', () => ({
   useRouter() {

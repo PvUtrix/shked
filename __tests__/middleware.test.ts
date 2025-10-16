@@ -44,7 +44,7 @@ describe('Middleware', () => {
   describe('Доступ к /admin/*', () => {
     it('должен разрешить доступ для admin роли', async () => {
       const request = createRequest('/admin/users', { role: 'admin' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       // Middleware не должен вернуть 403
       expect(response).toBeUndefined() // undefined означает что запрос пропущен
@@ -52,7 +52,7 @@ describe('Middleware', () => {
 
     it('должен вернуть 403 для student роли', async () => {
       const request = createRequest('/admin/users', { role: 'student' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -63,7 +63,7 @@ describe('Middleware', () => {
 
     it('должен вернуть 403 для lector роли', async () => {
       const request = createRequest('/admin/schedule', { role: 'lector' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -73,7 +73,7 @@ describe('Middleware', () => {
 
     it('должен вернуть 403 для mentor роли', async () => {
       const request = createRequest('/admin/subjects', { role: 'mentor' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -85,14 +85,14 @@ describe('Middleware', () => {
   describe('Доступ к /student/*', () => {
     it('должен разрешить доступ для student роли', async () => {
       const request = createRequest('/student/homework', { role: 'student' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })
 
     it('должен вернуть 403 для admin роли', async () => {
       const request = createRequest('/student/homework', { role: 'admin' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -102,7 +102,7 @@ describe('Middleware', () => {
 
     it('должен вернуть 403 для lector роли', async () => {
       const request = createRequest('/student/profile', { role: 'lector' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -114,14 +114,14 @@ describe('Middleware', () => {
   describe('Доступ к /lector/*', () => {
     it('должен разрешить доступ для lector роли', async () => {
       const request = createRequest('/lector/homework', { role: 'lector' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })
 
     it('должен вернуть 403 для student роли', async () => {
       const request = createRequest('/lector/homework', { role: 'student' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -131,7 +131,7 @@ describe('Middleware', () => {
 
     it('должен вернуть 403 для mentor роли', async () => {
       const request = createRequest('/lector/profile', { role: 'mentor' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -143,14 +143,14 @@ describe('Middleware', () => {
   describe('Доступ к /mentor/*', () => {
     it('должен разрешить доступ для mentor роли', async () => {
       const request = createRequest('/mentor/students', { role: 'mentor' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })
 
     it('должен вернуть 403 для student роли', async () => {
       const request = createRequest('/mentor/students', { role: 'student' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -160,7 +160,7 @@ describe('Middleware', () => {
 
     it('должен вернуть 403 для lector роли', async () => {
       const request = createRequest('/mentor/homework', { role: 'lector' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -172,7 +172,7 @@ describe('Middleware', () => {
   describe('Неавторизованный доступ', () => {
     it('должен редиректить на /login при отсутствии токена', async () => {
       const request = createRequest('/admin/users')
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -196,21 +196,21 @@ describe('Middleware', () => {
   describe('Edge cases', () => {
     it('должен обрабатывать путь с несколькими сегментами', async () => {
       const request = createRequest('/admin/users/123/edit', { role: 'admin' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })
 
     it('должен обрабатывать query параметры', async () => {
       const request = createRequest('/admin/users?page=1&limit=10', { role: 'admin' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })
 
     it('должен обрабатывать hash в URL', async () => {
       const request = createRequest('/admin/users#section', { role: 'admin' })
-      const response = await middleware(request as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })

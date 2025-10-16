@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import bcryptjs from 'bcryptjs'
 import { getServerSession } from 'next-auth/next'
+import { jest } from '@jest/globals'
 
 // Prisma клиент для тестов
 let prisma: PrismaClient

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { describe, it, expect, beforeEach, afterEach, afterAll, jest } from '@jest/globals'
 import { NextRequest } from 'next/server'
 import { GET, POST, PUT, DELETE } from '@/app/api/users/route'
 import { setupTestDb, cleanupTestDb, disconnectDb, createTestUser, createTestGroup, mockSession } from '../../utils/test-helpers'
