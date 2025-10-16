@@ -398,6 +398,84 @@ npm run start
 
 ## 🧪 Тестирование
 
+Проект SmartSchedule имеет комплексную систему тестирования, включающую unit, integration и E2E тесты.
+
+### Быстрый старт
+
+```bash
+# Запуск всех Jest тестов (unit + integration)
+npm test
+
+# Запуск в watch режиме (для разработки)
+npm run test:watch
+
+# Запуск только unit тестов
+npm run test:unit
+
+# Запуск только integration тестов
+npm run test:integration
+
+# Запуск с покрытием кода
+npm run test:coverage
+
+# E2E тесты с Playwright
+npm run test:e2e
+
+# E2E тесты с UI интерфейсом
+npm run test:e2e:ui
+
+# Запуск всех типов тестов
+npm run test:all
+```
+
+### Установка Playwright браузеров
+
+Для E2E тестов необходимо один раз установить браузеры:
+
+```bash
+npm run playwright:install
+```
+
+### Структура тестов
+
+```
+smartschedule/
+├── __tests__/
+│   ├── unit/                    # Unit тесты для утилит и хелперов
+│   ├── integration/             # Integration тесты для API routes
+│   ├── components/              # Тесты React компонентов
+│   ├── utils/                   # Утилиты для тестов
+│   ├── fixtures/                # Тестовые данные (фикстуры)
+│   └── mocks/                   # MSW моки для API
+├── e2e/                         # E2E тесты (Playwright)
+│   ├── auth.spec.ts            # Тесты аутентификации
+│   └── admin/                   # Тесты админской панели
+├── jest.config.js               # Конфигурация Jest
+├── jest.setup.js                # Setup для Jest
+└── playwright.config.ts         # Конфигурация Playwright
+```
+
+### Технологии тестирования
+
+- **Jest** — фреймворк для unit и integration тестов
+- **React Testing Library** — для тестирования React компонентов
+- **Playwright** — для E2E тестов
+- **MSW (Mock Service Worker)** — для мокирования API запросов
+- **@testing-library/user-event** — для симуляции действий пользователя
+
+### Покрытие кода
+
+Проект стремится к следующим показателям покрытия:
+- **>80%** для критичного кода (auth, API routes)
+- **>60%** для остального кода
+- **100%** для утилит и хелперов
+
+### Дополнительная информация
+
+Полное руководство по тестированию см. в [docs/TESTING.md](docs/TESTING.md)
+
+### Линтер и проверка типов
+
 ```bash
 # Запуск линтера
 npm run lint
@@ -442,7 +520,23 @@ npx prisma format
 
 ## 📦 Деплой
 
-### Vercel (рекомендуется):
+### 🚀 Coolify (текущий способ):
+
+Проект настроен на автоматический деплой через [Coolify](https://coolify.io/).
+
+**Как это работает:**
+1. Вы делаете изменения локально
+2. Коммитите и пушите в GitHub: `git push origin main`
+3. Coolify автоматически обнаруживает изменения, собирает и деплоит приложение
+4. ⏱️ Время деплоя: обычно 2-5 минут
+
+**Production сервер:** https://shked.innovators.moscow
+
+Подробности: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+
+---
+
+### Vercel (альтернатива):
 1. Подключите репозиторий к Vercel
 2. Настройте переменные окружения
 3. Vercel автоматически соберет и задеплоит проект
