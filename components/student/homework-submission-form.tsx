@@ -151,10 +151,13 @@ export function HomeworkSubmissionForm({
               <FormControl>
                 <Input
                   type="url"
-                  placeholder="https://example.com/my-work"
+                  placeholder="https://github.com/username/repository"
                   {...field}
                 />
               </FormControl>
+              <p className="text-xs text-gray-500 mt-1">
+                Укажите ссылку на GitHub, Google Docs или другой ресурс с вашей работой
+              </p>
               <FormMessage />
             </FormItem>
           )}

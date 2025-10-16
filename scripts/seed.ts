@@ -409,7 +409,9 @@ async function main() {
             data: {
               homeworkId: homework.id,
               userId: student.id,
-              submissionUrl: `https://example.com/submission/${student.id}/${homework.id}`,
+              submissionUrl: Math.random() > 0.5 
+                ? `https://github.com/student-${student.id}/homework-${homework.id}` 
+                : null,
               status: status,
               grade: grade,
               comment: comment,

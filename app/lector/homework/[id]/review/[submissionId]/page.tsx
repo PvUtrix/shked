@@ -147,6 +147,13 @@ export default function LectorReviewSubmissionPage({
     }
   }
 
+  const isValidSubmissionUrl = (url: string | null | undefined): boolean => {
+    if (!url) return false
+    // Проверяем что URL не пустой и не example.com
+    const isExampleDomain = url.includes('example.com') || url.includes('example.org')
+    return url.trim().length > 0 && !isExampleDomain
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -215,7 +222,7 @@ export default function LectorReviewSubmissionPage({
                   <div>
                     <Label className="text-sm font-medium text-gray-700">Ссылка на работу</Label>
                     <div className="mt-1">
-                      {submission.submissionUrl ? (
+                      {isValidSubmissionUrl(submission.submissionUrl) ? (
                         <Button variant="outline" asChild>
                           <a href={submission.submissionUrl} target="_blank" rel="noopener noreferrer">
                             Открыть работу
