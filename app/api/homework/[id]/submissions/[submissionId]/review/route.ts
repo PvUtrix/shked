@@ -16,7 +16,7 @@ export async function POST(
     }
 
     const body = await request.json()
-    const { grade, comment, status } = body
+    const { grade, comment, feedback, status } = body
 
     // Получаем сдачу с информацией о домашнем задании
     const submission = await prisma.homeworkSubmission.findUnique({
@@ -67,6 +67,7 @@ export async function POST(
       data: {
         grade: grade || null,
         comment: comment || null,
+        feedback: feedback || null,
         status: status || 'REVIEWED'
       },
       include: {

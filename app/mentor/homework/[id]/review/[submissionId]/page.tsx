@@ -24,6 +24,7 @@ interface Submission {
   status: string
   grade?: number
   comment?: string
+  feedback?: string
   user: {
     id: string
     name?: string
@@ -181,7 +182,7 @@ export default function MentorReviewSubmissionPage({
           </Card>
 
           {/* Проверка лектора */}
-          {submission.status === 'REVIEWED' && submission.comment && (
+          {submission.status === 'REVIEWED' && (submission.comment || submission.feedback) && (
             <Card>
               <CardHeader>
                 <CardTitle>Проверка лектора</CardTitle>
@@ -199,10 +200,21 @@ export default function MentorReviewSubmissionPage({
                     </div>
                   )}
                   
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Комментарий</Label>
-                    <p className="text-gray-700 mt-1 whitespace-pre-wrap">{submission.comment}</p>
-                  </div>
+                  {submission.comment && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Краткий комментарий</Label>
+                      <p className="text-gray-700 mt-1 whitespace-pre-wrap">{submission.comment}</p>
+                    </div>
+                  )}
+
+                  {submission.feedback && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Развернутая обратная связь</Label>
+                      <div className="mt-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                        <MarkdownViewer content={submission.feedback} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

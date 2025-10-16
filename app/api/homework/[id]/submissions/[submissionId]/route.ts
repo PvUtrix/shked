@@ -25,6 +25,7 @@ export async function GET(
         status: true,
         grade: true,
         comment: true,
+        feedback: true,
         homeworkId: true,
         user: {
           select: {

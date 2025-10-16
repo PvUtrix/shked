@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { MarkdownViewer } from '@/components/ui/markdown-viewer'
+import { MarkdownEditor } from '@/components/ui/markdown-editor'
 import { 
   ArrowLeft, 
   Save, 
@@ -31,6 +32,7 @@ interface Submission {
   status: string
   grade?: number
   comment?: string
+  feedback?: string
   user: {
     id: string
     name?: string
@@ -52,6 +54,7 @@ export default function LectorReviewSubmissionPage({
   const [formData, setFormData] = useState({
     grade: '',
     comment: '',
+    feedback: '',
     status: 'SUBMITTED'
   })
 
@@ -68,6 +71,7 @@ export default function LectorReviewSubmissionPage({
         setFormData({
           grade: data.grade?.toString() || '',
           comment: data.comment || '',
+          feedback: data.feedback || '',
           status: data.status || 'SUBMITTED'
         })
       } else {
@@ -94,6 +98,7 @@ export default function LectorReviewSubmissionPage({
         body: JSON.stringify({
           grade: formData.grade ? parseInt(formData.grade) : null,
           comment: formData.comment,
+          feedback: formData.feedback,
           status: formData.status
         }),
       })
@@ -277,13 +282,23 @@ export default function LectorReviewSubmissionPage({
                 </div>
 
                 <div>
-                  <Label htmlFor="comment">Комментарий</Label>
+                  <Label htmlFor="comment">Краткий комментарий</Label>
                   <Textarea
                     id="comment"
                     value={formData.comment}
                     onChange={(e) => setFormData(prev => ({ ...prev, comment: e.target.value }))}
-                    placeholder="Оставьте комментарий к работе..."
-                    rows={4}
+                    placeholder="Краткий комментарий к работе..."
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="feedback">Развернутая обратная связь (MDX)</Label>
+                  <MarkdownEditor
+                    value={formData.feedback}
+                    onChange={(value) => setFormData(prev => ({ ...prev, feedback: value }))}
+                    placeholder="Напишите развернутую обратную связь с использованием Markdown..."
+                    height="300px"
                   />
                 </div>
 
