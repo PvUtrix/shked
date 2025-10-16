@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-// GET /api/homework/[id]/submissions/[submissionId] - получение конкретной сдачи
+// GET /api/homework/[id]/submissions/[submissionId] - получение конкретной работы студента
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string; submissionId: string } }
@@ -54,15 +54,15 @@ export async function GET(
 
     if (!submission) {
       return NextResponse.json(
-        { error: 'Сдача не найдена' },
+        { error: 'Работа не найдена' },
         { status: 404 }
       )
     }
 
-    // Проверяем, что сдача принадлежит указанному домашнему заданию
+    // Проверяем, что работа принадлежит указанному домашнему заданию
     if (submission.homeworkId !== params.id) {
       return NextResponse.json(
-        { error: 'Сдача не принадлежит указанному заданию' },
+        { error: 'Работа не принадлежит указанному заданию' },
         { status: 400 }
       )
     }
@@ -71,12 +71,12 @@ export async function GET(
     if (session.user.role === 'admin') {
       // Админы имеют полный доступ
     } else if (session.user.role === 'lector') {
-      // Лекторы могут просматривать сдачи по своим предметам
+      // Лекторы могут просматривать работы по своим предметам
       if (submission.homework.subject?.lectorId !== session.user.id) {
         return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
       }
     } else if (session.user.role === 'mentor') {
-      // Менторы могут просматривать сдачи своих групп
+      // Менторы могут просматривать работы своих групп
       if (submission.homework.groupId !== session.user.groupId) {
         return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
       }
@@ -87,7 +87,7 @@ export async function GET(
     return NextResponse.json(submission)
 
   } catch (error) {
-    console.error('Ошибка при получении сдачи:', error)
+    console.error('Ошибка при получении работы:', error)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

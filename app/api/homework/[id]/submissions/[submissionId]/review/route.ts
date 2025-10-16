@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-// POST /api/homework/[id]/submissions/[submissionId]/review - проверка сдачи
+// POST /api/homework/[id]/submissions/[submissionId]/review - проверка работы студента
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string; submissionId: string } }
@@ -18,7 +18,7 @@ export async function POST(
     const body = await request.json()
     const { grade, comment, feedback, status } = body
 
-    // Получаем сдачу с информацией о домашнем задании
+    // Получаем работу студента с информацией о домашнем задании
     const submission = await prisma.homeworkSubmission.findUnique({
       where: { id: params.submissionId },
       include: {
@@ -36,15 +36,15 @@ export async function POST(
 
     if (!submission) {
       return NextResponse.json(
-        { error: 'Сдача не найдена' },
+        { error: 'Работа не найдена' },
         { status: 404 }
       )
     }
 
-    // Проверяем, что сдача принадлежит указанному домашнему заданию
+    // Проверяем, что работа принадлежит указанному домашнему заданию
     if (submission.homeworkId !== params.id) {
       return NextResponse.json(
-        { error: 'Сдача не принадлежит указанному заданию' },
+        { error: 'Работа не принадлежит указанному заданию' },
         { status: 400 }
       )
     }
@@ -53,7 +53,7 @@ export async function POST(
     if (session.user.role === 'admin') {
       // Админы имеют полный доступ
     } else if (session.user.role === 'lector') {
-      // Лекторы могут проверять сдачи только по своим предметам
+      // Лекторы могут проверять работы только по своим предметам
       if (submission.homework.subject?.lectorId !== session.user.id) {
         return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
       }
@@ -61,7 +61,7 @@ export async function POST(
       return NextResponse.json({ error: 'Доступ запрещен. Только лекторы и администраторы могут проверять работы.' }, { status: 403 })
     }
 
-    // Обновляем сдачу
+    // Обновляем работу
     const updatedSubmission = await prisma.homeworkSubmission.update({
       where: { id: params.submissionId },
       data: {
@@ -86,7 +86,7 @@ export async function POST(
     return NextResponse.json(updatedSubmission)
 
   } catch (error) {
-    console.error('Ошибка при проверке сдачи:', error)
+    console.error('Ошибка при проверке работы:', error)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

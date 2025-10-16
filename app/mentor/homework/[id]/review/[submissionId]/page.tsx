@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { MarkdownViewer } from '@/components/ui/markdown-viewer'
+import { InlineCommentViewer } from '@/components/ui/inline-comment-viewer'
 import { 
   ArrowLeft, 
   CheckCircle,
@@ -57,7 +58,7 @@ export default function MentorReviewSubmissionPage({
         router.push(`/mentor/homework/${params.id}`)
       }
     } catch (error) {
-      console.error('Ошибка при получении сдачи:', error)
+      console.error('Ошибка при получении работы:', error)
       router.push(`/mentor/homework/${params.id}`)
     } finally {
       setLoading(false)
@@ -103,7 +104,7 @@ export default function MentorReviewSubmissionPage({
   if (!submission) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Сдача не найдена</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Работа не найдена</h2>
         <Button asChild>
           <Link href={`/mentor/homework/${params.id}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -139,47 +140,47 @@ export default function MentorReviewSubmissionPage({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Основная информация */}
         <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileText className="h-5 w-5 mr-2" />
-                Работа студента
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* MDX Контент работы */}
-                {submission.content && (
+          {/* Работа студента с inline комментариями */}
+          {submission.content ? (
+            <InlineCommentViewer
+              content={submission.content}
+              submissionId={params.submissionId}
+              homeworkId={params.id}
+              canComment={false}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Работа студента
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">Содержание работы:</Label>
-                    <div className="mt-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                      <MarkdownViewer content={submission.content} />
+                    <Label className="text-sm font-medium text-gray-700">Ссылка на работу</Label>
+                    <div className="mt-1">
+                      {submission.submissionUrl ? (
+                        <Button variant="outline" asChild>
+                          <a href={submission.submissionUrl} target="_blank" rel="noopener noreferrer">
+                            Открыть работу
+                          </a>
+                        </Button>
+                      ) : (
+                        <p className="text-gray-500 italic">Ссылка не предоставлена</p>
+                      )}
                     </div>
                   </div>
-                )}
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Ссылка на работу</Label>
-                  <div className="mt-1">
-                    {submission.submissionUrl ? (
-                      <Button variant="outline" asChild>
-                        <a href={submission.submissionUrl} target="_blank" rel="noopener noreferrer">
-                          Открыть работу
-                        </a>
-                      </Button>
-                    ) : (
-                      <p className="text-gray-500 italic">Ссылка не предоставлена</p>
-                    )}
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Время сдачи</Label>
+                    <p className="text-sm text-gray-600">{formatDate(submission.submittedAt)}</p>
                   </div>
                 </div>
-                
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Время сдачи</Label>
-                  <p className="text-sm text-gray-600">{formatDate(submission.submittedAt)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Проверка лектора */}
           {submission.status === 'REVIEWED' && (submission.comment || submission.feedback) && (
@@ -227,7 +228,7 @@ export default function MentorReviewSubmissionPage({
             </CardHeader>
             <CardContent>
               <p className="text-orange-700">
-                Как ментор, вы можете просматривать сдачи студентов вашей группы. 
+                Как ментор, вы можете просматривать работы студентов вашей группы. 
                 Проверку и выставление оценок выполняет лектор.
               </p>
             </CardContent>

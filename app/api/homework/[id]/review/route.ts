@@ -25,7 +25,7 @@ export async function PUT(
       )
     }
 
-    // Проверка существования сдачи
+    // Проверка существования работы студента
     const existingSubmission = await prisma.homeworkSubmission.findUnique({
       where: {
         homeworkId_userId: {
@@ -49,7 +49,7 @@ export async function PUT(
 
     if (!existingSubmission) {
       return NextResponse.json(
-        { error: 'Сдача не найдена' },
+        { error: 'Работа не найдена' },
         { status: 404 }
       )
     }
@@ -62,7 +62,7 @@ export async function PUT(
       )
     }
 
-    // Обновление сдачи
+    // Обновление работы студента
     const submission = await prisma.homeworkSubmission.update({
       where: {
         homeworkId_userId: {

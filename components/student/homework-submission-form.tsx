@@ -70,7 +70,7 @@ export function HomeworkSubmissionForm({
 
       if (response.ok) {
         toast.success(
-          existingSubmission ? 'Сдача обновлена' : 'Задание сдано'
+          existingSubmission ? 'Работа обновлена' : 'Задание сдано'
         )
         onSuccess()
       } else {
@@ -128,12 +128,12 @@ export function HomeworkSubmissionForm({
           name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Содержание сдачи (MDX)</FormLabel>
+              <FormLabel>Содержание работы (MDX)</FormLabel>
               <FormControl>
                 <MarkdownEditor
                   value={field.value || ''}
                   onChange={field.onChange}
-                  placeholder="Напишите содержание вашей сдачи в формате Markdown..."
+                  placeholder="Напишите содержание вашей работы в формате Markdown..."
                   height="400px"
                 />
               </FormControl>
@@ -182,7 +182,7 @@ export function HomeworkSubmissionForm({
             ) : (
               <>
                 <Send className="h-4 w-4 mr-2" />
-                {existingSubmission ? 'Обновить сдачу' : 'Сдать задание'}
+                {existingSubmission ? 'Обновить работу' : 'Сдать задание'}
               </>
             )}
           </Button>

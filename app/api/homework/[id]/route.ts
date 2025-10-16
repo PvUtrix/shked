@@ -23,8 +23,8 @@ export async function GET(
         group: true,
         submissions: {
           where: session.user.role === 'student' 
-            ? { userId: session.user.id }  // Студенты видят только свою сдачу
-            : undefined,  // Админы и преподаватели видят все сдачи
+            ? { userId: session.user.id }  // Студенты видят только свою работу
+            : undefined,  // Админы и преподаватели видят все работы
           include: {
             user: {
               select: {

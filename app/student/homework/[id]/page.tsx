@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { MarkdownViewer } from '@/components/ui/markdown-viewer'
+import { InlineCommentViewer } from '@/components/ui/inline-comment-viewer'
 import { HomeworkSubmissionForm } from '@/components/student/homework-submission-form'
 import { 
   BookOpen, 
@@ -36,7 +37,7 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
         const data = await response.json()
         setHomework(data)
         
-        // Находим сдачу текущего пользователя
+        // Находим работу текущего пользователя
         if (data.submissions && data.submissions.length > 0) {
           setSubmission(data.submissions[0])
         }
@@ -225,11 +226,11 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
       {statusInfo.status !== 'reviewed' && (
         <Card>
           <CardHeader>
-            <CardTitle>Сдача задания</CardTitle>
+            <CardTitle>Сдача домашнего задания</CardTitle>
             <CardDescription>
               {statusInfo.status === 'not_submitted' 
-                ? 'Напишите содержание сдачи или укажите ссылку на выполненное задание'
-                : 'Обновите содержание сдачи или ссылку на выполненное задание'
+                ? 'Напишите содержание работы или укажите ссылку на выполненное задание'
+                : 'Обновите содержание работы или ссылку на выполненное задание'
               }
             </CardDescription>
           </CardHeader>
@@ -286,6 +287,21 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Моя работа с комментариями лектора */}
+      {submission && submission.content && (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Моя работа с комментариями преподавателя
+          </h3>
+          <InlineCommentViewer
+            content={submission.content}
+            submissionId={submission.id}
+            homeworkId={params.id}
+            canComment={false}
+          />
+        </div>
       )}
     </div>
   )

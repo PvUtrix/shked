@@ -175,11 +175,11 @@ export default function AdminHomeworkDetailPage({ params }: { params: { id: stri
             </Card>
           )}
 
-          {/* Сдачи */}
+          {/* Работы студентов */}
           {homework.submissions && homework.submissions.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Сдачи студентов</CardTitle>
+                <CardTitle>Работы студентов</CardTitle>
                 <CardDescription>
                   {homework.submissions.length} из {homework.group?.name || 'N/A'}
                 </CardDescription>
@@ -250,7 +250,7 @@ export default function AdminHomeworkDetailPage({ params }: { params: { id: stri
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Всего сдач:</span>
+                <span className="text-sm text-gray-600">Всего работ:</span>
                 <span className="font-medium">{homework.submissions?.length || 0}</span>
               </div>
               <div className="flex items-center justify-between">

@@ -58,6 +58,7 @@ model User {
   telegramUser  TelegramUser?
   homeworkSubmissions HomeworkSubmission[]
   assignedSubjects Subject[] // Предметы для преподавателя
+  homeworkComments HomeworkComment[] @relation("HomeworkCommentAuthor") // Комментарии к работам
 
   @@map("users")
 }
@@ -196,7 +197,7 @@ model HomeworkSubmission {
   id          String   @id @default(cuid())
   homeworkId  String
   userId      String
-  content     String?  // MDX контент сдачи
+  content     String?  // MDX контент работы студента
   submissionUrl String? // Ссылка на выполненное задание
   status      String   @default("NOT_SUBMITTED") // NOT_SUBMITTED, SUBMITTED, REVIEWED
   grade       Int?     // Оценка (1-5 или 1-100)
@@ -209,7 +210,26 @@ model HomeworkSubmission {
   
   homework    Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments    HomeworkComment[] // Inline комментарии к работе
   
   @@unique([homeworkId, userId])
   @@map("homework_submissions")
+}
+
+model HomeworkComment {
+  id           String   @id @default(cuid())
+  submissionId String   // ID работы студента
+  authorId     String   // ID автора комментария (обычно лектор)
+  content      String   // Текст комментария
+  startOffset  Int      // Начальная позиция выделенного текста
+  endOffset    Int      // Конечная позиция выделенного текста
+  selectedText String   @db.Text // Выделенный текст для контекста
+  resolved     Boolean  @default(false) // Помечен ли как решенный
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  submission   HomeworkSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  author       User              @relation("HomeworkCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  @@map("homework_comments")
 }

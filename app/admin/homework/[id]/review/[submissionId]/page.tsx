@@ -72,7 +72,7 @@ export default function ReviewSubmissionPage({
         router.push(`/admin/homework/${params.id}`)
       }
     } catch (error) {
-      console.error('Ошибка при получении сдачи:', error)
+      console.error('Ошибка при получении работы:', error)
       router.push(`/admin/homework/${params.id}`)
     } finally {
       setLoading(false)
@@ -97,15 +97,15 @@ export default function ReviewSubmissionPage({
       })
 
       if (response.ok) {
-        toast.success('Сдача проверена')
+        toast.success('Работа проверена')
         router.push(`/admin/homework/${params.id}`)
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Ошибка при проверке сдачи')
+        toast.error(error.error || 'Ошибка при проверке работы')
       }
     } catch (error) {
-      console.error('Ошибка при проверке сдачи:', error)
-      toast.error('Ошибка при проверке сдачи')
+      console.error('Ошибка при проверке работы:', error)
+      toast.error('Ошибка при проверке работы')
     } finally {
       setSaving(false)
     }
@@ -150,7 +150,7 @@ export default function ReviewSubmissionPage({
   if (!submission) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Сдача не найдена</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Работа не найдена</h2>
         <Button asChild>
           <Link href={`/admin/homework/${params.id}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -172,7 +172,7 @@ export default function ReviewSubmissionPage({
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Проверка сдачи</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Проверка домашнего задания</h1>
             <p className="text-gray-600">
               {submission.user?.name || 
                `${submission.user?.firstName || ''} ${submission.user?.lastName || ''}`.trim() ||
@@ -190,7 +190,7 @@ export default function ReviewSubmissionPage({
             <CardHeader>
               <CardTitle className="flex items-center">
                 <FileText className="h-5 w-5 mr-2" />
-                Сдача студента
+                Работа студента
               </CardTitle>
             </CardHeader>
             <CardContent>

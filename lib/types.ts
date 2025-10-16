@@ -57,7 +57,7 @@ export type HomeworkSubmission = {
   id: string
   homeworkId: string
   userId: string
-  content?: string  // MDX контент сдачи
+  content?: string  // MDX контент работы студента
   submissionUrl?: string
   status: 'NOT_SUBMITTED' | 'SUBMITTED' | 'REVIEWED'
   grade?: number
@@ -93,7 +93,7 @@ export type HomeworkFormData = {
 }
 
 export type HomeworkSubmissionFormData = {
-  content?: string  // MDX контент сдачи
+  content?: string  // MDX контент работы студента
   submissionUrl?: string
 }
 

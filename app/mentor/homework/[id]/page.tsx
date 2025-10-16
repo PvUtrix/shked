@@ -186,13 +186,13 @@ export default function MentorHomeworkDetailPage({ params }: { params: { id: str
             </Card>
           )}
 
-          {/* Сдачи студентов */}
+          {/* Работы студентов */}
           {homework.submissions && homework.submissions.length > 0 ? (
             <Card>
               <CardHeader>
-                <CardTitle>Сдачи студентов</CardTitle>
+                <CardTitle>Работы студентов</CardTitle>
                 <CardDescription>
-                  {homework.submissions.length} сдач
+                  {homework.submissions.length} работ
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -272,7 +272,7 @@ export default function MentorHomeworkDetailPage({ params }: { params: { id: str
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Всего сдач:</span>
+                <span className="text-sm text-gray-600">Всего работ:</span>
                 <span className="font-medium">{homework.submissions?.length || 0}</span>
               </div>
               <div className="flex items-center justify-between">
