@@ -162,8 +162,20 @@ export async function POST(
 
   } catch (error) {
     console.error('Ошибка при создании комментария:', error)
+    console.error('Детали ошибки:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack')
+    
+    // Если это ошибка Prisma о несуществующей таблице
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    if (errorMessage.includes('relation') || errorMessage.includes('table') || errorMessage.includes('homework_comments')) {
+      return NextResponse.json(
+        { error: 'Таблица комментариев не найдена. Необходимо применить миграцию базы данных.' },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { error: 'Внутренняя ошибка сервера', details: errorMessage },
       { status: 500 }
     )
   }
