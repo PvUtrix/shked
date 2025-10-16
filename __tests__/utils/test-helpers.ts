@@ -7,32 +7,29 @@ let prisma: PrismaClient
 
 /**
  * Получить Prisma клиент для тестов
+ * Использует существующую базу данных из переменной окружения
  */
 export function getPrismaClient(): PrismaClient {
   if (!prisma) {
-    prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL || 'file::memory:?cache=shared',
-        },
-      },
-    })
+    // Используем стандартный Prisma клиент из lib/db
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { prisma: dbPrisma } = require('@/lib/db')
+    prisma = dbPrisma
   }
   return prisma
 }
 
 /**
  * Инициализация тестовой БД
+ * Просто убеждаемся что подключение работает
  */
 export async function setupTestDb() {
   const prisma = getPrismaClient()
   
-  // Для in-memory SQLite нужно применить миграции
-  // В реальных тестах это может быть сложнее
   try {
     await prisma.$connect()
   } catch (error) {
-    console.error('Ошибка подключения к тестовой БД:', error)
+    console.warn('Не удалось подключиться к тестовой БД. Убедитесь что PostgreSQL запущен.')
   }
 }
 
