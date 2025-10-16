@@ -188,6 +188,7 @@ export async function POST(request: NextRequest) {
       data: {
         title: body.title,
         description: body.description,
+        content: body.content,  // MDX контент
         taskUrl: body.taskUrl,
         deadline: new Date(body.deadline),
         materials: body.materials || [],

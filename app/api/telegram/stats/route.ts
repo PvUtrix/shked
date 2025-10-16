@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth'
 import { getNotificationStats } from '@/lib/telegram/notifications'
 import { prisma } from '@/lib/db'
 
+// Указываем, что этот route должен быть динамическим
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

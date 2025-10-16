@@ -32,6 +32,7 @@ export type Homework = {
   id: string
   title: string
   description?: string
+  content?: string  // MDX контент задания
   taskUrl?: string
   deadline: Date
   materials?: any[] // Дополнительные материалы
@@ -56,10 +57,12 @@ export type HomeworkSubmission = {
   id: string
   homeworkId: string
   userId: string
+  content?: string  // MDX контент сдачи
   submissionUrl?: string
   status: 'NOT_SUBMITTED' | 'SUBMITTED' | 'REVIEWED'
   grade?: number
-  comment?: string
+  comment?: string  // Комментарий преподавателя (MDX)
+  feedback?: string // Развернутая обратная связь (MDX)
   submittedAt?: Date
   reviewedAt?: Date
   createdAt: Date
@@ -77,6 +80,7 @@ export type HomeworkSubmission = {
 export type HomeworkFormData = {
   title: string
   description?: string
+  content?: string  // MDX контент задания
   taskUrl?: string
   deadline: string
   materials?: Array<{
@@ -89,12 +93,14 @@ export type HomeworkFormData = {
 }
 
 export type HomeworkSubmissionFormData = {
-  submissionUrl: string
+  content?: string  // MDX контент сдачи
+  submissionUrl?: string
 }
 
 export type HomeworkReviewFormData = {
   grade?: number
-  comment?: string
+  comment?: string  // Комментарий преподавателя (MDX)
+  feedback?: string  // Развернутая обратная связь (MDX)
 }
 
 export const HOMEWORK_STATUSES = {

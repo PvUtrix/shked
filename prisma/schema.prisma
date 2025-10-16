@@ -175,6 +175,7 @@ model Homework {
   id          String   @id @default(cuid())
   title       String
   description String?
+  content     String?  // MDX контент задания
   taskUrl     String?  // Ссылка на задание
   deadline    DateTime
   materials   Json?    // Дополнительные материалы (массив объектов)
@@ -195,10 +196,12 @@ model HomeworkSubmission {
   id          String   @id @default(cuid())
   homeworkId  String
   userId      String
+  content     String?  // MDX контент сдачи
   submissionUrl String? // Ссылка на выполненное задание
   status      String   @default("NOT_SUBMITTED") // NOT_SUBMITTED, SUBMITTED, REVIEWED
   grade       Int?     // Оценка (1-5 или 1-100)
-  comment     String?  // Комментарий преподавателя
+  comment     String?  // Комментарий преподавателя (MDX)
+  feedback    String?  // Развернутая обратная связь (MDX)
   submittedAt DateTime?
   reviewedAt  DateTime?
   createdAt   DateTime @default(now())

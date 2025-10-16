@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
+import { MarkdownEditor } from '@/components/ui/markdown-editor'
 import { HomeworkFormData } from '@/lib/types'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -38,6 +39,7 @@ const materialSchema = z.object({
 const homeworkSchema = z.object({
   title: z.string().min(1, 'Название задания обязательно'),
   description: z.string().optional(),
+  content: z.string().optional(),  // MDX контент
   taskUrl: z.string().url('Некорректная ссылка').optional().or(z.literal('')),
   deadline: z.string().min(1, 'Дедлайн обязателен'),
   materials: z.array(materialSchema).optional(),
@@ -63,6 +65,7 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
     defaultValues: {
       title: '',
       description: '',
+      content: '',  // MDX контент
       taskUrl: '',
       deadline: '',
       materials: [],
@@ -111,6 +114,7 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
       form.reset({
         title: homework.title || '',
         description: homework.description || '',
+        content: homework.content || '',  // MDX контент
         taskUrl: homework.taskUrl || '',
         deadline: deadline.toISOString().split('T')[0] + 'T' + deadline.toTimeString().split(' ')[0].slice(0, 5),
         materials: homework.materials || [],
@@ -121,6 +125,7 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
       form.reset({
         title: '',
         description: '',
+        content: '',  // MDX контент
         taskUrl: '',
         deadline: '',
         materials: [],
@@ -209,6 +214,25 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
                     <Textarea 
                       placeholder="Подробное описание задания"
                       {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Содержание задания (MDX)</FormLabel>
+                  <FormControl>
+                    <MarkdownEditor
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                      placeholder="Напишите содержание задания в формате Markdown..."
+                      height="300px"
                     />
                   </FormControl>
                   <FormMessage />

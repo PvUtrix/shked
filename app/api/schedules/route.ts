@@ -43,9 +43,45 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Для студентов показываем только их группу
+    // Для студентов показываем только их группу с учетом подгрупп
     if (session.user.role === 'student' && session.user.groupId) {
       where.groupId = session.user.groupId
+      
+      // Получаем информацию о подгруппах студента
+      const userGroup = await prisma.userGroup.findUnique({
+        where: {
+          userId_groupId: {
+            userId: session.user.id,
+            groupId: session.user.groupId
+          }
+        }
+      })
+      
+      // Если у студента есть подгруппы, фильтруем расписание
+      // Показываем занятия либо для всей группы (subgroupId = null),
+      // либо для конкретных подгрупп студента
+      if (userGroup) {
+        const subgroupConditions: Array<{ subgroupId: string | null }> = [
+          { subgroupId: null }, // Занятия для всей группы
+        ]
+        
+        // Добавляем условия для каждой подгруппы, в которую назначен студент
+        if (userGroup.subgroupCommerce !== null && userGroup.subgroupCommerce !== undefined) {
+          subgroupConditions.push({ subgroupId: String(userGroup.subgroupCommerce) })
+        }
+        if (userGroup.subgroupTutorial !== null && userGroup.subgroupTutorial !== undefined) {
+          subgroupConditions.push({ subgroupId: String(userGroup.subgroupTutorial) })
+        }
+        if (userGroup.subgroupFinance !== null && userGroup.subgroupFinance !== undefined) {
+          subgroupConditions.push({ subgroupId: String(userGroup.subgroupFinance) })
+        }
+        if (userGroup.subgroupSystemThinking !== null && userGroup.subgroupSystemThinking !== undefined) {
+          subgroupConditions.push({ subgroupId: String(userGroup.subgroupSystemThinking) })
+        }
+        
+        // Применяем фильтр OR для подгрупп
+        where.OR = subgroupConditions
+      }
     }
 
     // Для преподавателей показываем только их предметы

@@ -252,9 +252,20 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Подгруппа</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Подгруппа" {...field} />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Вся группа" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">Вся группа</SelectItem>
+                        <SelectItem value="1">Подгруппа 1</SelectItem>
+                        <SelectItem value="2">Подгруппа 2</SelectItem>
+                        <SelectItem value="3">Подгруппа 3</SelectItem>
+                        <SelectItem value="4">Подгруппа 4</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

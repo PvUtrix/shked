@@ -4,20 +4,17 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { MarkdownViewer } from '@/components/ui/markdown-viewer'
+import { HomeworkSubmissionForm } from '@/components/student/homework-submission-form'
 import { 
   BookOpen, 
-  Clock, 
-  Calendar,
+  Clock,
   ExternalLink,
   ArrowLeft,
-  Save,
   CheckCircle,
-  XCircle,
-  AlertCircle
+  XCircle
 } from 'lucide-react'
 import { Homework, HomeworkSubmission } from '@/lib/types'
 import Link from 'next/link'
@@ -27,8 +24,6 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
   const [homework, setHomework] = useState<Homework | null>(null)
   const [submission, setSubmission] = useState<HomeworkSubmission | null>(null)
   const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [submissionUrl, setSubmissionUrl] = useState('')
 
   useEffect(() => {
     fetchHomework()
@@ -44,7 +39,6 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
         // Находим сдачу текущего пользователя
         if (data.submissions && data.submissions.length > 0) {
           setSubmission(data.submissions[0])
-          setSubmissionUrl(data.submissions[0].submissionUrl || '')
         }
       } else {
         router.push('/student/homework')
@@ -57,33 +51,6 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-
-    try {
-      const url = submission ? '/api/homework/[id]/submit' : '/api/homework/[id]/submit'
-      const response = await fetch(url.replace('[id]', params.id), {
-        method: submission ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ submissionUrl }),
-      })
-
-      if (response.ok) {
-        router.push('/student/homework')
-      } else {
-        const error = await response.json()
-        alert(`Ошибка: ${error.error}`)
-      }
-    } catch (error) {
-      console.error('Ошибка при сдаче домашнего задания:', error)
-      alert('Ошибка при сдаче домашнего задания')
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   const formatDate = (date: string | Date) => {
     try {
@@ -189,6 +156,16 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
             </div>
           )}
 
+          {/* MDX Контент */}
+          {homework.content && (
+            <div>
+              <Label className="text-sm font-medium">Содержание задания:</Label>
+              <div className="mt-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <MarkdownViewer content={homework.content} />
+              </div>
+            </div>
+          )}
+
           {/* Дедлайн */}
           <div className="flex items-center space-x-2">
             <Clock className="h-4 w-4 text-gray-400" />
@@ -218,7 +195,7 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
           )}
 
           {/* Дополнительные материалы */}
-          {homework.materials && homework.materials.length > 0 && (
+          {homework.materials && Array.isArray(homework.materials) && homework.materials.length > 0 && (
             <div>
               <Label className="text-sm font-medium">Дополнительные материалы:</Label>
               <div className="mt-2 space-y-2">
@@ -251,44 +228,20 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
             <CardTitle>Сдача задания</CardTitle>
             <CardDescription>
               {statusInfo.status === 'not_submitted' 
-                ? 'Отправьте ссылку на выполненное задание'
-                : 'Обновите ссылку на выполненное задание'
+                ? 'Напишите содержание сдачи или укажите ссылку на выполненное задание'
+                : 'Обновите содержание сдачи или ссылку на выполненное задание'
               }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="submissionUrl">Ссылка на выполненное задание *</Label>
-                <Input
-                  id="submissionUrl"
-                  type="url"
-                  value={submissionUrl}
-                  onChange={(e) => setSubmissionUrl(e.target.value)}
-                  placeholder="https://example.com/my-work"
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end space-x-4">
-                <Button variant="outline" asChild>
-                  <Link href="/student/homework">Отмена</Link>
-                </Button>
-                <Button type="submit" disabled={submitting || overdue}>
-                  {submitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      {statusInfo.status === 'not_submitted' ? 'Сдача...' : 'Обновление...'}
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      {statusInfo.status === 'not_submitted' ? 'Сдать задание' : 'Обновить сдачу'}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
+            <HomeworkSubmissionForm
+              homeworkId={params.id}
+              existingSubmission={submission}
+              onSuccess={() => {
+                fetchHomework()
+              }}
+              isOverdue={overdue}
+            />
           </CardContent>
         </Card>
       )}
@@ -313,9 +266,18 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
             {submission.comment && (
               <div>
                 <Label className="text-sm font-medium">Комментарий преподавателя:</Label>
-                <p className="text-gray-700 mt-1 p-3 bg-gray-50 rounded-lg">
-                  {submission.comment}
-                </p>
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <MarkdownViewer content={submission.comment} />
+                </div>
+              </div>
+            )}
+
+            {submission.feedback && (
+              <div>
+                <Label className="text-sm font-medium">Развернутая обратная связь:</Label>
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <MarkdownViewer content={submission.feedback} />
+                </div>
               </div>
             )}
 

@@ -18,9 +18,10 @@ export async function POST(
 
     const body: HomeworkSubmissionFormData = await request.json()
     
-    if (!body.submissionUrl) {
+    // Проверяем, что есть либо контент, либо ссылка
+    if (!body.content && !body.submissionUrl) {
       return NextResponse.json(
-        { error: 'Ссылка на выполненное задание обязательна' },
+        { error: 'Необходимо указать контент задания или ссылку на выполненное задание' },
         { status: 400 }
       )
     }
@@ -63,6 +64,7 @@ export async function POST(
         }
       },
       update: {
+        content: body.content,  // MDX контент
         submissionUrl: body.submissionUrl,
         status: 'SUBMITTED',
         submittedAt: new Date()
@@ -70,6 +72,7 @@ export async function POST(
       create: {
         homeworkId: params.id,
         userId: session.user.id,
+        content: body.content,  // MDX контент
         submissionUrl: body.submissionUrl,
         status: 'SUBMITTED',
         submittedAt: new Date()
@@ -118,9 +121,10 @@ export async function PUT(
 
     const body: HomeworkSubmissionFormData = await request.json()
     
-    if (!body.submissionUrl) {
+    // Проверяем, что есть либо контент, либо ссылка
+    if (!body.content && !body.submissionUrl) {
       return NextResponse.json(
-        { error: 'Ссылка на выполненное задание обязательна' },
+        { error: 'Необходимо указать контент задания или ссылку на выполненное задание' },
         { status: 400 }
       )
     }
@@ -162,6 +166,7 @@ export async function PUT(
         }
       },
       data: {
+        content: body.content,  // MDX контент
         submissionUrl: body.submissionUrl,
         submittedAt: new Date()
       },

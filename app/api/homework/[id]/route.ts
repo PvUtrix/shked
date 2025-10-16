@@ -121,6 +121,7 @@ export async function PUT(
     
     if (body.title !== undefined) updateData.title = body.title
     if (body.description !== undefined) updateData.description = body.description
+    if (body.content !== undefined) updateData.content = body.content  // MDX контент
     if (body.taskUrl !== undefined) updateData.taskUrl = body.taskUrl
     if (body.deadline) updateData.deadline = new Date(body.deadline)
     if (body.materials !== undefined) updateData.materials = body.materials

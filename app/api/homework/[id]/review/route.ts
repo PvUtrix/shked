@@ -73,7 +73,8 @@ export async function PUT(
       data: {
         status: 'REVIEWED',
         grade: body.grade,
-        comment: body.comment,
+        comment: body.comment,  // Комментарий преподавателя (MDX)
+        feedback: body.feedback,  // Развернутая обратная связь (MDX)
         reviewedAt: new Date()
       },
       include: {

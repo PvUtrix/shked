@@ -39,10 +39,15 @@ export default function StudentDashboard() {
       const response = await fetch('/api/schedules')
       if (response.ok) {
         const data = await response.json()
-        setSchedules(data || [])
+        // Убеждаемся, что data.schedules это массив
+        const schedulesArray = Array.isArray(data.schedules) ? data.schedules : []
+        setSchedules(schedulesArray)
+      } else {
+        setSchedules([])
       }
     } catch (error) {
       console.error('Ошибка при получении расписания:', error)
+      setSchedules([])
     } finally {
       setLoading(false)
     }

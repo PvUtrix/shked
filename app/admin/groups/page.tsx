@@ -275,9 +275,15 @@ export default function GroupsPage() {
                     </div>
 
                     <div className="pt-2">
-                      <Button variant="outline" className="w-full" onClick={() => alert('Функция управления студентами будет реализована в следующей версии')}>
-                        <Users className="h-4 w-4 mr-2" />
-                        Управлять студентами
+                      <Button 
+                        variant="outline" 
+                        className="w-full" 
+                        asChild
+                      >
+                        <a href={`/admin/groups/${group.id}/students`}>
+                          <Users className="h-4 w-4 mr-2" />
+                          Управлять студентами
+                        </a>
                       </Button>
                     </div>
                   </div>
