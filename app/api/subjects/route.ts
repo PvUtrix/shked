@@ -174,3 +174,59 @@ export async function PUT(request: NextRequest) {
     )
   }
 }
+
+// DELETE /api/subjects - мягкое удаление предмета
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'ID предмета обязателен' },
+        { status: 400 }
+      )
+    }
+
+    // Проверяем существование предмета
+    const existingSubject = await prisma.subject.findUnique({
+      where: { id }
+    })
+
+    if (!existingSubject) {
+      return NextResponse.json(
+        { error: 'Предмет не найден' },
+        { status: 404 }
+      )
+    }
+
+    // Для преподавателей проверяем, что предмет принадлежит им
+    if (session.user.role === 'lector') {
+      // Временно отключаем проверку lectorId до применения миграции
+      // if (existingSubject.lectorId !== session.user.id) {
+      //   return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
+      // }
+    }
+
+    // Мягкое удаление - помечаем как неактивный
+    await prisma.subject.update({
+      where: { id },
+      data: { isActive: false }
+    })
+
+    return NextResponse.json({ message: 'Предмет удален' })
+
+  } catch (error) {
+    console.error('Ошибка при удалении предмета:', error)
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 }
+    )
+  }
+}

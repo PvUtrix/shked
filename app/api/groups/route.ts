@@ -164,3 +164,51 @@ export async function PUT(request: NextRequest) {
     )
   }
 }
+
+// DELETE /api/groups - мягкое удаление группы
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'ID группы обязателен' },
+        { status: 400 }
+      )
+    }
+
+    // Проверяем существование группы
+    const existingGroup = await prisma.group.findUnique({
+      where: { id }
+    })
+
+    if (!existingGroup) {
+      return NextResponse.json(
+        { error: 'Группа не найдена' },
+        { status: 404 }
+      )
+    }
+
+    // Мягкое удаление - помечаем как неактивную
+    await prisma.group.update({
+      where: { id },
+      data: { isActive: false }
+    })
+
+    return NextResponse.json({ message: 'Группа удалена' })
+
+  } catch (error) {
+    console.error('Ошибка при удалении группы:', error)
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 }
+    )
+  }
+}

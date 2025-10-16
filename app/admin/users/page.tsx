@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Search, Users, UserCheck, GraduationCap, BookOpen, UserCog } from 'lucide-react'
+import { Search, Users, UserCheck, GraduationCap, BookOpen, UserCog, Plus, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { UserForm } from '@/components/admin/user-form'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface User {
   id: string
@@ -29,6 +31,10 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
+  const [userFormOpen, setUserFormOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
 
   useEffect(() => {
     fetchUsers()
@@ -77,6 +83,49 @@ export default function UsersPage() {
       console.error('Ошибка при обновлении роли:', error)
       toast.error('Ошибка при обновлении роли')
     }
+  }
+
+  const handleCreateUser = () => {
+    setEditingUser(null)
+    setUserFormOpen(true)
+  }
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user)
+    setUserFormOpen(true)
+  }
+
+  const handleDeleteUser = (user: User) => {
+    setUserToDelete(user)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return
+
+    try {
+      const response = await fetch(`/api/users?id=${userToDelete.id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast.success('Пользователь деактивирован')
+        await fetchUsers()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Ошибка при деактивации пользователя')
+      }
+    } catch (error) {
+      console.error('Ошибка при деактивации пользователя:', error)
+      toast.error('Произошла ошибка при деактивации')
+    } finally {
+      setDeleteDialogOpen(false)
+      setUserToDelete(null)
+    }
+  }
+
+  const handleFormSuccess = () => {
+    fetchUsers()
   }
 
   const getRoleIcon = (role: string) => {
@@ -154,11 +203,17 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold">Управление пользователями</h1>
           <p className="text-gray-600">Просмотр и управление ролями пользователей системы</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Users className="h-6 w-6 text-blue-600" />
-          <span className="text-sm text-gray-600">
-            Всего: {users.length} | Показано: {filteredUsers.length}
-          </span>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Users className="h-6 w-6 text-blue-600" />
+            <span className="text-sm text-gray-600">
+              Всего: {users.length} | Показано: {filteredUsers.length}
+            </span>
+          </div>
+          <Button onClick={handleCreateUser}>
+            <Plus className="h-4 w-4 mr-2" />
+            Создать пользователя
+          </Button>
         </div>
       </div>
 
@@ -217,6 +272,20 @@ export default function UsersPage() {
                     </Badge>
                   </div>
                   <div className="flex items-center space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditUser(user)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteUser(user)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                     <Select
                       value={user.role}
                       onValueChange={(newRole) => updateUserRole(user.id, newRole)}
@@ -253,6 +322,26 @@ export default function UsersPage() {
           ))
         )}
       </div>
+
+      {/* Форма пользователя */}
+      <UserForm
+        open={userFormOpen}
+        onOpenChange={setUserFormOpen}
+        user={editingUser}
+        onSuccess={handleFormSuccess}
+      />
+
+      {/* Диалог подтверждения удаления */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Деактивировать пользователя"
+        description={`Вы уверены, что хотите деактивировать пользователя "${userToDelete?.name || userToDelete?.email}"? Пользователь не сможет войти в систему.`}
+        confirmText="Деактивировать"
+        cancelText="Отмена"
+        onConfirm={confirmDeleteUser}
+        variant="destructive"
+      />
     </div>
   )
 }

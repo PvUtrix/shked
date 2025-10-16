@@ -1,0 +1,48 @@
+{
+  "types": {
+    "feat": {
+      "section": "✨ Новые функции",
+      "hidden": false
+    },
+    "fix": {
+      "section": "🐛 Исправления",
+      "hidden": false
+    },
+    "perf": {
+      "section": "⚡ Улучшения производительности",
+      "hidden": false
+    },
+    "refactor": {
+      "section": "♻️ Рефакторинг",
+      "hidden": false
+    },
+    "docs": {
+      "section": "📚 Документация",
+      "hidden": false
+    },
+    "style": {
+      "section": "💄 Стили",
+      "hidden": false
+    },
+    "test": {
+      "section": "🧪 Тесты",
+      "hidden": false
+    },
+    "chore": {
+      "section": "🔧 Обслуживание",
+      "hidden": false
+    },
+    "ci": {
+      "section": "👷 CI/CD",
+      "hidden": false
+    },
+    "build": {
+      "section": "📦 Сборка",
+      "hidden": false
+    }
+  },
+  "commitUrlFormat": "{{host}}/{{owner}}/{{repository}}/commit/{{hash}}",
+  "compareUrlFormat": "{{host}}/{{owner}}/{{repository}}/compare/{{previousTag}}...{{currentTag}}",
+  "issueUrlFormat": "{{host}}/{{owner}}/{{repository}}/issues/{{id}}",
+  "userUrlFormat": "{{host}}/{{user}}"
+}

@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { BookOpen, Plus, Edit, Trash2, User, UserCheck } from 'lucide-react'
+import { SubjectForm } from '@/components/admin/subject-form'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { toast } from 'sonner'
 
 interface Subject {
   id: string
@@ -38,6 +41,10 @@ export default function SubjectsPage() {
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [lectors, setLectors] = useState<Lector[]>([])
   const [loading, setLoading] = useState(true)
+  const [subjectFormOpen, setSubjectFormOpen] = useState(false)
+  const [editingSubject, setEditingSubject] = useState<Subject | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -90,6 +97,49 @@ export default function SubjectsPage() {
     }
   }
 
+  const handleCreateSubject = () => {
+    setEditingSubject(null)
+    setSubjectFormOpen(true)
+  }
+
+  const handleEditSubject = (subject: Subject) => {
+    setEditingSubject(subject)
+    setSubjectFormOpen(true)
+  }
+
+  const handleDeleteSubject = (subject: Subject) => {
+    setSubjectToDelete(subject)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteSubject = async () => {
+    if (!subjectToDelete) return
+
+    try {
+      const response = await fetch(`/api/subjects?id=${subjectToDelete.id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast.success('Предмет удален')
+        await fetchData()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Ошибка при удалении предмета')
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении предмета:', error)
+      toast.error('Произошла ошибка при удалении')
+    } finally {
+      setDeleteDialogOpen(false)
+      setSubjectToDelete(null)
+    }
+  }
+
+  const handleFormSuccess = () => {
+    fetchData()
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -102,7 +152,7 @@ export default function SubjectsPage() {
             Управляйте предметами и их преподавателями
           </p>
         </div>
-        <Button onClick={() => alert('Функция добавления предмета будет реализована в следующей версии')}>
+        <Button onClick={handleCreateSubject}>
           <Plus className="h-4 w-4 mr-2" />
           Добавить предмет
         </Button>
@@ -117,7 +167,7 @@ export default function SubjectsPage() {
                 <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg mb-2">Предметы не найдены</p>
                 <p className="text-gray-400 mb-6">Добавьте первый предмет для начала работы</p>
-                <Button onClick={() => alert('Функция добавления предмета будет реализована в следующей версии')}>
+                <Button onClick={handleCreateSubject}>
                   <Plus className="h-4 w-4 mr-2" />
                   Добавить первый предмет
                 </Button>
@@ -134,10 +184,10 @@ export default function SubjectsPage() {
                       {subject?.name || 'Предмет без названия'}
                     </CardTitle>
                     <div className="flex items-center space-x-1">
-                      <Button variant="ghost" size="sm" onClick={() => alert('Функция редактирования предмета будет реализована в следующей версии')}>
+                      <Button variant="ghost" size="sm" onClick={() => handleEditSubject(subject)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => alert('Функция удаления предмета будет реализована в следующей версии')}>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteSubject(subject)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -209,6 +259,26 @@ export default function SubjectsPage() {
           </div>
         )}
       </div>
+
+      {/* Форма предмета */}
+      <SubjectForm
+        open={subjectFormOpen}
+        onOpenChange={setSubjectFormOpen}
+        subject={editingSubject}
+        onSuccess={handleFormSuccess}
+      />
+
+      {/* Диалог подтверждения удаления */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Удалить предмет"
+        description={`Вы уверены, что хотите удалить предмет "${subjectToDelete?.name}"? Это действие нельзя отменить.`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        onConfirm={confirmDeleteSubject}
+        variant="destructive"
+      />
     </div>
   )
 }

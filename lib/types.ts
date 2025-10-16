@@ -110,6 +110,43 @@ export const HOMEWORK_MATERIAL_TYPES = {
   other: 'Другое'
 } as const
 
+// Типы для форм CRUD операций
+export type GroupFormData = {
+  name: string
+  description?: string
+  semester?: string
+  year?: string
+}
+
+export type SubjectFormData = {
+  name: string
+  description?: string
+  instructor?: string
+  lectorId?: string
+}
+
+export type UserFormData = {
+  email: string
+  password?: string // Только для создания
+  name?: string
+  firstName?: string
+  lastName?: string
+  role: 'admin' | 'student' | 'lector' | 'mentor'
+  groupId?: string
+}
+
+export type ScheduleFormData = {
+  subjectId: string
+  groupId?: string
+  subgroupId?: string
+  date: string // ISO date string
+  startTime: string
+  endTime: string
+  location?: string
+  eventType?: string
+  description?: string
+}
+
 // Типы для предметов и групп
 export type Subject = {
   id: string

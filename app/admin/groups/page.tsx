@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Users, UserPlus, Edit, Trash2, UserCheck } from 'lucide-react'
+import { GroupForm } from '@/components/admin/group-form'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { toast } from 'sonner'
 
 interface Group {
   id: string
@@ -33,6 +36,10 @@ export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([])
   const [mentors, setMentors] = useState<Mentor[]>([])
   const [loading, setLoading] = useState(true)
+  const [groupFormOpen, setGroupFormOpen] = useState(false)
+  const [editingGroup, setEditingGroup] = useState<Group | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [groupToDelete, setGroupToDelete] = useState<Group | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -113,6 +120,49 @@ export default function GroupsPage() {
     }
   }
 
+  const handleCreateGroup = () => {
+    setEditingGroup(null)
+    setGroupFormOpen(true)
+  }
+
+  const handleEditGroup = (group: Group) => {
+    setEditingGroup(group)
+    setGroupFormOpen(true)
+  }
+
+  const handleDeleteGroup = (group: Group) => {
+    setGroupToDelete(group)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteGroup = async () => {
+    if (!groupToDelete) return
+
+    try {
+      const response = await fetch(`/api/groups?id=${groupToDelete.id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast.success('Группа удалена')
+        await fetchData()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Ошибка при удалении группы')
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении группы:', error)
+      toast.error('Произошла ошибка при удалении')
+    } finally {
+      setDeleteDialogOpen(false)
+      setGroupToDelete(null)
+    }
+  }
+
+  const handleFormSuccess = () => {
+    fetchData()
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -125,7 +175,7 @@ export default function GroupsPage() {
             Создавайте и управляйте учебными группами студентов
           </p>
         </div>
-        <Button onClick={() => alert('Функция создания группы будет реализована в следующей версии')}>
+        <Button onClick={handleCreateGroup}>
           <UserPlus className="h-4 w-4 mr-2" />
           Создать группу
         </Button>
@@ -140,7 +190,7 @@ export default function GroupsPage() {
                 <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg mb-2">Групп не найдено</p>
                 <p className="text-gray-400 mb-6">Создайте первую группу для начала работы</p>
-                <Button onClick={() => alert('Функция создания группы будет реализована в следующей версии')}>
+                <Button onClick={handleCreateGroup}>
                   <UserPlus className="h-4 w-4 mr-2" />
                   Создать первую группу
                 </Button>
@@ -157,10 +207,10 @@ export default function GroupsPage() {
                       {group?.name || 'Группа без названия'}
                     </CardTitle>
                     <div className="flex items-center space-x-1">
-                      <Button variant="ghost" size="sm" onClick={() => alert('Функция редактирования группы будет реализована в следующей версии')}>
+                      <Button variant="ghost" size="sm" onClick={() => handleEditGroup(group)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => alert('Функция удаления группы будет реализована в следующей версии')}>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteGroup(group)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -237,6 +287,26 @@ export default function GroupsPage() {
           </div>
         )}
       </div>
+
+      {/* Форма группы */}
+      <GroupForm
+        open={groupFormOpen}
+        onOpenChange={setGroupFormOpen}
+        group={editingGroup}
+        onSuccess={handleFormSuccess}
+      />
+
+      {/* Диалог подтверждения удаления */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Удалить группу"
+        description={`Вы уверены, что хотите удалить группу "${groupToDelete?.name}"? Это действие нельзя отменить.`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        onConfirm={confirmDeleteGroup}
+        variant="destructive"
+      />
     </div>
   )
 }

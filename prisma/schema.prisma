@@ -48,6 +48,7 @@ model User {
   canHelp       String?     // Чем могу быть полезен
   lookingFor    String?     // Что ищу
   mentorGroupIds Json?      // Группы для ментора (массив ID групп)
+  isActive      Boolean     @default(true)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   accounts      Account[]
@@ -75,6 +76,7 @@ model Group {
   description String?
   semester    String?
   year        String?
+  isActive    Boolean     @default(true)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   schedules   Schedule[]
@@ -91,6 +93,7 @@ model Subject {
   description String?
   instructor  String?
   lectorId    String?    // ID преподавателя
+  isActive    Boolean    @default(true)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   schedules   Schedule[]
@@ -112,6 +115,7 @@ model Schedule {
   location    String?
   eventType   String?
   description String?
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   group       Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
