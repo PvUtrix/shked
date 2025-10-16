@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
+import { MarkdownViewer } from '@/components/ui/markdown-viewer'
 import { 
   ArrowLeft, 
   Calendar, 
@@ -126,10 +128,25 @@ export default function MentorHomeworkDetailPage({ params }: { params: { id: str
                 Описание задания
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="prose max-w-none">
-                <p className="text-gray-700 whitespace-pre-wrap">{homework.description}</p>
-              </div>
+            <CardContent className="space-y-4">
+              {/* Краткое описание */}
+              {homework.description && (
+                <div>
+                  <Label className="text-sm font-medium">Краткое описание:</Label>
+                  <p className="text-gray-700 mt-1 whitespace-pre-wrap">{homework.description}</p>
+                </div>
+              )}
+
+              {/* MDX Контент */}
+              {homework.content && (
+                <div>
+                  <Label className="text-sm font-medium">Содержание задания:</Label>
+                  <div className="mt-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                    <MarkdownViewer content={homework.content} />
+                  </div>
+                </div>
+              )}
+
               {homework.taskUrl && (
                 <div className="mt-4">
                   <Button variant="outline" asChild>

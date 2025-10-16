@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { MarkdownViewer } from '@/components/ui/markdown-viewer'
 import { 
   ArrowLeft, 
   CheckCircle,
@@ -17,6 +18,7 @@ import Link from 'next/link'
 
 interface Submission {
   id: string
+  content?: string
   submissionUrl: string
   submittedAt: string
   status: string
@@ -122,7 +124,7 @@ export default function MentorReviewSubmissionPage({
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Просмотр сдачи</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Просмотр домашнего задания</h1>
             <p className="text-gray-600">
               {submission.user?.name || 
                `${submission.user?.firstName || ''} ${submission.user?.lastName || ''}`.trim() ||
@@ -140,11 +142,21 @@ export default function MentorReviewSubmissionPage({
             <CardHeader>
               <CardTitle className="flex items-center">
                 <FileText className="h-5 w-5 mr-2" />
-                Сдача студента
+                Работа студента
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {/* MDX Контент работы */}
+                {submission.content && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Содержание работы:</Label>
+                    <div className="mt-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                      <MarkdownViewer content={submission.content} />
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <Label className="text-sm font-medium text-gray-700">Ссылка на работу</Label>
                   <div className="mt-1">

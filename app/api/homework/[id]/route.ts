@@ -79,15 +79,22 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
 
     const body: Partial<HomeworkFormData> = await request.json()
 
     // Проверка существования домашнего задания
     const existingHomework = await prisma.homework.findUnique({
-      where: { id: params.id }
+      where: { id: params.id },
+      include: {
+        subject: {
+          select: {
+            lectorId: true
+          }
+        }
+      }
     })
 
     if (!existingHomework) {
@@ -95,6 +102,18 @@ export async function PUT(
         { error: 'Домашнее задание не найдено' },
         { status: 404 }
       )
+    }
+
+    // Проверка прав доступа: только админы и лекторы своих предметов
+    if (session.user.role === 'admin') {
+      // Админы имеют полный доступ
+    } else if (session.user.role === 'lector') {
+      // Лекторы могут редактировать только свои задания
+      if (existingHomework.subject?.lectorId !== session.user.id) {
+        return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+      }
+    } else {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
     // Проверка существования предмета (если обновляется)

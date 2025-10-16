@@ -17,7 +17,15 @@ export async function GET(
 
     const submission = await prisma.homeworkSubmission.findUnique({
       where: { id: params.submissionId },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        submissionUrl: true,
+        submittedAt: true,
+        status: true,
+        grade: true,
+        comment: true,
+        homeworkId: true,
         user: {
           select: {
             id: true,
