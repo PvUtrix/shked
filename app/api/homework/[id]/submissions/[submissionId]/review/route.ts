@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-// GET /api/homework/[id]/submissions/[submissionId] - получение конкретной сдачи
-export async function GET(
+// POST /api/homework/[id]/submissions/[submissionId]/review - проверка сдачи
+export async function POST(
   request: NextRequest,
   { params }: { params: { id: string; submissionId: string } }
 ) {
@@ -15,24 +15,15 @@ export async function GET(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
 
+    const body = await request.json()
+    const { grade, comment, status } = body
+
+    // Получаем сдачу с информацией о домашнем задании
     const submission = await prisma.homeworkSubmission.findUnique({
       where: { id: params.submissionId },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        },
         homework: {
-          select: {
-            id: true,
-            title: true,
-            subjectId: true,
-            groupId: true,
+          include: {
             subject: {
               select: {
                 lectorId: true
@@ -58,30 +49,47 @@ export async function GET(
       )
     }
 
-    // Проверка прав доступа: админы, лекторы своих предметов, менторы своих групп
+    // Проверка прав доступа: только админы и лекторы могут проверять
     if (session.user.role === 'admin') {
       // Админы имеют полный доступ
     } else if (session.user.role === 'lector') {
-      // Лекторы могут просматривать сдачи по своим предметам
+      // Лекторы могут проверять сдачи только по своим предметам
       if (submission.homework.subject?.lectorId !== session.user.id) {
         return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
       }
-    } else if (session.user.role === 'mentor') {
-      // Менторы могут просматривать сдачи своих групп
-      if (submission.homework.groupId !== session.user.groupId) {
-        return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
-      }
     } else {
-      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+      return NextResponse.json({ error: 'Доступ запрещен. Только лекторы и администраторы могут проверять работы.' }, { status: 403 })
     }
 
-    return NextResponse.json(submission)
+    // Обновляем сдачу
+    const updatedSubmission = await prisma.homeworkSubmission.update({
+      where: { id: params.submissionId },
+      data: {
+        grade: grade || null,
+        comment: comment || null,
+        status: status || 'REVIEWED'
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    return NextResponse.json(updatedSubmission)
 
   } catch (error) {
-    console.error('Ошибка при получении сдачи:', error)
+    console.error('Ошибка при проверке сдачи:', error)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
     )
   }
 }
+
