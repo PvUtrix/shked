@@ -13,8 +13,13 @@ RUN npm install
 FROM node:18-alpine AS builder
 WORKDIR /app
 
+# Установка OpenSSL для Prisma
+RUN apk add --no-cache openssl
+
 # Копирование зависимостей из предыдущего этапа
 COPY --from=deps /app/node_modules ./node_modules
+
+# Копирование всех файлов проекта
 COPY . .
 
 # Создание public директории если её нет
@@ -35,8 +40,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Установка wget для health check
-RUN apk add --no-cache wget
+# Установка wget для health check и openssl для Prisma
+RUN apk add --no-cache wget openssl
 
 # Создание пользователя для запуска приложения
 RUN addgroup --system --gid 1001 nodejs
@@ -52,7 +57,13 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Копирование Prisma схемы и миграций
 COPY --from=builder /app/prisma ./prisma
+
+# Копирование Prisma Client и необходимых модулей
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Копирование prisma CLI для миграций
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
 # Установка правильных прав доступа для всех файлов
 RUN chown -R nextjs:nodejs /app

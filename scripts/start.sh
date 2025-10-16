@@ -1,23 +1,26 @@
 #!/bin/sh
 
 # Установка правильных прав доступа
-echo "Setting up permissions..."
+echo "Настройка прав доступа..."
 chmod -R 755 /app/node_modules/.prisma 2>/dev/null || true
 chmod -R 755 /app/prisma 2>/dev/null || true
 
-# Запуск миграций базы данных
-echo "Running database migrations..."
-npx prisma migrate deploy
+# Проверка наличия Prisma Client
+if [ ! -d "/app/node_modules/.prisma/client" ]; then
+  echo "ОШИБКА: Prisma Client не найден!"
+  exit 1
+fi
 
-# Генерация Prisma Client
-echo "Generating Prisma client..."
-export PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
+echo "Prisma Client найден, продолжаем..."
 
-# Принудительная перегенерация для правильной архитектуры
-echo "Force regenerating Prisma client for correct architecture..."
-rm -rf /app/node_modules/.prisma/client 2>/dev/null || true
-npx prisma generate
+# Запуск миграций базы данных (только если DATABASE_URL установлен)
+if [ -n "$DATABASE_URL" ]; then
+  echo "Применение миграций базы данных..."
+  npx prisma migrate deploy || echo "Предупреждение: миграции не удалось применить"
+else
+  echo "DATABASE_URL не установлен, пропускаем миграции..."
+fi
 
 # Запуск приложения
-echo "Starting application..."
+echo "Запуск приложения..."
 exec node server.js

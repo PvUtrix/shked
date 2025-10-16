@@ -1,80 +1,52 @@
-# Dependencies
+# Файлы для игнорирования при сборке Docker образа
+
+# Зависимости
 node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
-
-# Testing
-coverage
-.nyc_output
 
 # Next.js
 .next
 out
-build
 dist
+build
 
-# Production
-/build
+# Prisma
+.prisma
 
-# Misc
-.DS_Store
-*.pem
+# Тестирование
+coverage
+.nyc_output
 
-# Debug
-*.log
-
-# Local env files
+# Переменные окружения
 .env
 .env*.local
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-tsconfig.tsbuildinfo
-
-# Git
-.git
-.gitignore
-.gitattributes
-
-# IDE
+# Отладка и IDE
 .vscode
 .idea
 *.swp
 *.swo
 *~
 
-# Documentation
-README.md
-CONTRIBUTING.md
-SECURITY.md
-CODE_OF_CONDUCT.md
-LICENSE
-CHANGELOG.md
-QUICKSTART.md
+# OS
+.DS_Store
+Thumbs.db
 
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
+# Git
+.git
+.gitignore
 
-# CI/CD
-.github
-
-# Screenshots
+# Документация и скриншоты
 screenshots
+docs
 
-# Prisma
-prisma/migrations
+# Временные файлы
+*.log
+tmp
+temp
 
-# Other
-.editorconfig
-.eslintcache
+# Markdown (кроме README)
+*.md
+!README.md
