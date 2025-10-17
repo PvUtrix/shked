@@ -26,16 +26,15 @@ export async function GET(request: NextRequest) {
     const subjects = await prisma.subject.findMany({
       where,
       include: {
-        // Временно отключаем lector до применения миграции
-        // lector: {
-        //   select: {
-        //     id: true,
-        //     name: true,
-        //     firstName: true,
-        //     lastName: true,
-        //     email: true
-        //   }
-        // },
+        lector: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        },
         _count: {
           select: {
             schedules: true,
@@ -82,22 +81,20 @@ export async function POST(request: NextRequest) {
       data: {
         name: body.name,
         description: body.description,
-        instructor: body.instructor
-        // Временно отключаем lectorId до применения миграции
-        // lectorId: session.user.role === 'lector' ? session.user.id : body.lectorId
+        instructor: body.instructor,
+        lectorId: session.user.role === 'lector' ? session.user.id : body.lectorId
+      },
+      include: {
+        lector: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
       }
-      // Временно отключаем lector до применения миграции
-      // include: {
-      //   lector: {
-      //     select: {
-      //       id: true,
-      //       name: true,
-      //       firstName: true,
-      //       lastName: true,
-      //       email: true
-      //     }
-      //   }
-      // }
     })
 
     return NextResponse.json(subject, { status: 201 })
@@ -146,22 +143,20 @@ export async function PUT(request: NextRequest) {
       data: {
         name: body.name,
         description: body.description,
-        instructor: body.instructor
-        // Временно отключаем lectorId до применения миграции
-        // lectorId: session.user.role === 'admin' ? body.lectorId : undefined
+        instructor: body.instructor,
+        lectorId: session.user.role === 'admin' ? body.lectorId : undefined
+      },
+      include: {
+        lector: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
       }
-      // Временно отключаем lector до применения миграции
-      // include: {
-      //   lector: {
-      //     select: {
-      //       id: true,
-      //       name: true,
-      //       firstName: true,
-      //       lastName: true,
-      //       email: true
-      //     }
-      //   }
-      // }
     })
 
     return NextResponse.json(subject)

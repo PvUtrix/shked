@@ -52,7 +52,7 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
       name: '',
       description: '',
       instructor: '',
-      lectorId: '',
+      lectorId: 'none',
     },
   })
 
@@ -82,14 +82,14 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
         name: subject.name || '',
         description: subject.description || '',
         instructor: subject.instructor || '',
-        lectorId: subject.lectorId || '',
+        lectorId: subject.lectorId || 'none',
       })
     } else {
       form.reset({
         name: '',
         description: '',
         instructor: '',
-        lectorId: '',
+        lectorId: 'none',
       })
     }
   }, [subject, form])
@@ -99,7 +99,14 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
     try {
       const url = '/api/subjects'
       const method = isEditing ? 'PUT' : 'POST'
-      const body = isEditing ? { ...data, id: subject.id } : data
+      
+      // Преобразуем "none" в null для lectorId
+      const processedData = {
+        ...data,
+        lectorId: data.lectorId === 'none' ? null : data.lectorId
+      }
+      
+      const body = isEditing ? { ...processedData, id: subject.id } : processedData
 
       const response = await fetch(url, {
         method,
@@ -203,7 +210,7 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Без назначения</SelectItem>
+                      <SelectItem value="none">Без назначения</SelectItem>
                       {lectors.map((lector) => (
                         <SelectItem key={lector.id} value={lector.id}>
                           {lector.name || `${lector.firstName || ''} ${lector.lastName || ''}`.trim() || lector.email}
