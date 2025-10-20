@@ -2,7 +2,7 @@
 
 ## Overview
 
-Integrate MDXEditor (modern React WYSIWYG Markdown editor) to create a comprehensive homework management system for SmartSchedule. This will allow admins to create assignments with deadlines, students to submit homework in Markdown format, and admins to grade and provide feedback.
+Integrate MDXEditor (modern React WYSIWYG Markdown editor) to create a comprehensive homework management system for Shked (Шкед). This will allow admins to create assignments with deadlines, students to submit homework in Markdown format, and admins to grade and provide feedback.
 
 ## Database Schema Changes
 

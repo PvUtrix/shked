@@ -170,7 +170,7 @@ Scorecard обновляется автоматически еженедельн
 
 ## Автоматизация в CI/CD
 
-Проект SmartSchedule уже имеет настроенный workflow для Scorecard:
+Проект **Шкед** уже имеет настроенный workflow для Scorecard:
 
 ```yaml
 # .github/workflows/scorecard.yml
