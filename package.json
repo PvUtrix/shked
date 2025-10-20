@@ -16,6 +16,10 @@
     "url": "https://github.com/PvUtrix/shked/issues"
   },
   "homepage": "https://github.com/PvUtrix/shked#readme",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
   "funding": {
     "type": "individual",
     "url": "https://www.tbank.ru/cf/ATFldP3BgtQ"
@@ -35,6 +39,10 @@
     "postgresql"
   ],
   "private": false,
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",

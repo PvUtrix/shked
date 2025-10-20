@@ -4,6 +4,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Version](https://img.shields.io/github/v/release/PvUtrix/shked)
+![Node.js](https://img.shields.io/badge/Node.js-20+-green)
 ![Next.js](https://img.shields.io/badge/Next.js-14.2-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-blue)
@@ -259,7 +260,7 @@ shked/
 ## 🚀 Установка и запуск
 
 ### Предварительные требования:
-- **Node.js** версии 18.x или выше
+- **Node.js** версии 20.x или выше (обязательно)
 - **PostgreSQL** версии 12.x или выше
 - **npm** или **yarn** или **pnpm**
 
@@ -690,7 +691,7 @@ pm2 start npm --name "shked" -- start
 
 Текущий статус:
 - Стадия: Активная разработка
-- Поддерживаемые среды: Node.js 18+, PostgreSQL (через Prisma)
+- Поддерживаемые среды: Node.js 20+, PostgreSQL (через Prisma)
 - Покрытие тестами: базовые интеграционные и юнит-тесты. Планируется расширение покрытия.
 
 ## 🗺️ Дорожная карта
