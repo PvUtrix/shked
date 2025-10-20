@@ -1,3 +1,12 @@
+# Changelog
+
+## <small>1.1.1 (2025-10-20)</small>
+
+* fix: обновление до Node.js 20 для исправления ошибки release-it ([6ec1898](https://github.com/PvUtrix/shked/commit/6ec1898))
+* docs: добавить раздел о версионировании и релизах в README ([03c1adf](https://github.com/PvUtrix/shked/commit/03c1adf))
+* docs: реструктуризация и очистка документации ([e05d4a6](https://github.com/PvUtrix/shked/commit/e05d4a6))
+* Initial commit ([861d144](https://github.com/PvUtrix/shked/commit/861d144))
+
 # История изменений
 
 Все значимые изменения в этом проекте будут документированы в этом файле.
