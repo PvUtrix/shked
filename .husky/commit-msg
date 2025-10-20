@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Commitlint hook
+node_modules/.bin/commitlint --edit $1

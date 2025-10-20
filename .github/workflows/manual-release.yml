@@ -1,0 +1,76 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Тип релиза (patch/minor/major/beta)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - beta
+
+jobs:
+  manual-release:
+    name: Manual Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          case ${{ inputs.release_type }} in
+            patch)
+              npm run release:patch -- --ci
+              ;;
+            minor)
+              npm run release:minor -- --ci
+              ;;
+            major)
+              npm run release:major -- --ci
+              ;;
+            beta)
+              npm run release:beta -- --ci
+              ;;
+          esac
+      
+      - name: Get version
+        id: get_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      
+      - name: Summary
+        run: |
+          echo "✅ Ручной релиз создан успешно!" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Версия: v${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "🔖 Тип релиза: ${{ inputs.release_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [Посмотреть релиз](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.get_version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+
