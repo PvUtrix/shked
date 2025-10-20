@@ -27,6 +27,7 @@
 - [**CODE_OF_CONDUCT.md**](development/CODE_OF_CONDUCT.md) — Кодекс поведения сообщества
 - [**TESTING.md**](development/TESTING.md) — Руководство по тестированию
 - [**STRUCTURE.md**](development/STRUCTURE.md) — Структура проекта
+- [**SCORECARD.md**](development/SCORECARD.md) — OpenSSF Scorecard: оценка безопасности
 
 ### 🚢 Развертывание (`deployment/`)
 

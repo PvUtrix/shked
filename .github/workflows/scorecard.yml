@@ -1,0 +1,60 @@
+# Workflow для запуска OpenSSF Scorecard для оценки безопасности проекта
+# OpenSSF Scorecard анализирует проект на соответствие best practices безопасности
+
+name: OpenSSF Scorecard
+
+on:
+  # Запуск при каждом пуше в main
+  branch_protection_rule:
+  schedule:
+    # Еженедельный запуск по вторникам в 02:00 UTC
+    - cron: '0 2 * * 2'
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Объявляем permissions для токена
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      # Необходимо для публикации результатов
+      security-events: write
+      # Необходимо для GitHub OIDC token, если публикуем результаты
+      id-token: write
+      # Для чтения репозитория
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run OpenSSF Scorecard Analysis
+        uses: ossf/scorecard-action@v2.4.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          # Публиковать результаты в репозиторий для отображения бейджа
+          publish_results: true
+
+      # Загрузить результаты в GitHub Security tab
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+
+      # Опциональный шаг: загрузка артефактов для анализа
+      - name: Upload SARIF results as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scorecard-results
+          path: results.sarif
+          retention-days: 30
+

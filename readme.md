@@ -9,6 +9,8 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-blue)
 ![Prisma](https://img.shields.io/badge/Prisma-6.7-2D3748)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/PvUtrix/shked/badge)](https://scorecard.dev/viewer/?uri=github.com/PvUtrix/shked)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/0/badge)](https://www.bestpractices.dev/projects/0)
 
 [Демо](https://shked.innovators.moscow) • [Документация]([https://github.com/PvUtrix/shked/wiki](https://github.com/PvUtrix/shked/tree/main/docs)) • [Релизы](https://github.com/PvUtrix/shked/releases) • [Сообщить об ошибке](https://github.com/PvUtrix/shked/issues) • [💝 Поддержать проект](https://www.tbank.ru/cf/ATFldP3BgtQ)
 
@@ -396,12 +398,37 @@ npm run start
 
 ## 🔐 Безопасность
 
+### OpenSSF Scorecard
+
+Проект использует **[OpenSSF Scorecard](https://scorecard.dev/)** для автоматической оценки безопасности. Этот инструмент от Open Source Security Foundation (OpenSSF) анализирует проект по следующим критериям:
+
+- ✅ **Branch Protection** — защита основных веток от прямых изменений
+- ✅ **Code Review** — обязательная проверка кода перед слиянием
+- ✅ **CI Tests** — автоматическое тестирование в CI/CD
+- ✅ **Dependency Updates** — регулярное обновление зависимостей
+- ✅ **Security Policy** — наличие политики безопасности (SECURITY.md)
+- ✅ **Signed Releases** — подписанные релизы
+- ✅ **SAST** — статический анализ кода на уязвимости
+- ✅ **Vulnerability Disclosure** — процесс сообщения об уязвимостях
+
+Результаты проверки доступны на странице: [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/PvUtrix/shked/badge)](https://scorecard.dev/viewer/?uri=github.com/PvUtrix/shked)
+
+### Меры безопасности
+
 - **Аутентификация** — NextAuth.js с поддержкой JWT
 - **Хеширование паролей** — bcryptjs для безопасного хранения
 - **Защита роутов** — middleware для проверки прав доступа
 - **CSRF защита** — встроенная защита Next.js
 - **SQL Injection** — защита через Prisma ORM
 - **XSS защита** — React автоматически экранирует данные
+- **Dependency Scanning** — автоматическое сканирование зависимостей через GitHub Dependabot
+- **Code Scanning** — статический анализ кода через OpenSSF Scorecard
+- **Security Advisories** — мониторинг CVE и уязвимостей
+- **Automated Updates** — автоматические обновления безопасности через Dependabot
+
+### Сообщение об уязвимостях
+
+Если вы обнаружили уязвимость безопасности, пожалуйста, **НЕ создавайте публичный issue**. Вместо этого следуйте нашей [Политике безопасности](docs/SECURITY.md) для ответственного раскрытия информации.
 
 ## 📦 Версионирование и Релизы
 
@@ -763,6 +790,7 @@ pm2 start npm --name "shked" -- start
 - [Release Guide](docs/RELEASE_GUIDE.md) - Краткое руководство по релизам
 - [Versioning Guide](docs/VERSIONING.md) - Руководство по версионированию
 - [Changelog](docs/CHANGELOG.md) - История изменений
+- [OpenSSF Scorecard](docs/development/SCORECARD.md) - Оценка безопасности проекта
 - [FAQ](https://github.com/PvUtrix/shked/wiki/FAQ) - Часто задаваемые вопросы
 
 ---
