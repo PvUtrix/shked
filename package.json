@@ -71,7 +71,7 @@
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@jest/globals": "^30.2.0",
-    "@next/swc-wasm-nodejs": "13.5.1",
+    "@next/swc-wasm-nodejs": "15.5.6",
     "@playwright/test": "^1.56.0",
     "@release-it/conventional-changelog": "^10.0.1",
     "@testing-library/jest-dom": "^6.9.1",
