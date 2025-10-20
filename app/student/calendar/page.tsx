@@ -38,7 +38,8 @@ export default function StudentCalendarPage() {
       const response = await fetch('/api/schedules')
       if (response.ok) {
         const data = await response.json()
-        setSchedules(data || [])
+        // API возвращает { schedules: [...] }, а не массив напрямую
+        setSchedules(data?.schedules || [])
       }
     } catch (error) {
       console.error('Ошибка при получении расписания:', error)
