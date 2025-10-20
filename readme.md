@@ -3,12 +3,13 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Version](https://img.shields.io/github/v/release/PvUtrix/shked)
 ![Next.js](https://img.shields.io/badge/Next.js-14.2-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-blue)
 ![Prisma](https://img.shields.io/badge/Prisma-6.7-2D3748)
 
-[Демо](https://shked.innovators.moscow) • [Документация]([https://github.com/PvUtrix/shked/wiki](https://github.com/PvUtrix/shked/tree/main/docs)) • [Сообщить об ошибке](https://github.com/PvUtrix/shked/issues) • [💝 Поддержать проект](https://www.tbank.ru/cf/ATFldP3BgtQ)
+[Демо](https://shked.innovators.moscow) • [Документация]([https://github.com/PvUtrix/shked/wiki](https://github.com/PvUtrix/shked/tree/main/docs)) • [Релизы](https://github.com/PvUtrix/shked/releases) • [Сообщить об ошибке](https://github.com/PvUtrix/shked/issues) • [💝 Поддержать проект](https://www.tbank.ru/cf/ATFldP3BgtQ)
 
 **Проект разработан студентом магистратуры МФТИ**
 [Павел Шершнёв](https://github.com/PvUtrix) • Основатель [Tango Vision](https://tangovision.ru) • Ex-CTO 4 стартапов • 6 лет в Citibank
@@ -401,6 +402,42 @@ npm run start
 - **SQL Injection** — защита через Prisma ORM
 - **XSS защита** — React автоматически экранирует данные
 
+## 📦 Версионирование и Релизы
+
+Проект использует **Semantic Versioning** (SemVer) и автоматизированную систему релизов через GitHub Actions.
+
+### Текущая версия: **v1.1.0**
+
+Версия отображается в футере на всех страницах приложения и автоматически обновляется при создании новых релизов.
+
+### Формат версий
+- **MAJOR.MINOR.PATCH** (например, 1.2.3)
+- **Patch** (1.0.0 → 1.0.1) - исправления ошибок
+- **Minor** (1.0.0 → 1.1.0) - новые функции
+- **Major** (1.0.0 → 2.0.0) - breaking changes
+
+### Создание релизов
+
+```bash
+# Автоматически определяет тип релиза
+npm run release
+
+# Или указать тип напрямую
+npm run release:patch   # для исправлений
+npm run release:minor   # для новых функций
+npm run release:major   # для breaking changes
+npm run release:beta    # для тестовых версий
+```
+
+### GitHub Releases
+- Релизы создаются автоматически при пуше в `main` через GitHub Actions
+- Вы также можете создать релиз вручную через GitHub UI (Actions → Manual Release)
+- Changelog генерируется автоматически на основе коммитов
+
+Подробная документация: [docs/GITHUB_RELEASES.md](docs/GITHUB_RELEASES.md)
+
+---
+
 ## 🧪 Тестирование
 
 Проект SmartSchedule имеет комплексную систему тестирования, включающую unit, integration и E2E тесты.
@@ -721,6 +758,9 @@ pm2 start npm --name "shked" -- start
 
 - [Wiki](https://github.com/PvUtrix/shked/wiki) - Подробная документация
 - [Telegram Bot Guide](docs/TELEGRAM_BOT.md) - Руководство по Telegram боту
+- [GitHub Releases](docs/GITHUB_RELEASES.md) - Руководство по релизам и версионированию
+- [Release Guide](docs/RELEASE_GUIDE.md) - Краткое руководство по релизам
+- [Versioning Guide](docs/VERSIONING.md) - Руководство по версионированию
 - [Changelog](docs/CHANGELOG.md) - История изменений
 - [FAQ](https://github.com/PvUtrix/shked/wiki/FAQ) - Часто задаваемые вопросы
 
