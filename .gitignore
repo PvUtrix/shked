@@ -136,3 +136,10 @@ __pycache__/
 *.bak
 *.old
 *.backup
+
+# Obsidian
+obsidian-vault/.obsidian/workspace.json
+obsidian-vault/.obsidian/workspace-mobile.json
+obsidian-vault/.trash/
+obsidian-vault/.obsidian/plugins/*/
+obsidian-vault/.obsidian/community-plugins.json

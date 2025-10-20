@@ -1,0 +1,16 @@
+{
+  "legacyEditor": false,
+  "livePreview": true,
+  "readableLineLength": true,
+  "strictLineBreaks": false,
+  "showFrontmatter": true,
+  "alwaysUpdateLinks": true,
+  "useMarkdownLinks": false,
+  "newLinkFormat": "shortest",
+  "defaultViewMode": "source",
+  "attachmentFolderPath": "_attachments",
+  "showLineNumber": true,
+  "foldHeading": true,
+  "foldIndent": true,
+  "showIndentGuide": true
+}

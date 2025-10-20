@@ -1,0 +1,338 @@
+{
+  "nodes": [
+    {
+      "id": "frontend",
+      "type": "group",
+      "x": -800,
+      "y": -400,
+      "width": 600,
+      "height": 700,
+      "label": "Frontend (Next.js 14)",
+      "color": "1"
+    },
+    {
+      "id": "nextjs",
+      "type": "text",
+      "text": "## Next.js 14 App Router\n\n- Server Components\n- Client Components\n- API Routes\n- Middleware\n\n[[ADR-001 Next.js 14 App Router]]",
+      "x": -780,
+      "y": -360,
+      "width": 260,
+      "height": 200,
+      "color": "1"
+    },
+    {
+      "id": "ui",
+      "type": "text",
+      "text": "## UI Layer\n\n- React 18\n- TypeScript\n- Tailwind CSS\n- Radix UI\n\n[[ADR-007 Tailwind + Radix UI]]",
+      "x": -480,
+      "y": -360,
+      "width": 260,
+      "height": 200,
+      "color": "1"
+    },
+    {
+      "id": "pages-admin",
+      "type": "text",
+      "text": "### Admin\n`/admin/*`\n\n- Users\n- Groups\n- Subjects\n- Schedule\n- Settings",
+      "x": -780,
+      "y": -120,
+      "width": 120,
+      "height": 160,
+      "color": "5"
+    },
+    {
+      "id": "pages-lector",
+      "type": "text",
+      "text": "### Lector\n`/lector/*`\n\n- Homework\n- Schedule\n- Review",
+      "x": -640,
+      "y": -120,
+      "width": 120,
+      "height": 140,
+      "color": "4"
+    },
+    {
+      "id": "pages-mentor",
+      "type": "text",
+      "text": "### Mentor\n`/mentor/*`\n\n- Students\n- Homework\n- Comments",
+      "x": -500,
+      "y": -120,
+      "width": 120,
+      "height": 140,
+      "color": "3"
+    },
+    {
+      "id": "pages-student",
+      "type": "text",
+      "text": "### Student\n`/student/*`\n\n- Calendar\n- Homework\n- Profile",
+      "x": -360,
+      "y": -120,
+      "width": 120,
+      "height": 140,
+      "color": "2"
+    },
+    {
+      "id": "backend",
+      "type": "group",
+      "x": -800,
+      "y": 400,
+      "width": 600,
+      "height": 500,
+      "label": "Backend (API + DB)",
+      "color": "4"
+    },
+    {
+      "id": "api-routes",
+      "type": "text",
+      "text": "## API Routes\n`/api/*`\n\n- Groups\n- Homework\n- Schedules\n- Subjects\n- Telegram\n- Users\n\n[[Карта API]]",
+      "x": -780,
+      "y": 440,
+      "width": 260,
+      "height": 220,
+      "color": "4"
+    },
+    {
+      "id": "auth",
+      "type": "text",
+      "text": "## Authentication\n\n- NextAuth.js\n- JWT Sessions\n- Role-based access\n\n[[ADR-003 NextAuth.js аутентификация]]",
+      "x": -480,
+      "y": 440,
+      "width": 260,
+      "height": 160,
+      "color": "5"
+    },
+    {
+      "id": "prisma",
+      "type": "text",
+      "text": "## Prisma ORM\n\n- Type-safe queries\n- Migrations\n- Relations\n\n[[ADR-002 Prisma ORM]]",
+      "x": -780,
+      "y": 700,
+      "width": 260,
+      "height": 160,
+      "color": "6"
+    },
+    {
+      "id": "database",
+      "type": "text",
+      "text": "## PostgreSQL\n\n9 Models:\n- User\n- Group\n- Subject\n- Schedule\n- Homework\n- HomeworkSubmission\n- HomeworkComment\n- UserGroup\n- TelegramUser\n- BotSettings",
+      "x": -480,
+      "y": 640,
+      "width": 260,
+      "height": 220,
+      "color": "6"
+    },
+    {
+      "id": "integrations",
+      "type": "group",
+      "x": -100,
+      "y": -400,
+      "width": 500,
+      "height": 1300,
+      "label": "External Integrations",
+      "color": "3"
+    },
+    {
+      "id": "telegram",
+      "type": "text",
+      "text": "## Telegram Bot\n\n- Webhook handler\n- Commands\n- Natural language (LLM)\n- Notifications\n- Account linking\n\n[[ADR-004 Telegram интеграция]]\n[[Telegram интеграция]]",
+      "x": -80,
+      "y": -360,
+      "width": 260,
+      "height": 240,
+      "color": "3"
+    },
+    {
+      "id": "gigachat",
+      "type": "text",
+      "text": "## GigaChat API\n\n- Natural language processing\n- Smart responses\n- Context-aware",
+      "x": 220,
+      "y": -360,
+      "width": 160,
+      "height": 160,
+      "color": "3"
+    },
+    {
+      "id": "cron",
+      "type": "text",
+      "text": "## Cron Jobs\n\n**Every 5 min:**\n- Schedule reminders\n\n**Daily 7:00:**\n- Daily summaries\n\n**Every 2h:**\n- Homework deadlines",
+      "x": -80,
+      "y": -80,
+      "width": 260,
+      "height": 200,
+      "color": "3"
+    },
+    {
+      "id": "notifications",
+      "type": "text",
+      "text": "## Notifications\n\n- Schedule reminders (30 min before)\n- Daily summaries\n- Homework deadlines\n- Review notifications",
+      "x": 220,
+      "y": -80,
+      "width": 160,
+      "height": 180,
+      "color": "3"
+    },
+    {
+      "id": "features",
+      "type": "group",
+      "x": -80,
+      "y": 200,
+      "width": 460,
+      "height": 700,
+      "label": "Core Features",
+      "color": "2"
+    },
+    {
+      "id": "schedule-mgmt",
+      "type": "text",
+      "text": "## Schedule Management\n\n- Create/Edit/Delete\n- Subgroups support\n- Calendar view\n- Filtering\n\n[[Управление расписанием]]",
+      "x": -60,
+      "y": 240,
+      "width": 200,
+      "height": 180,
+      "color": "2"
+    },
+    {
+      "id": "homework-system",
+      "type": "text",
+      "text": "## Homework System\n\n- MDX content\n- Submissions\n- Reviews\n- Inline comments\n- Grading\n\n[[Система домашних заданий]]\n[[ADR-005 MDX для домашних заданий]]",
+      "x": 160,
+      "y": 240,
+      "width": 200,
+      "height": 220,
+      "color": "2"
+    },
+    {
+      "id": "subgroups",
+      "type": "text",
+      "text": "## Subgroups System\n\n- Different subgroups per subject\n- Commerce: 1-2\n- Tutorial: 1-3\n- Finance: 1-2\n- System Thinking: 1-2\n\n[[Система подгрупп]]\n[[ADR-006 Система подгрупп]]",
+      "x": -60,
+      "y": 460,
+      "width": 200,
+      "height": 220,
+      "color": "2"
+    },
+    {
+      "id": "roles",
+      "type": "text",
+      "text": "## User Roles\n\n- [[Admin]] - full access\n- [[Student]] - view & submit\n- [[Lector]] - create & review\n- [[Mentor]] - help students",
+      "x": 160,
+      "y": 500,
+      "width": 200,
+      "height": 180,
+      "color": "5"
+    },
+    {
+      "id": "overview",
+      "type": "text",
+      "text": "# ШКЕД Architecture\n\n**SmartSchedule** - система управления расписанием МФТИ\n\n[[Обзор системы]]\n[[Технологический стек]]\n[[Карта проекта]]",
+      "x": -400,
+      "y": -800,
+      "width": 300,
+      "height": 200,
+      "color": "6"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "nextjs",
+      "toNode": "api-routes",
+      "label": "API calls"
+    },
+    {
+      "id": "e2",
+      "fromNode": "api-routes",
+      "toNode": "prisma",
+      "label": "queries"
+    },
+    {
+      "id": "e3",
+      "fromNode": "prisma",
+      "toNode": "database",
+      "label": "ORM"
+    },
+    {
+      "id": "e4",
+      "fromNode": "api-routes",
+      "toNode": "auth",
+      "label": "session"
+    },
+    {
+      "id": "e5",
+      "fromNode": "telegram",
+      "toNode": "api-routes",
+      "label": "webhook"
+    },
+    {
+      "id": "e6",
+      "fromNode": "telegram",
+      "toNode": "gigachat",
+      "label": "LLM"
+    },
+    {
+      "id": "e7",
+      "fromNode": "cron",
+      "toNode": "notifications",
+      "label": "triggers"
+    },
+    {
+      "id": "e8",
+      "fromNode": "notifications",
+      "toNode": "telegram",
+      "label": "send"
+    },
+    {
+      "id": "e9",
+      "fromNode": "schedule-mgmt",
+      "toNode": "api-routes",
+      "label": "CRUD"
+    },
+    {
+      "id": "e10",
+      "fromNode": "homework-system",
+      "toNode": "api-routes",
+      "label": "CRUD"
+    },
+    {
+      "id": "e11",
+      "fromNode": "subgroups",
+      "toNode": "database",
+      "label": "UserGroup"
+    },
+    {
+      "id": "e12",
+      "fromNode": "pages-admin",
+      "toNode": "nextjs"
+    },
+    {
+      "id": "e13",
+      "fromNode": "pages-lector",
+      "toNode": "nextjs"
+    },
+    {
+      "id": "e14",
+      "fromNode": "pages-mentor",
+      "toNode": "nextjs"
+    },
+    {
+      "id": "e15",
+      "fromNode": "pages-student",
+      "toNode": "nextjs"
+    },
+    {
+      "id": "e16",
+      "fromNode": "overview",
+      "toNode": "frontend"
+    },
+    {
+      "id": "e17",
+      "fromNode": "overview",
+      "toNode": "backend"
+    },
+    {
+      "id": "e18",
+      "fromNode": "overview",
+      "toNode": "integrations"
+    }
+  ]
+}
+

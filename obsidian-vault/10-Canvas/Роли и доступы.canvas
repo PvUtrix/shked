@@ -1,0 +1,250 @@
+{
+  "nodes": [
+    {
+      "id": "admin-role",
+      "type": "text",
+      "text": "# [[Admin]]\n\n## Доступ\n`/admin/*`\n\n## Права\n✅ Управление пользователями\n✅ Управление группами\n✅ Управление предметами\n✅ Создание расписания\n✅ Создание домашних заданий\n✅ Проверка работ\n✅ Настройки Telegram бота\n✅ Полный доступ к системе",
+      "x": -600,
+      "y": -400,
+      "width": 300,
+      "height": 360,
+      "color": "5"
+    },
+    {
+      "id": "lector-role",
+      "type": "text",
+      "text": "# [[Lector]]\n\n## Доступ\n`/lector/*`\n\n## Права\n✅ Создание домашних заданий\n✅ Проверка работ студентов\n✅ Комментарии к работам\n✅ Выставление оценок\n✅ Создание расписания\n✅ Просмотр своих предметов\n✅ Получение уведомлений о занятиях",
+      "x": -200,
+      "y": -400,
+      "width": 300,
+      "height": 320,
+      "color": "4"
+    },
+    {
+      "id": "mentor-role",
+      "type": "text",
+      "text": "# [[Mentor]]\n\n## Доступ\n`/mentor/*`\n\n## Права\n✅ Просмотр расписания своих групп\n✅ Просмотр домашних заданий\n✅ Комментарии к работам\n✅ Помощь студентам\n✅ Просмотр списка студентов\n❌ Выставление оценок\n❌ Создание заданий",
+      "x": 200,
+      "y": -400,
+      "width": 300,
+      "height": 300,
+      "color": "3"
+    },
+    {
+      "id": "student-role",
+      "type": "text",
+      "text": "# [[Student]]\n\n## Доступ\n`/student/*`\n\n## Права\n✅ Просмотр своего расписания\n✅ Просмотр домашних заданий\n✅ Сдача работ\n✅ Просмотр feedback\n✅ Просмотр комментариев\n✅ Привязка Telegram\n✅ Получение уведомлений\n❌ Просмотр чужих работ",
+      "x": 600,
+      "y": -400,
+      "width": 300,
+      "height": 320,
+      "color": "2"
+    },
+    {
+      "id": "groups-api",
+      "type": "text",
+      "text": "## [[Groups API]]\n\n**Admin**: GET, POST, PUT, DELETE\n**Lector**: GET\n**Mentor**: GET (свои группы)\n**Student**: GET",
+      "x": -600,
+      "y": 100,
+      "width": 260,
+      "height": 180,
+      "color": "6"
+    },
+    {
+      "id": "homework-api",
+      "type": "text",
+      "text": "## [[Homework API]]\n\n**Admin**: Full access\n**Lector**: POST, PUT (свои), GET, Review\n**Mentor**: GET, Comments\n**Student**: GET (своя группа), Submit",
+      "x": -300,
+      "y": 100,
+      "width": 260,
+      "height": 200,
+      "color": "6"
+    },
+    {
+      "id": "schedules-api",
+      "type": "text",
+      "text": "## [[Schedules API]]\n\n**Admin**: POST, PUT, DELETE\n**Lector**: POST, PUT, DELETE\n**Mentor**: GET (свои группы)\n**Student**: GET (с фильтрацией по подгруппам)",
+      "x": 0,
+      "y": 100,
+      "width": 260,
+      "height": 200,
+      "color": "6"
+    },
+    {
+      "id": "users-api",
+      "type": "text",
+      "text": "## [[Users API]]\n\n**Admin**: Full CRUD\n**Lector**: GET\n**Mentor**: GET (студенты своих групп)\n**Student**: GET (просмотр для коллаборации)",
+      "x": 300,
+      "y": 100,
+      "width": 260,
+      "height": 200,
+      "color": "6"
+    },
+    {
+      "id": "telegram-api",
+      "type": "text",
+      "text": "## [[Telegram API]]\n\n**Admin**: Config, Send, Stats\n**All**: Link (привязка аккаунта)\n**Public**: Webhook",
+      "x": 600,
+      "y": 100,
+      "width": 260,
+      "height": 160,
+      "color": "6"
+    },
+    {
+      "id": "middleware",
+      "type": "text",
+      "text": "# Middleware\n`middleware.ts`\n\n## Защита роутов\n\n- `/admin/*` → только Admin\n- `/lector/*` → только Lector\n- `/mentor/*` → только Mentor\n- `/student/*` → только Student\n- `/login` → публичный\n\nПроверка через NextAuth session",
+      "x": -200,
+      "y": 400,
+      "width": 400,
+      "height": 280,
+      "color": "5"
+    },
+    {
+      "id": "auth-flow",
+      "type": "text",
+      "text": "# Authentication Flow\n\n1. User → `/login`\n2. Credentials (email + password)\n3. NextAuth validates\n4. JWT token with `role`\n5. Redirect based on role:\n   - admin → `/admin`\n   - lector → `/lector`\n   - mentor → `/mentor`\n   - student → `/student`\n\n[[ADR-003 NextAuth.js аутентификация]]",
+      "x": 300,
+      "y": 400,
+      "width": 300,
+      "height": 320,
+      "color": "4"
+    },
+    {
+      "id": "role-check",
+      "type": "text",
+      "text": "# API Role Check\n\n```typescript\nconst session = await getServerSession()\n\nif (!session?.user) {\n  return 401 // Unauthorized\n}\n\nif (session.user.role !== 'admin') {\n  return 403 // Forbidden\n}\n\n// Proceed with logic\n```",
+      "x": -600,
+      "y": 400,
+      "width": 300,
+      "height": 280,
+      "color": "5"
+    },
+    {
+      "id": "overview",
+      "type": "text",
+      "text": "# Роли и доступы ШКЕД\n\n4 роли пользователей с разными уровнями доступа\n\n[[Обзор системы]]",
+      "x": -100,
+      "y": -700,
+      "width": 300,
+      "height": 160,
+      "color": "6"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "admin-role",
+      "toNode": "groups-api"
+    },
+    {
+      "id": "e2",
+      "fromNode": "admin-role",
+      "toNode": "homework-api"
+    },
+    {
+      "id": "e3",
+      "fromNode": "admin-role",
+      "toNode": "schedules-api"
+    },
+    {
+      "id": "e4",
+      "fromNode": "admin-role",
+      "toNode": "users-api"
+    },
+    {
+      "id": "e5",
+      "fromNode": "admin-role",
+      "toNode": "telegram-api"
+    },
+    {
+      "id": "e6",
+      "fromNode": "lector-role",
+      "toNode": "homework-api"
+    },
+    {
+      "id": "e7",
+      "fromNode": "lector-role",
+      "toNode": "schedules-api"
+    },
+    {
+      "id": "e8",
+      "fromNode": "mentor-role",
+      "toNode": "homework-api",
+      "label": "read + comments"
+    },
+    {
+      "id": "e9",
+      "fromNode": "mentor-role",
+      "toNode": "schedules-api",
+      "label": "read only"
+    },
+    {
+      "id": "e10",
+      "fromNode": "student-role",
+      "toNode": "homework-api",
+      "label": "submit"
+    },
+    {
+      "id": "e11",
+      "fromNode": "student-role",
+      "toNode": "schedules-api",
+      "label": "read with subgroups"
+    },
+    {
+      "id": "e12",
+      "fromNode": "middleware",
+      "toNode": "admin-role",
+      "label": "protects"
+    },
+    {
+      "id": "e13",
+      "fromNode": "middleware",
+      "toNode": "lector-role",
+      "label": "protects"
+    },
+    {
+      "id": "e14",
+      "fromNode": "middleware",
+      "toNode": "mentor-role",
+      "label": "protects"
+    },
+    {
+      "id": "e15",
+      "fromNode": "middleware",
+      "toNode": "student-role",
+      "label": "protects"
+    },
+    {
+      "id": "e16",
+      "fromNode": "auth-flow",
+      "toNode": "middleware"
+    },
+    {
+      "id": "e17",
+      "fromNode": "role-check",
+      "toNode": "groups-api"
+    },
+    {
+      "id": "e18",
+      "fromNode": "overview",
+      "toNode": "admin-role"
+    },
+    {
+      "id": "e19",
+      "fromNode": "overview",
+      "toNode": "lector-role"
+    },
+    {
+      "id": "e20",
+      "fromNode": "overview",
+      "toNode": "mentor-role"
+    },
+    {
+      "id": "e21",
+      "fromNode": "overview",
+      "toNode": "student-role"
+    }
+  ]
+}
+
