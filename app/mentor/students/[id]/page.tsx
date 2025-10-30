@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 import { StudentProfileView } from '@/components/mentor/student-profile-view'
 import { notFound } from 'next/navigation'
 
