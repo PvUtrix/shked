@@ -138,7 +138,7 @@ export default async function AdminForumPage() {
               <Card>
                 <CardContent className="pt-6">
                   <p className="text-center text-muted-foreground">
-                    Нет тем в категории "{title}"
+                    Нет тем в категории &quot;{title}&quot;
                   </p>
                 </CardContent>
               </Card>

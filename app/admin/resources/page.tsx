@@ -111,7 +111,7 @@ export default async function AdminResourcesPage() {
               <Card>
                 <CardContent className="pt-6">
                   <p className="text-center text-muted-foreground">
-                    Нет ресурсов типа "{title}"
+                    Нет ресурсов типа &quot;{title}&quot;
                   </p>
                 </CardContent>
               </Card>
