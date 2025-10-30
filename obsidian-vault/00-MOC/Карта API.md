@@ -76,7 +76,7 @@
 - `PUT /api/subjects/[id]` - обновить предмет (admin only)
 - `DELETE /api/subjects/[id]` - удалить предмет (admin only)
 
-**Связи**: [[Lector]] через `lectorId`
+**Связи**: [[Teacher]] через `teacherId`
 
 ## 📅 Расписание
 
@@ -108,20 +108,20 @@
   - Лекторы видят свои предметы
   - Админы видят все
 - `GET /api/homework/[id]` - детали задания
-- `POST /api/homework` - создать задание (lector, admin)
-- `PUT /api/homework/[id]` - обновить задание (lector, admin)
-- `DELETE /api/homework/[id]` - удалить задание (lector, admin)
+- `POST /api/homework` - создать задание (teacher, admin)
+- `PUT /api/homework/[id]` - обновить задание (teacher, admin)
+- `DELETE /api/homework/[id]` - удалить задание (teacher, admin)
 
 #### Submissions (Работы студентов)
 - `GET /api/homework/[id]/submissions` - все работы по заданию
 - `GET /api/homework/[id]/submissions/[submissionId]` - конкретная работа
 - `POST /api/homework/[id]/submit` - сдать работу (student)
 - `PUT /api/homework/[id]/submissions/[submissionId]` - обновить работу
-- `POST /api/homework/[id]/submissions/[submissionId]/review` - проверить работу (lector)
+- `POST /api/homework/[id]/submissions/[submissionId]/review` - проверить работу (teacher)
 
 #### Comments (Inline комментарии)
 - `GET /api/homework/[id]/submissions/[submissionId]/comments` - комментарии к работе
-- `POST /api/homework/[id]/submissions/[submissionId]/comments` - добавить комментарий (lector)
+- `POST /api/homework/[id]/submissions/[submissionId]/comments` - добавить комментарий (teacher)
 - `PUT /api/homework/[id]/submissions/[submissionId]/comments/[commentId]` - обновить комментарий
 - `DELETE /api/homework/[id]/submissions/[submissionId]/comments/[commentId]` - удалить комментарий
 
@@ -184,7 +184,7 @@
 
 ### Role-based Access Control
 
-| Endpoint | Admin | Lector | Mentor | Student |
+| Endpoint | Admin | Teacher | Mentor | Student |
 |----------|-------|--------|--------|---------|
 | Users CRUD | ✅ | ❌ | ❌ | ❌ |
 | Groups CRUD | ✅ | ❌ | ❌ | ❌ |
@@ -195,7 +195,7 @@
 | Homework Submit | ❌ | ❌ | ❌ | ✅ |
 | Telegram Config | ✅ | ❌ | ❌ | ❌ |
 
-**См. также**: [[Admin]], [[Student]], [[Lector]], [[Mentor]]
+**См. также**: [[Admin]], [[Student]], [[Teacher]], [[Mentor]]
 
 ## 📊 Request/Response форматы
 

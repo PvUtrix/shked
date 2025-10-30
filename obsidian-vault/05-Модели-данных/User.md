@@ -50,7 +50,7 @@ model User {
 - `image` - URL аватара пользователя
 
 ### Роль и группа
-- `role` - роль пользователя (`admin` | `student` | `lector` | `mentor`)
+- `role` - роль пользователя (`admin` | `student` | `teacher` | `mentor`)
 - `groupId` - ID группы (для студентов)
 - `mentorGroupIds` - массив ID групп (для менторов)
 
@@ -101,8 +101,8 @@ model User {
 - ✅ Telegram уведомления
 - ❌ Создание контента
 
-### Lector (Преподаватель)
-**Заметка**: [[Lector]]  
+### Teacher (Преподаватель)
+**Заметка**: [[Teacher]]  
 **Права**: Управление своими предметами и домашними заданиями
 
 **Возможности**:
@@ -155,7 +155,7 @@ model User {
 ### Основной тип
 ```typescript
 // lib/types.ts
-export type UserRole = 'admin' | 'student' | 'lector' | 'mentor'
+export type UserRole = 'admin' | 'student' | 'teacher' | 'mentor'
 
 export interface User {
   id: string
@@ -275,7 +275,7 @@ const user = await prisma.user.findUnique({
 await prisma.user.update({
   where: { id: userId },
   data: {
-    role: 'lector'
+    role: 'teacher'
   }
 })
 ```
@@ -300,7 +300,7 @@ export const userSchema = z.object({
   email: z.string().email('Неверный email'),
   password: z.string().min(6, 'Минимум 6 символов'),
   name: z.string().min(1, 'Имя обязательно'),
-  role: z.enum(['admin', 'student', 'lector', 'mentor']),
+  role: z.enum(['admin', 'student', 'teacher', 'mentor']),
   groupId: z.string().optional()
 })
 ```
@@ -355,7 +355,7 @@ if (session.user.role !== 'admin' && session.user.id !== userId) {
 ### Роли
 - [[Admin]] - администраторы
 - [[Student]] - студенты
-- [[Lector]] - преподаватели
+- [[Teacher]] - преподаватели
 - [[Mentor]] - менторы
 
 ### API

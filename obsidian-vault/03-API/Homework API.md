@@ -28,7 +28,7 @@ Homework API предоставляет endpoints для создания дом
 
 #### Права доступа
 - ✅ [[Admin]] - все задания
-- ✅ [[Lector]] - задания по своим предметам
+- ✅ [[Teacher]] - задания по своим предметам
 - ✅ [[Mentor]] - задания групп ментора
 - ✅ [[Student]] - задания своей группы
 
@@ -39,7 +39,7 @@ Homework API предоставляет endpoints для создания дом
 | `subjectId` | `string` | Фильтр по предмету |
 | `groupId` | `string` | Фильтр по группе |
 | `status` | `string` | Статус для студента: `not_submitted`, `submitted`, `reviewed`, `returned` |
-| `lector` | `boolean` | Только задания преподавателя |
+| `teacher` | `boolean` | Только задания преподавателя |
 | `mentor` | `boolean` | Только задания групп ментора |
 | `page` | `number` | Номер страницы (по умолчанию `1`) |
 | `limit` | `number` | Количество на странице (по умолчанию `10`) |
@@ -101,7 +101,7 @@ const response = await fetch('/api/homework?status=not_submitted', {
 })
 
 // Получить задания преподавателя
-const response = await fetch('/api/homework?lector=true', {
+const response = await fetch('/api/homework?teacher=true', {
   method: 'GET',
   credentials: 'include'
 })
@@ -121,7 +121,7 @@ const response = await fetch('/api/homework?lector=true', {
 
 #### Права доступа
 - ✅ [[Admin]] - может создавать для любого предмета
-- ✅ [[Lector]] - может создавать для своих предметов
+- ✅ [[Teacher]] - может создавать для своих предметов
 
 #### Request Body
 
@@ -201,7 +201,7 @@ const homework = await response.json()
 
 #### Права доступа
 - ✅ [[Admin]] - любое задание
-- ✅ [[Lector]] - любое задание
+- ✅ [[Teacher]] - любое задание
 - ✅ [[Mentor]] - задания своих групп
 - ✅ [[Student]] - задания своей группы
 
@@ -254,7 +254,7 @@ const homework = await response.json()
 
 #### Права доступа
 - ✅ [[Admin]] - любое задание
-- ✅ [[Lector]] - задания по своим предметам
+- ✅ [[Teacher]] - задания по своим предметам
 
 #### Request Body
 
@@ -352,7 +352,7 @@ const result = await response.json()
 
 #### Права доступа
 - ✅ [[Admin]] - любая работа
-- ✅ [[Lector]] - работы по своим предметам
+- ✅ [[Teacher]] - работы по своим предметам
 - ✅ [[Mentor]] - работы студентов своих групп
 - ✅ [[Student]] - только своя работа
 
@@ -454,7 +454,7 @@ const submission = await response.json()
 
 #### Права доступа
 - ✅ [[Admin]] - может проверять любые работы
-- ✅ [[Lector]] - работы по своим предметам
+- ✅ [[Teacher]] - работы по своим предметам
 
 #### Request Body
 
@@ -533,7 +533,7 @@ const response = await fetch('/api/homework/hw-id/submissions/sub-id/review', {
 
 #### Права доступа
 - ✅ [[Admin]] - все комментарии
-- ✅ [[Lector]] - комментарии к работам по своим предметам
+- ✅ [[Teacher]] - комментарии к работам по своим предметам
 - ✅ [[Mentor]] - комментарии к работам студентов своих групп
 - ✅ [[Student]] - комментарии к своей работе
 
@@ -582,7 +582,7 @@ const { comments } = await response.json()
 
 #### Права доступа
 - ✅ [[Admin]] - может комментировать
-- ✅ [[Lector]] - работы по своим предметам
+- ✅ [[Teacher]] - работы по своим предметам
 - ✅ [[Mentor]] - работы студентов своих групп
 
 #### Request Body
@@ -799,7 +799,7 @@ model HomeworkComment {
 - [[Telegram интеграция]] - уведомления о дедлайнах
 
 ### Компоненты
-- [[homework-form.tsx]] - форма создания задания (lector)
+- [[homework-form.tsx]] - форма создания задания (teacher)
 - [[homework-submission-form.tsx]] - форма сдачи работы (student)
 - [[markdown-editor.tsx]] - редактор MDX
 - [[markdown-viewer.tsx]] - просмотр MDX
@@ -810,7 +810,7 @@ model HomeworkComment {
 
 ### Роли
 - [[Admin]] - полный доступ
-- [[Lector]] - создание и проверка
+- [[Teacher]] - создание и проверка
 - [[Mentor]] - помощь студентам, комментарии
 - [[Student]] - сдача работ
 

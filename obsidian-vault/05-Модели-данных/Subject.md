@@ -14,13 +14,13 @@ model Subject {
   name        String     @unique
   description String?
   instructor  String?
-  lectorId    String?    // ID преподавателя
+  teacherId    String?    // ID преподавателя
   isActive    Boolean    @default(true)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   schedules   Schedule[]
   homework    Homework[]
-  lector      User?      @relation(fields: [lectorId], references: [id])
+  teacher      User?      @relation(fields: [teacherId], references: [id])
 
   @@map("subjects")
 }
@@ -32,11 +32,11 @@ model Subject {
 - `id` - уникальный идентификатор (CUID)
 - `name` - название предмета (уникальное, например "Математический анализ")
 - `description` - описание предмета
-- `instructor` - имя инструктора (устаревшее поле, используется `lectorId`)
+- `instructor` - имя инструктора (устаревшее поле, используется `teacherId`)
 
 ### Преподаватель
-- `lectorId` - ID пользователя с ролью `lector`
-- `lector` - связь с [[User]] (преподаватель)
+- `teacherId` - ID пользователя с ролью `teacher`
+- `teacher` - связь с [[User]] (преподаватель)
 
 ### Статус
 - `isActive` - активен ли предмет
@@ -48,7 +48,7 @@ model Subject {
 ## Связи (Relations)
 
 ### Many-to-One
-- [[User]] - преподаватель (лектор) через `lectorId`
+- [[User]] - преподаватель (лектор) через `teacherId`
 
 ### One-to-Many
 - [[Schedule]][] - расписание занятий по предмету
@@ -90,20 +90,20 @@ export interface Subject {
   name: string
   description?: string
   instructor?: string
-  lectorId?: string
+  teacherId?: string
   isActive: boolean
   createdAt: Date
   updatedAt: Date
 }
 
 export interface SubjectWithRelations extends Subject {
-  lector?: User
+  teacher?: User
   schedules: Schedule[]
   homework: Homework[]
 }
 
 export interface SubjectWithStats extends Subject {
-  lector?: User
+  teacher?: User
   scheduleCount: number
   homeworkCount: number
   studentCount: number
@@ -116,7 +116,7 @@ export interface SubjectWithStats extends Subject {
 - ✅ CRUD всех предметов
 - ✅ Назначение лекторов к предметам
 
-### Lector
+### Teacher
 - ✅ Просмотр своих предметов
 - ✅ Просмотр расписания по своим предметам
 - ❌ Создание/редактирование предметов
@@ -137,7 +137,7 @@ const subject = await prisma.subject.create({
   data: {
     name: 'Математический анализ',
     description: 'Основы математического анализа для магистрантов',
-    lectorId: lectorUserId,
+    teacherId: teacherUserId,
     isActive: true
   }
 })
@@ -148,7 +148,7 @@ const subject = await prisma.subject.create({
 await prisma.subject.update({
   where: { id: subjectId },
   data: {
-    lectorId: lectorUserId
+    teacherId: teacherUserId
   }
 })
 ```
@@ -158,7 +158,7 @@ await prisma.subject.update({
 const subjects = await prisma.subject.findMany({
   where: { isActive: true },
   include: {
-    lector: {
+    teacher: {
       select: {
         id: true,
         name: true,
@@ -182,7 +182,7 @@ const subjects = await prisma.subject.findMany({
 ```typescript
 const mySubjects = await prisma.subject.findMany({
   where: {
-    lectorId: lectorId
+    teacherId: teacherId
   },
   include: {
     homework: {
@@ -215,7 +215,7 @@ const groupSubjects = await prisma.subject.findMany({
     }
   },
   include: {
-    lector: {
+    teacher: {
       select: {
         name: true
       }
@@ -238,7 +238,7 @@ export const subjectSchema = z.object({
   description: z.string()
     .max(500, 'Максимум 500 символов')
     .optional(),
-  lectorId: z.string().cuid().optional(),
+  teacherId: z.string().cuid().optional(),
   isActive: z.boolean().default(true)
 })
 ```
@@ -262,7 +262,7 @@ export const subjectSchema = z.object({
 const subjectStats = await prisma.subject.findUnique({
   where: { id: subjectId },
   include: {
-    lector: true,
+    teacher: true,
     _count: {
       select: {
         schedules: true,
@@ -297,7 +297,7 @@ console.log({
   scheduleCount: subjectStats._count.schedules,
   homeworkCount: subjectStats._count.homework,
   studentCount: uniqueStudents.size,
-  lector: subjectStats.lector?.name
+  teacher: subjectStats.teacher?.name
 })
 ```
 
@@ -305,7 +305,7 @@ console.log({
 ```typescript
 const mySubjectStats = await prisma.subject.findMany({
   where: {
-    lectorId: lectorId
+    teacherId: teacherId
   },
   include: {
     homework: {
@@ -331,7 +331,7 @@ const stats = mySubjectStats.map(subject => ({
 
 ## Миграции
 
-### Добавление поля lectorId
+### Добавление поля teacherId
 ```prisma
 // До
 model Subject {
@@ -341,23 +341,23 @@ model Subject {
 // После
 model Subject {
   instructor  String?
-  lectorId    String?
-  lector      User?   @relation(fields: [lectorId], references: [id])
+  teacherId    String?
+  teacher      User?   @relation(fields: [teacherId], references: [id])
 }
 ```
 
 ```bash
-npx prisma migrate dev --name add_subject_lector
+npx prisma migrate dev --name add_subject_teacher
 ```
 
 ### Миграция данных
 ```sql
--- Перенести данные из instructor в lectorId (если нужно)
+-- Перенести данные из instructor в teacherId (если нужно)
 UPDATE subjects s
-SET lector_id = (
+SET teacher_id = (
   SELECT id FROM users u
   WHERE u.name = s.instructor
-  AND u.role = 'lector'
+  AND u.role = 'teacher'
   LIMIT 1
 )
 WHERE s.instructor IS NOT NULL;
@@ -373,7 +373,7 @@ WHERE s.instructor IS NOT NULL;
 
 ### Роли
 - [[Admin]] - управление предметами
-- [[Lector]] - назначается к предметам
+- [[Teacher]] - назначается к предметам
 - [[Student]] - изучает предметы
 
 ### Функции
@@ -416,5 +416,5 @@ WHERE s.instructor IS NOT NULL;
 
 ---
 
-#model #prisma #subject #lector
+#model #prisma #subject #teacher
 

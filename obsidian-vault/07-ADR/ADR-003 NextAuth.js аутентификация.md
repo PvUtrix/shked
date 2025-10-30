@@ -192,8 +192,8 @@ export default withAuth(
       return NextResponse.redirect(new URL('/login', req.url))
     }
 
-    // Проверка доступа к /lector
-    if (path.startsWith('/lector') && token?.role !== 'lector') {
+    // Проверка доступа к /Teacher
+    if (path.startsWith('/Teacher') && token?.role !== 'Teacher') {
       return NextResponse.redirect(new URL('/login', req.url))
     }
 
@@ -207,7 +207,7 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: ['/admin/:path*', '/student/:path*', '/lector/:path*', '/mentor/:path*']
+  matcher: ['/admin/:path*', '/student/:path*', '/Teacher/:path*', '/mentor/:path*']
 }
 ```
 
@@ -438,7 +438,7 @@ NEXTAUTH_SECRET=<strong-random-secret>  # openssl rand -base64 32
 - [[User]] - модель с ролями
 - [[Middleware аутентификации]] - защита роутов
 - [[API Routes]] - проверка auth в каждом endpoint
-- [[Admin]] / [[Student]] / [[Lector]] / [[Mentor]] - ролевой доступ
+- [[Admin]] / [[Student]] / [[Teacher]] / [[Mentor]] - ролевой доступ
 - [[Login форма]] - UI для входа
 
 ### Связанные решения

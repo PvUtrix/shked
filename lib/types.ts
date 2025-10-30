@@ -137,8 +137,9 @@ export type UserFormData = {
   name?: string
   firstName?: string
   lastName?: string
-  role: 'admin' | 'student' | 'lector' | 'mentor'
+  role: 'admin' | 'student' | 'teacher' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin'
   groupId?: string
+  status?: 'ACTIVE' | 'EXPELLED' | 'ACADEMIC_LEAVE'
 }
 
 export type ScheduleFormData = {

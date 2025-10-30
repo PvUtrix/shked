@@ -100,7 +100,7 @@
 - Интерфейс: `/student/homework/[id]` (после проверки)
 - API: `GET /api/homework/[id]/submissions/[submissionId]`
 - Модель: [[HomeworkSubmission]], [[HomeworkComment]]
-- Связь: [[Lector]]
+- Связь: [[Teacher]]
 
 ---
 
@@ -173,7 +173,7 @@
 
 ### Роли
 - [[Student]] - основная документация роли
-- [[Lector]] - преподаватели
+- [[Teacher]] - преподаватели
 - [[Mentor]] - менторы
 
 ### Модели данных

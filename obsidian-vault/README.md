@@ -100,7 +100,7 @@ obsidian-vault/
 ## 🏷️ Система тегов
 
 ### По ролям
-`#admin` `#student` `#lector` `#mentor`
+`#admin` `#student` `#Teacher` `#mentor`
 
 ### По типу кода
 `#api` `#component` `#model` `#hook` `#middleware`

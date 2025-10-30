@@ -187,7 +187,7 @@ const schedules = await prisma.schedule.findMany({
   include: {
     subject: {
       include: {
-        lector: {
+        teacher: {
           select: {
             name: true,
             email: true
@@ -221,7 +221,7 @@ const todaySchedule = await prisma.schedule.findMany({
   include: {
     subject: {
       include: {
-        lector: true
+        teacher: true
       }
     }
   },
@@ -233,10 +233,10 @@ const todaySchedule = await prisma.schedule.findMany({
 
 ### Получение расписания лектора
 ```typescript
-const lectorSchedule = await prisma.schedule.findMany({
+const teacherSchedule = await prisma.schedule.findMany({
   where: {
     subject: {
-      lectorId: lectorId
+      teacherId: teacherId
     },
     date: {
       gte: new Date()
@@ -353,7 +353,7 @@ const upcomingSchedules = await prisma.schedule.findMany({
   include: {
     subject: {
       include: {
-        lector: {
+        teacher: {
           include: {
             telegramUser: true
           }
@@ -444,7 +444,7 @@ const locationStats = await prisma.schedule.groupBy({
 ### Роли
 - [[Admin]] - управление расписанием
 - [[Student]] - просмотр расписания
-- [[Lector]] - просмотр своего расписания
+- [[Teacher]] - просмотр своего расписания
 
 ## Файлы
 

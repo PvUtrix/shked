@@ -23,7 +23,7 @@ Schedules API предоставляет endpoints для создания, чт
 
 #### Права доступа
 - ✅ [[Admin]] - все занятия
-- ✅ [[Lector]] - занятия по своим предметам
+- ✅ [[Teacher]] - занятия по своим предметам
 - ✅ [[Mentor]] - занятия своих групп
 - ✅ [[Student]] - занятия своей группы с учетом подгрупп
 
@@ -34,7 +34,7 @@ Schedules API предоставляет endpoints для создания, чт
 | `subjectId` | `string` | Фильтр по предмету |
 | `groupId` | `string` | Фильтр по группе |
 | `date` | `string` | Фильтр по дате (ISO 8601) |
-| `lector` | `boolean` | Только занятия преподавателя |
+| `teacher` | `boolean` | Только занятия преподавателя |
 | `mentor` | `boolean` | Только занятия групп ментора |
 
 #### Response
@@ -81,7 +81,7 @@ const response = await fetch(`/api/schedules?date=${today}`, {
 })
 
 // Получить расписание преподавателя
-const response = await fetch('/api/schedules?lector=true', {
+const response = await fetch('/api/schedules?teacher=true', {
   method: 'GET',
   credentials: 'include'
 })
@@ -115,7 +115,7 @@ const response = await fetch('/api/schedules?groupId=group-id', {
 
 #### Права доступа
 - ✅ [[Admin]] - может создавать
-- ✅ [[Lector]] - может создавать
+- ✅ [[Teacher]] - может создавать
 
 #### Request Body
 
@@ -203,7 +203,7 @@ const schedule = await response.json()
 
 #### Права доступа
 - ✅ [[Admin]] - может обновлять
-- ✅ [[Lector]] - может обновлять
+- ✅ [[Teacher]] - может обновлять
 
 #### Request Body
 
@@ -266,7 +266,7 @@ const schedule = await response.json()
 
 #### Права доступа
 - ✅ [[Admin]] - может удалять
-- ✅ [[Lector]] - может удалять
+- ✅ [[Teacher]] - может удалять
 
 #### Query Parameters
 
@@ -426,7 +426,7 @@ async function handleSubmit(data: ScheduleFormData) {
 
 ### Роли
 - [[Admin]] - полный доступ
-- [[Lector]] - создание и редактирование
+- [[Teacher]] - создание и редактирование
 - [[Mentor]] - просмотр расписания групп
 - [[Student]] - просмотр своего расписания
 

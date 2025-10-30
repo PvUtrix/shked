@@ -13,19 +13,45 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const lector = searchParams.get('lector') === 'true'
+    const teacherId = searchParams.get('teacherId')
+    const assistantId = searchParams.get('assistantId')
+    const includeRelations = searchParams.get('includeRelations') === 'true'
 
     const where: any = {}
 
-    // Для преподавателей показываем только их предметы
-    if (session.user.role === 'lector' || lector) {
-      // Временно отключаем фильтрацию по lectorId до применения миграции
-      // where.lectorId = session.user.id
+    // Для преподавателей, ассистентов и со-преподавателей показываем только их предметы
+    if (['teacher', 'assistant', 'co_teacher', 'lector'].includes(session.user.role)) {
+      where.teachers = {
+        some: {
+          userId: session.user.id
+        }
+      }
+    }
+
+    // Фильтрация по ID преподавателя
+    if (teacherId) {
+      where.teachers = {
+        some: {
+          userId: teacherId,
+          role: 'TEACHER'
+        }
+      }
+    }
+
+    // Фильтрация по ID ассистента
+    if (assistantId) {
+      where.teachers = {
+        some: {
+          userId: assistantId,
+          role: 'ASSISTANT'
+        }
+      }
     }
 
     const subjects = await prisma.subject.findMany({
       where,
       include: {
+        // Старое поле lector (deprecated, для обратной совместимости)
         lector: {
           select: {
             id: true,
@@ -35,10 +61,44 @@ export async function GET(request: NextRequest) {
             email: true
           }
         },
+        // Новая система множественных преподавателей
+        teachers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                role: true
+              }
+            }
+          }
+        },
+        // Опциональные связи
+        ...(includeRelations ? {
+          documents: true,
+          resources: true,
+          subgroups: {
+            include: {
+              _count: {
+                select: { students: true }
+              }
+            }
+          },
+          exams: {
+            where: {
+              isActive: true
+            }
+          }
+        } : {}),
         _count: {
           select: {
             schedules: true,
-            homework: true
+            homework: true,
+            documents: true,
+            exams: true
           }
         }
       },
@@ -63,7 +123,8 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
+    // Только admin может создавать предметы
+    if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
@@ -82,7 +143,8 @@ export async function POST(request: NextRequest) {
         name: body.name,
         description: body.description,
         instructor: body.instructor,
-        lectorId: session.user.role === 'lector' ? session.user.id : body.lectorId
+        // Старое поле для обратной совместимости
+        lectorId: body.lectorId
       },
       include: {
         lector: {
@@ -93,9 +155,31 @@ export async function POST(request: NextRequest) {
             lastName: true,
             email: true
           }
+        },
+        teachers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          }
         }
       }
     })
+
+    // Если указан lectorId, создаем запись в SubjectTeacher для обратной совместимости
+    if (body.lectorId) {
+      await prisma.subjectTeacher.create({
+        data: {
+          subjectId: subject.id,
+          userId: body.lectorId,
+          role: 'TEACHER'
+        }
+      })
+    }
 
     return NextResponse.json(subject, { status: 201 })
 
@@ -113,7 +197,8 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
+    // Только admin и teacher могут редактировать предметы
+    if (!session?.user || !['admin', 'teacher', 'lector'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
@@ -127,15 +212,22 @@ export async function PUT(request: NextRequest) {
     }
 
     // Для преподавателей проверяем, что предмет принадлежит им
-    if (session.user.role === 'lector') {
+    if (['teacher', 'lector'].includes(session.user.role)) {
       const existingSubject = await prisma.subject.findUnique({
-        where: { id: body.id }
+        where: { id: body.id },
+        include: {
+          teachers: {
+            where: {
+              userId: session.user.id,
+              role: { in: ['TEACHER', 'CO_TEACHER'] }
+            }
+          }
+        }
       })
 
-      // Временно отключаем проверку lectorId до применения миграции
-      // if (!existingSubject || existingSubject.lectorId !== session.user.id) {
-      //   return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
-      // }
+      if (!existingSubject || existingSubject.teachers.length === 0) {
+        return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
+      }
     }
 
     const subject = await prisma.subject.update({
@@ -154,6 +246,17 @@ export async function PUT(request: NextRequest) {
             firstName: true,
             lastName: true,
             email: true
+          }
+        },
+        teachers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
           }
         }
       }
@@ -175,7 +278,8 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
+    // Только admin может удалять предметы
+    if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
@@ -199,14 +303,6 @@ export async function DELETE(request: NextRequest) {
         { error: 'Предмет не найден' },
         { status: 404 }
       )
-    }
-
-    // Для преподавателей проверяем, что предмет принадлежит им
-    if (session.user.role === 'lector') {
-      // Временно отключаем проверку lectorId до применения миграции
-      // if (existingSubject.lectorId !== session.user.id) {
-      //   return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
-      // }
     }
 
     // Мягкое удаление - помечаем как неактивный

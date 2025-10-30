@@ -11,14 +11,27 @@ export default async function HomePage() {
   const session = await getServerSession(authOptions)
 
   if (session) {
-    if (session.user.role === 'admin') {
-      redirect('/admin')
-    } else if (session.user.role === 'lector') {
-      redirect('/lector')
-    } else if (session.user.role === 'mentor') {
-      redirect('/mentor')
-    } else {
-      redirect('/student')
+    // Редиректы для всех 8 ролей
+    switch (session.user.role) {
+      case 'admin':
+        redirect('/admin')
+      case 'teacher':
+        redirect('/teacher')
+      case 'lector': // Обратная совместимость (deprecated)
+        redirect('/teacher')
+      case 'assistant':
+        redirect('/assistant')
+      case 'co_teacher':
+        redirect('/teacher') // Со-преподаватели используют тот же интерфейс
+      case 'mentor':
+        redirect('/mentor')
+      case 'education_office_head':
+        redirect('/education-office')
+      case 'department_admin':
+        redirect('/department')
+      case 'student':
+      default:
+        redirect('/student')
     }
   }
 
@@ -72,7 +85,7 @@ export default async function HomePage() {
               Роли пользователей
             </h3>
             <p className="text-lg text-white/70 max-w-2xl mx-auto">
-              Система поддерживает 4 типа пользователей с уникальными правами доступа
+              Система поддерживает 8 типов пользователей с уникальными правами доступа
             </p>
           </div>
           
@@ -93,20 +106,6 @@ export default async function HomePage() {
 
             <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white card-hover">
               <CardHeader className="text-center">
-                <div className="h-12 w-12 mx-auto mb-4 bg-green-500 rounded-full flex items-center justify-center">
-                  <GraduationCap className="h-6 w-6 text-white" />
-                </div>
-                <CardTitle className="text-lg">Студент</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-white/70 text-center">
-                  Просмотр расписания, сдача домашних заданий, отслеживание оценок
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white card-hover">
-              <CardHeader className="text-center">
                 <div className="h-12 w-12 mx-auto mb-4 bg-purple-500 rounded-full flex items-center justify-center">
                   <BookOpen className="h-6 w-6 text-white" />
                 </div>
@@ -114,7 +113,21 @@ export default async function HomePage() {
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-white/70 text-center">
-                  Управление предметами, создание ДЗ, проверка работ студентов
+                  Создание ДЗ, проверка работ, отметка посещаемости, управление экзаменами
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white card-hover">
+              <CardHeader className="text-center">
+                <div className="h-12 w-12 mx-auto mb-4 bg-green-500 rounded-full flex items-center justify-center">
+                  <GraduationCap className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-lg">Студент</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-white/70 text-center">
+                  Просмотр расписания, сдача ДЗ, форум, встречи с ментором, экзамены
                 </CardDescription>
               </CardContent>
             </Card>
@@ -128,10 +141,16 @@ export default async function HomePage() {
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-white/70 text-center">
-                  Помощь студентам, мониторинг групп, консультации по обучению
+                  Встречи со студентами, отслеживание прогресса, консультации по ВКР
                 </CardDescription>
               </CardContent>
             </Card>
+          </div>
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-white/60">
+              + Ассистент, Со-преподаватель, Учебный отдел, Администратор кафедры
+            </p>
           </div>
         </div>
       </section>
