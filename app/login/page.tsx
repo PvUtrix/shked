@@ -11,14 +11,27 @@ export default async function LoginPage() {
   const session = await getServerSession(authOptions)
 
   if (session) {
-    if (session.user.role === 'admin') {
-      redirect('/admin')
-    } else if (session.user.role === 'lector') {
-      redirect('/lector')
-    } else if (session.user.role === 'mentor') {
-      redirect('/mentor')
-    } else {
-      redirect('/student')
+    // Редиректы для всех 8 ролей
+    switch (session.user.role) {
+      case 'admin':
+        redirect('/admin')
+      case 'teacher':
+        redirect('/teacher')
+      case 'lector': // Обратная совместимость (deprecated)
+        redirect('/teacher')
+      case 'assistant':
+        redirect('/assistant')
+      case 'co_teacher':
+        redirect('/teacher') // Со-преподаватели используют тот же интерфейс
+      case 'mentor':
+        redirect('/mentor')
+      case 'education_office_head':
+        redirect('/education-office')
+      case 'department_admin':
+        redirect('/department')
+      case 'student':
+      default:
+        redirect('/student')
     }
   }
 

@@ -60,12 +60,16 @@ export function LoginForm() {
           Введите свои учетные данные для входа в Шкед
         </CardDescription>
         <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
-          <p className="font-medium mb-2">Демо аккаунты:</p>
-          <div className="space-y-1 text-xs">
-            <p><strong>Админ:</strong> admin@shked.com / admin123</p>
-            <p><strong>Студент:</strong> student123@demo.com / student123</p>
-            <p><strong>Преподаватель:</strong> lector@demo.com / lector123</p>
-            <p><strong>Ментор:</strong> mentor@demo.com / mentor123</p>
+          <p className="font-medium mb-2">Демо аккаунты (8 ролей):</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            <p><strong>👨‍💼 Админ:</strong> admin@shked.com / admin123</p>
+            <p><strong>🎓 Студент:</strong> student@demo.com / student123</p>
+            <p><strong>👨‍🏫 Преподаватель:</strong> teacher@demo.com / teacher123</p>
+            <p><strong>👤 Ментор:</strong> mentor@demo.com / mentor123</p>
+            <p><strong>🤝 Ассистент:</strong> assistant@demo.com / assistant123</p>
+            <p><strong>👥 Со-препод:</strong> coteacher@demo.com / coteacher123</p>
+            <p><strong>📊 Учебный отдел:</strong> eduoffice@demo.com / eduoffice123</p>
+            <p><strong>🏛️ Админ кафедры:</strong> deptadmin@demo.com / deptadmin123</p>
           </div>
         </div>
       </CardHeader>
