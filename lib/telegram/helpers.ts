@@ -180,8 +180,8 @@ export function getEventTypeEmoji(eventType?: string): string {
  * https://core.telegram.org/bots/api#markdownv2-style
  */
 export function escapeMarkdown(text: string): string {
-  // Экранируем все специальные символы MarkdownV2
-  return text.replace(/[_*\[\]()~`>#+=|{}.!-]/g, '\\$&')
+  // Экранируем все специальные символы MarkdownV2 (включая обратный слэш)
+  return text.replace(/[\\_*[\]()~`>#+=|{}.!-]/g, '\\$&')
 }
 
 /**
