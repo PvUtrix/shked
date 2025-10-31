@@ -17,7 +17,7 @@ export default withAuth(
     
     // Проверка доступа к роутам преподавателя (teacher заменяет lector)
     if (req.nextUrl.pathname.startsWith('/teacher') && 
-        !['teacher', 'admin'].includes(role || '')) {
+        !['teacher', 'lector', 'admin'].includes(role || '')) {
       return new Response('Forbidden', { status: 403 })
     }
     

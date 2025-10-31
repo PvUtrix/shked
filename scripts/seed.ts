@@ -89,18 +89,18 @@ async function main() {
       },
     })
 
-    // Демо преподаватель
-    const demoLectorPassword = await bcryptjs.hash('lector123', 12)
-    const demoLector = await prisma.user.upsert({
-      where: { email: 'lector@demo.com' },
+    // Демо преподаватель (создаем teacher@demo.com с ролью teacher)
+    const demoTeacherPassword = await bcryptjs.hash('teacher123', 12)
+    const demoTeacher = await prisma.user.upsert({
+      where: { email: 'teacher@demo.com' },
       update: {},
       create: {
-        email: 'lector@demo.com',
-        password: demoLectorPassword,
+        email: 'teacher@demo.com',
+        password: demoTeacherPassword,
         firstName: 'Демо',
         lastName: 'Преподаватель',
         name: 'Демо Преподаватель',
-        role: 'lector',
+        role: 'teacher',
       },
     })
 
@@ -170,11 +170,11 @@ async function main() {
     }
 
     // Назначаем демо преподавателя к нескольким предметам
-    const lectorSubjects = createdSubjects.slice(0, 3) // Первые 3 предмета
-    for (const subject of lectorSubjects) {
+    const teacherSubjects = createdSubjects.slice(0, 3) // Первые 3 предмета
+    for (const subject of teacherSubjects) {
       await prisma.subject.update({
         where: { id: subject.id },
-        data: { lectorId: demoLector.id }
+        data: { lectorId: demoTeacher.id }
       })
     }
 
@@ -435,7 +435,7 @@ async function main() {
       * admin@shked.com / admin123 (админ)
       * john@doe.com / johndoe123 (админ)
       * student123@demo.com / student123 (студент)
-      * lector@demo.com / lector123 (преподаватель)
+      * teacher@demo.com / teacher123 (преподаватель)
       * mentor@demo.com / mentor123 (ментор)`)
     
   } catch (error) {
