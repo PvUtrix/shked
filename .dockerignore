@@ -1,0 +1,52 @@
+# Файлы для игнорирования при сборке Docker образа
+
+# Зависимости
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js
+.next
+out
+dist
+build
+
+# Prisma
+.prisma
+
+# Тестирование
+coverage
+.nyc_output
+
+# Переменные окружения
+.env
+.env*.local
+
+# Отладка и IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Документация и скриншоты
+screenshots
+docs
+
+# Временные файлы
+*.log
+tmp
+temp
+
+# Markdown (кроме README)
+*.md
+!README.md

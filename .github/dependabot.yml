@@ -1,0 +1,77 @@
+# Конфигурация Dependabot для автоматических обновлений зависимостей
+# Помогает поддерживать проект в безопасности и актуальности
+# Подробнее: https://docs.github.com/en/code-security/dependabot
+
+version: 2
+updates:
+  # Обновления npm зависимостей
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      # Проверка обновлений каждый день в 9:00 UTC
+      interval: "daily"
+      time: "09:00"
+      timezone: "Europe/Moscow"
+    # Ограничение количества открытых PR
+    open-pull-requests-limit: 10
+    # Группировка minor и patch обновлений
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    # Метки для PR
+    labels:
+      - "dependencies"
+      - "automated"
+    # Автоматический rebase при конфликтах
+    rebase-strategy: "auto"
+    # Префикс для коммитов
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # Игнорирование определенных зависимостей (если нужно)
+    # ignore:
+    #   - dependency-name: "react"
+    #     update-types: ["version-update:semver-major"]
+
+  # Обновления GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Moscow"
+    open-pull-requests-limit: 5
+    labels:
+      - "ci/cd"
+      - "dependencies"
+      - "automated"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+
+  # Обновления Docker (если используете)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+      timezone: "Europe/Moscow"
+    open-pull-requests-limit: 3
+    labels:
+      - "docker"
+      - "dependencies"
+      - "automated"
+    commit-message:
+      prefix: "chore(docker)"
+      include: "scope"
+

@@ -1,0 +1,145 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+/test-results/
+/playwright-report/
+/.playwright/
+*.spec.js
+*.spec.js.map
+*.test.js
+*.test.js.map
+
+# Next.js
+/.next/
+/out/
+.next
+out
+build
+dist
+
+# Production
+/build
+
+# Misc
+.DS_Store
+*.pem
+.vscode/
+.idea/
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
+
+# Local env files
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Prisma
+prisma/migrations/
+*.db
+*.db-journal
+
+# OS
+Thumbs.db
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+
+# Lock files (optional - uncomment if you want to ignore them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Development and temporary documentation
+*_COMPLETE.md
+*_UPDATE.md
+*_CHECKLIST.md
+QUICKSTART.md
+SETUP*.md
+REBRANDING*.md
+DONATION*.md
+
+# Data files (examples, test data)
+data/*.xlsx
+data/*.xls
+data/*.json
+data/test/
+data/examples/
+
+# Python scripts (if not part of main project)
+*.py
+__pycache__/
+*.pyc
+
+# Backup files
+*.bak
+*.old
+*.backup
+
+# Obsidian
+obsidian-vault/.obsidian/workspace.json
+obsidian-vault/.obsidian/workspace-mobile.json
+obsidian-vault/.trash/
+obsidian-vault/.obsidian/plugins/*/
+obsidian-vault/.obsidian/community-plugins.json

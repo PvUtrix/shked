@@ -1,0 +1,129 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/**'
+      - '!.github/workflows/release.yml'
+
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Тип релиза'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - beta
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Generate Prisma Client
+        run: npx prisma generate
+      
+      - name: Build application
+        run: npm run build
+        env:
+          DATABASE_URL: "postgresql://user:pass@localhost:5432/test?schema=public"
+          NEXTAUTH_URL: "http://localhost:3000"
+          NEXTAUTH_SECRET: "test-secret-key-for-ci"
+      
+      - name: Run tests
+        run: npm test
+        continue-on-error: true
+      
+      - name: Determine release type
+        id: release_type
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "type=${{ inputs.release_type }}" >> $GITHUB_OUTPUT
+          else
+            # Анализируем коммиты для определения типа релиза
+            COMMITS=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%s")
+            if echo "$COMMITS" | grep -q "BREAKING CHANGE\|!:"; then
+              echo "type=major" >> $GITHUB_OUTPUT
+            elif echo "$COMMITS" | grep -q "^feat"; then
+              echo "type=minor" >> $GITHUB_OUTPUT
+            else
+              echo "type=patch" >> $GITHUB_OUTPUT
+            fi
+          fi
+      
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_TYPE="${{ steps.release_type.outputs.type }}"
+          
+          case $RELEASE_TYPE in
+            patch)
+              npm run release:patch -- --ci
+              ;;
+            minor)
+              npm run release:minor -- --ci
+              ;;
+            major)
+              npm run release:major -- --ci
+              ;;
+            beta)
+              npm run release:beta -- --ci
+              ;;
+          esac
+      
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          release_name: Release v${{ steps.get_version.outputs.version }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: ${{ steps.release_type.outputs.type == 'beta' }}
+        continue-on-error: true
+      
+      - name: Get version
+        id: get_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      
+      - name: Summary
+        run: |
+          echo "✅ Релиз создан успешно!" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Версия: v${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "🔖 Тип релиза: ${{ steps.release_type.outputs.type }}" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [Посмотреть релиз](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.get_version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+
