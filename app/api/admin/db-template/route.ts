@@ -253,6 +253,13 @@ export async function POST(request: NextRequest) {
 
     const templatePath = path.join(TEMPLATES_DIR, `${name}.json`)
 
+    // Защита: гарантируем, что итоговый путь находится внутри папки шаблонов
+    const resolvedTemplatesDir = path.resolve(TEMPLATES_DIR)
+    const resolvedTemplatePath = path.resolve(templatePath)
+    if (!resolvedTemplatePath.startsWith(resolvedTemplatesDir + path.sep)) {
+      return NextResponse.json({ error: 'Путь к шаблону некорректен' }, { status: 400 })
+    }
+
     if (action === 'save') {
       // Сохранение текущего состояния БД
       console.log(`💾 Сохранение шаблона "${name}"...`)
