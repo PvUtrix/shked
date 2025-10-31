@@ -187,10 +187,14 @@
 - **Профиль**: `/student/profile` - личная информация
 
 ### Преподаватель:
-- **Главная**: `/lector` - обзор назначенных предметов
-- **Расписание**: `/lector/schedule` - расписание занятий
-- **Домашние задания**: `/lector/homework` - создание и проверка ДЗ
-- **Профиль**: `/lector/profile` - личная информация
+- **Главная**: `/teacher` - обзор назначенных предметов
+- **Расписание**: `/teacher/schedule` - расписание занятий
+- **Домашние задания**: `/teacher/homework` - создание и проверка ДЗ
+- **Посещаемость**: `/teacher/attendance` - отметка присутствующих
+- **Экзамены**: `/teacher/exams` - создание и проверка экзаменов
+- **Профиль**: `/teacher/profile` - личная информация
+
+> **Примечание**: Старые маршруты `/lector/*` сохранены для совместимости и перенаправляются на `/teacher/*`.
 
 ### Ментор:
 - **Главная**: `/mentor` - обзор назначенных групп
@@ -258,8 +262,10 @@
 |------|-------|--------|----------|
 | Администратор | admin@shked.com | admin123 | Полный доступ к системе |
 | Студент | student123@demo.com | student123 | Просмотр расписания и ДЗ |
-| Преподаватель | lector@demo.com | lector123 | Управление предметами и ДЗ |
+| Преподаватель | teacher@demo.com | teacher123 | Управление предметами и ДЗ |
 | Ментор | mentor@demo.com | mentor123 | Помощь студентам в группах |
+
+> **Примечание**: Демо аккаунт `lector@demo.com` устарел, используйте `teacher@demo.com`.
 
 Все демо аккаунты имеют предустановленные связи:
 - **Преподаватель** назначен к 3 предметам
@@ -270,22 +276,29 @@
 
 ### База данных:
 ```sql
--- Поле роли в таблице пользователей
-role ENUM('admin', 'student', 'lector', 'mentor')
+-- Поле роли в таблице пользователей (8 ролей)
+role TEXT DEFAULT 'student' CHECK(role IN (
+  'admin', 'student', 'teacher', 'mentor', 
+  'assistant', 'co_teacher', 'education_office_head', 'department_admin'
+));
 
--- Связь преподавателя с предметами
-ALTER TABLE subjects ADD COLUMN lectorId TEXT;
-ALTER TABLE subjects ADD CONSTRAINT subjects_lectorId_fkey 
-  FOREIGN KEY (lectorId) REFERENCES users(id);
+-- Связь преподавателя с предметами (многие-ко-многим)
+CREATE TABLE subject_teachers (
+  id TEXT PRIMARY KEY,
+  subject_id TEXT REFERENCES subjects(id),
+  user_id TEXT REFERENCES users(id),
+  role TEXT CHECK(role IN ('TEACHER', 'ASSISTANT', 'CO_TEACHER')),
+  is_primary BOOLEAN DEFAULT FALSE
+);
 
 -- Группы для ментора (JSON массив)
-ALTER TABLE users ADD COLUMN mentorGroupIds JSONB;
+ALTER TABLE users ADD COLUMN mentor_group_ids JSONB;
 ```
 
 ### TypeScript типы:
 ```typescript
 interface User {
-  role: 'admin' | 'student' | 'lector' | 'mentor';
+  role: 'admin' | 'student' | 'teacher' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin';
   mentorGroupIds?: string[];
   assignedSubjects?: Subject[];
 }
@@ -294,13 +307,22 @@ interface User {
 ### Middleware:
 ```typescript
 // Проверка доступа к роутам по ролям
-if (req.nextUrl.pathname.startsWith('/lector') && 
-    req.nextauth.token?.role !== 'lector') {
+if (req.nextUrl.pathname.startsWith('/teacher') && 
+    req.nextauth.token?.role !== 'teacher') {
   return new Response('Forbidden', { status: 403 });
+}
+```
+
+### Совместимость с устаревшими маршрутами:
+```typescript
+// Перенаправление /lector/* на /teacher/*
+if (req.nextUrl.pathname.startsWith('/lector')) {
+  const newPath = req.nextUrl.pathname.replace('/lector', '/teacher');
+  return NextResponse.redirect(new URL(newPath, req.url));
 }
 ```
 
 ---
 
-*Документация обновлена: 14 октября 2025*
+*Документация обновлена: 31 октября 2025*
 *Версия системы: 1.1.0*
