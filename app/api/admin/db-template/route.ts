@@ -242,6 +242,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Не указаны action и name' }, { status: 400 })
     }
 
+    // Валидация имени шаблона для предотвращения path traversal
+    if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+      return NextResponse.json({ 
+        error: 'Недопустимое имя шаблона. Используйте только латинские буквы, цифры, дефис и подчеркивание' 
+      }, { status: 400 })
+    }
+
     await ensureTemplatesDir()
 
     const templatePath = path.join(TEMPLATES_DIR, `${name}.json`)

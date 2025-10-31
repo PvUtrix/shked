@@ -175,28 +175,13 @@ export function getEventTypeEmoji(eventType?: string): string {
 }
 
 /**
- * Экранировать специальные символы для Markdown
+ * Экранировать специальные символы для Telegram MarkdownV2
+ * Для MarkdownV2 необходимо экранировать: _*[]()~`>#+-=|{}.!
+ * https://core.telegram.org/bots/api#markdownv2-style
  */
 export function escapeMarkdown(text: string): string {
-  return text
-    .replace(/\*/g, '\\*')
-    .replace(/_/g, '\\_')
-    .replace(/\[/g, '\\[')
-    .replace(/\]/g, '\\]')
-    .replace(/\(/g, '\\(')
-    .replace(/\)/g, '\\)')
-    .replace(/~/g, '\\~')
-    .replace(/`/g, '\\`')
-    .replace(/>/g, '\\>')
-    .replace(/#/g, '\\#')
-    .replace(/\+/g, '\\+')
-    .replace(/-/g, '\\-')
-    .replace(/=/g, '\\=')
-    .replace(/\|/g, '\\|')
-    .replace(/\{/g, '\\{')
-    .replace(/\}/g, '\\}')
-    .replace(/\./g, '\\.')
-    .replace(/!/g, '\\!')
+  // Экранируем все специальные символы MarkdownV2
+  return text.replace(/[_*\[\]()~`>#+=|{}.!-]/g, '\\$&')
 }
 
 /**

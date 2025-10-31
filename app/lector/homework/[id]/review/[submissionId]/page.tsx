@@ -149,9 +149,18 @@ export default function LectorReviewSubmissionPage({
 
   const isValidSubmissionUrl = (url: string | null | undefined): boolean => {
     if (!url) return false
-    // Проверяем что URL не пустой и не example.com
-    const isExampleDomain = url.includes('example.com') || url.includes('example.org')
-    return url.trim().length > 0 && !isExampleDomain
+    try {
+      const parsedUrl = new URL(url)
+      // Разрешаем только http и https протоколы
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        return false
+      }
+      // Проверяем что URL не пустой и не example.com
+      const isExampleDomain = parsedUrl.hostname.includes('example.com') || parsedUrl.hostname.includes('example.org')
+      return url.trim().length > 0 && !isExampleDomain
+    } catch {
+      return false
+    }
   }
 
   if (loading) {

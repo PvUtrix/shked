@@ -111,6 +111,22 @@ export default function ReviewSubmissionPage({
     }
   }
 
+  const isValidSubmissionUrl = (url: string | null | undefined): boolean => {
+    if (!url) return false
+    try {
+      const parsedUrl = new URL(url)
+      // Разрешаем только http и https протоколы
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        return false
+      }
+      // Проверяем что URL не пустой и не example.com
+      const isExampleDomain = parsedUrl.hostname.includes('example.com') || parsedUrl.hostname.includes('example.org')
+      return url.trim().length > 0 && !isExampleDomain
+    } catch {
+      return false
+    }
+  }
+
   const formatDate = (date: string | Date) => {
     try {
       const dateObj = typeof date === 'string' ? new Date(date) : date
@@ -198,7 +214,7 @@ export default function ReviewSubmissionPage({
                 <div>
                   <Label className="text-sm font-medium text-gray-700">Ссылка на работу</Label>
                   <div className="mt-1">
-                    {submission.submissionUrl ? (
+                    {submission.submissionUrl && isValidSubmissionUrl(submission.submissionUrl) ? (
                       <Button variant="outline" asChild>
                         <a href={submission.submissionUrl} target="_blank" rel="noopener noreferrer">
                           Открыть работу
