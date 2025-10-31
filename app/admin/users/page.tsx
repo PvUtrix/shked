@@ -134,10 +134,16 @@ export default function UsersPage() {
         return <UserCog className="h-4 w-4" />
       case 'student':
         return <GraduationCap className="h-4 w-4" />
+      case 'teacher':
       case 'lector':
+      case 'assistant':
+      case 'co_teacher':
         return <BookOpen className="h-4 w-4" />
       case 'mentor':
         return <UserCheck className="h-4 w-4" />
+      case 'education_office_head':
+      case 'department_admin':
+        return <UserCog className="h-4 w-4" />
       default:
         return <Users className="h-4 w-4" />
     }
@@ -149,10 +155,20 @@ export default function UsersPage() {
         return 'bg-red-100 text-red-800'
       case 'student':
         return 'bg-blue-100 text-blue-800'
-      case 'lector':
+      case 'teacher':
         return 'bg-purple-100 text-purple-800'
+      case 'lector': // Обратная совместимость
+        return 'bg-purple-100 text-purple-800'
+      case 'assistant':
+        return 'bg-indigo-100 text-indigo-800'
+      case 'co_teacher':
+        return 'bg-violet-100 text-violet-800'
       case 'mentor':
         return 'bg-orange-100 text-orange-800'
+      case 'education_office_head':
+        return 'bg-green-100 text-green-800'
+      case 'department_admin':
+        return 'bg-yellow-100 text-yellow-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -164,10 +180,20 @@ export default function UsersPage() {
         return 'Администратор'
       case 'student':
         return 'Студент'
-      case 'lector':
+      case 'teacher':
         return 'Преподаватель'
+      case 'lector': // Обратная совместимость
+        return 'Преподаватель (legacy)'
+      case 'assistant':
+        return 'Ассистент'
+      case 'co_teacher':
+        return 'Со-преподаватель'
       case 'mentor':
         return 'Ментор'
+      case 'education_office_head':
+        return 'Учебный отдел'
+      case 'department_admin':
+        return 'Администратор кафедры'
       default:
         return role
     }
@@ -239,8 +265,12 @@ export default function UsersPage() {
               <SelectItem value="all">Все роли</SelectItem>
               <SelectItem value="admin">Администраторы</SelectItem>
               <SelectItem value="student">Студенты</SelectItem>
-              <SelectItem value="lector">Преподаватели</SelectItem>
+              <SelectItem value="teacher">Преподаватели</SelectItem>
+              <SelectItem value="assistant">Ассистенты</SelectItem>
+              <SelectItem value="co_teacher">Со-преподаватели</SelectItem>
               <SelectItem value="mentor">Менторы</SelectItem>
+              <SelectItem value="education_office_head">Учебный отдел</SelectItem>
+              <SelectItem value="department_admin">Администраторы кафедры</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -296,8 +326,12 @@ export default function UsersPage() {
                       <SelectContent>
                         <SelectItem value="admin">Администратор</SelectItem>
                         <SelectItem value="student">Студент</SelectItem>
-                        <SelectItem value="lector">Преподаватель</SelectItem>
+                        <SelectItem value="teacher">Преподаватель</SelectItem>
+                        <SelectItem value="assistant">Ассистент</SelectItem>
+                        <SelectItem value="co_teacher">Со-преподаватель</SelectItem>
                         <SelectItem value="mentor">Ментор</SelectItem>
+                        <SelectItem value="education_office_head">Учебный отдел</SelectItem>
+                        <SelectItem value="department_admin">Администратор кафедры</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
