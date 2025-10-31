@@ -119,9 +119,14 @@ export default function ReviewSubmissionPage({
       if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
         return false
       }
-      // Проверяем что URL не пустой и не example.com
-      const isExampleDomain = parsedUrl.hostname.includes('example.com') || parsedUrl.hostname.includes('example.org')
-      return url.trim().length > 0 && !isExampleDomain
+      // Проверяем что URL не пустой и не принадлежит example.com или example.org (в том числе их субдоменам)
+      const forbiddenDomains = ['example.com', 'example.org']
+      const hostname = parsedUrl.hostname.toLowerCase()
+      const isForbiddenDomain = forbiddenDomains.some(domain =>
+        hostname === domain ||
+        hostname.endsWith('.' + domain)
+      )
+      return url.trim().length > 0 && !isForbiddenDomain
     } catch {
       return false
     }
