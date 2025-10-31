@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     console.log('🌱 Начинаем создание тестовых пользователей...')
 
-    // Создаем тестовых пользователей
+    // Создаем тестовых пользователей для всех 8 ролей
     const adminPassword = await bcryptjs.hash('admin123', 12)
     const admin = await prisma.user.upsert({
       where: { email: 'admin@shked.com' },
@@ -36,26 +36,12 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    const testPassword = await bcryptjs.hash('johndoe123', 12)
-    const testUser = await prisma.user.upsert({
-      where: { email: 'john@doe.com' },
-      update: {},
-      create: {
-        email: 'john@doe.com',
-        password: testPassword,
-        firstName: 'John',
-        lastName: 'Doe',
-        name: 'John Doe',
-        role: 'admin',
-      },
-    })
-
     const studentPassword = await bcryptjs.hash('student123', 12)
     const student = await prisma.user.upsert({
-      where: { email: 'student123@demo.com' },
+      where: { email: 'student@demo.com' },
       update: {},
       create: {
-        email: 'student123@demo.com',
+        email: 'student@demo.com',
         password: studentPassword,
         firstName: 'Демо',
         lastName: 'Студент',
@@ -64,14 +50,103 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    const teacherPassword = await bcryptjs.hash('teacher123', 12)
+    const teacher = await prisma.user.upsert({
+      where: { email: 'teacher@demo.com' },
+      update: {},
+      create: {
+        email: 'teacher@demo.com',
+        password: teacherPassword,
+        firstName: 'Демо',
+        lastName: 'Преподаватель',
+        name: 'Демо Преподаватель',
+        role: 'teacher',
+      },
+    })
+
+    const mentorPassword = await bcryptjs.hash('mentor123', 12)
+    const mentor = await prisma.user.upsert({
+      where: { email: 'mentor@demo.com' },
+      update: {},
+      create: {
+        email: 'mentor@demo.com',
+        password: mentorPassword,
+        firstName: 'Демо',
+        lastName: 'Ментор',
+        name: 'Демо Ментор',
+        role: 'mentor',
+      },
+    })
+
+    const assistantPassword = await bcryptjs.hash('assistant123', 12)
+    const assistant = await prisma.user.upsert({
+      where: { email: 'assistant@demo.com' },
+      update: {},
+      create: {
+        email: 'assistant@demo.com',
+        password: assistantPassword,
+        firstName: 'Демо',
+        lastName: 'Ассистент',
+        name: 'Демо Ассистент',
+        role: 'assistant',
+      },
+    })
+
+    const coTeacherPassword = await bcryptjs.hash('coteacher123', 12)
+    const coTeacher = await prisma.user.upsert({
+      where: { email: 'coteacher@demo.com' },
+      update: {},
+      create: {
+        email: 'coteacher@demo.com',
+        password: coTeacherPassword,
+        firstName: 'Демо',
+        lastName: 'Со-преподаватель',
+        name: 'Демо Со-преподаватель',
+        role: 'co_teacher',
+      },
+    })
+
+    const eduOfficePassword = await bcryptjs.hash('eduoffice123', 12)
+    const eduOffice = await prisma.user.upsert({
+      where: { email: 'eduoffice@demo.com' },
+      update: {},
+      create: {
+        email: 'eduoffice@demo.com',
+        password: eduOfficePassword,
+        firstName: 'Демо',
+        lastName: 'Учебный отдел',
+        name: 'Демо Учебный отдел',
+        role: 'education_office_head',
+      },
+    })
+
+    const deptAdminPassword = await bcryptjs.hash('deptadmin123', 12)
+    const deptAdmin = await prisma.user.upsert({
+      where: { email: 'deptadmin@demo.com' },
+      update: {},
+      create: {
+        email: 'deptadmin@demo.com',
+        password: deptAdminPassword,
+        firstName: 'Демо',
+        lastName: 'Админ кафедры',
+        name: 'Демо Администратор кафедры',
+        role: 'department_admin',
+      },
+    })
+
     console.log('✅ Тестовые пользователи созданы успешно!')
 
     return NextResponse.json({
-      message: 'Тестовые пользователи созданы успешно!',
+      message: 'Тестовые пользователи созданы успешно! (8 ролей)',
       users: [
         { email: 'admin@shked.com', password: 'admin123', role: 'admin' },
-        { email: 'john@doe.com', password: 'johndoe123', role: 'admin' },
-        { email: 'student123@demo.com', password: 'student123', role: 'student' }
+        { email: 'student@demo.com', password: 'student123', role: 'student' },
+        { email: 'teacher@demo.com', password: 'teacher123', role: 'teacher' },
+        { email: 'mentor@demo.com', password: 'mentor123', role: 'mentor' },
+        { email: 'assistant@demo.com', password: 'assistant123', role: 'assistant' },
+        { email: 'coteacher@demo.com', password: 'coteacher123', role: 'co_teacher' },
+        { email: 'eduoffice@demo.com', password: 'eduoffice123', role: 'education_office_head' },
+        { email: 'deptadmin@demo.com', password: 'deptadmin123', role: 'department_admin' },
       ]
     })
 
