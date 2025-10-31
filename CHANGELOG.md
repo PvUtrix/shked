@@ -1,3 +1,16 @@
+# Changelog
+
+## <small>2.0.1 (2025-10-31)</small>
+
+* fix: обновить зависимости для устранения уязвимостей безопасности ([48fb3b0](https://github.com/PvUtrix/shked/commit/48fb3b0))
+* fix(deps): обновить package-lock.json для синхронизации зависимостей ([6bd5fdc](https://github.com/PvUtrix/shked/commit/6bd5fdc))
+* fix(release): добавить загрузку nvm в скрипт релиза ([7bfcfd0](https://github.com/PvUtrix/shked/commit/7bfcfd0))
+* fix(roles): добавить поддержку обратной совместимости для роли lector ([51779cd](https://github.com/PvUtrix/shked/commit/51779cd))
+* fix(security): исправить критичные уязвимости безопасности ([817803b](https://github.com/PvUtrix/shked/commit/817803b))
+* feat(release): добавить поддержку релизов через PR для защищённой ветки main ([badb2ad](https://github.com/PvUtrix/shked/commit/badb2ad))
+* revert(roles): откат с teacher на lector - используем одну роль для простоты ([58920c6](https://github.com/PvUtrix/shked/commit/58920c6))
+* docs: обновить документацию по ролям пользователей и структуре проекта ([f07aaff](https://github.com/PvUtrix/shked/commit/f07aaff))
+
 # 📝 CHANGELOG
 
 Все заметные изменения в проекте SmartSchedule (ШКЕД) документируются в этом файле.
