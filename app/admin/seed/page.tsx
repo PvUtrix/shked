@@ -3,16 +3,26 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, CheckCircle, Loader2, Users } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { AlertCircle, CheckCircle, Loader2, Users, RefreshCw, Download, Upload, Database, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+
+type Operation = 'seed' | 'reset' | 'save' | 'restore'
 
 export default function SeedPage() {
   const [loading, setLoading] = useState(false)
+  const [operation, setOperation] = useState<Operation | null>(null)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const [templateName, setTemplateName] = useState('')
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [pendingOperation, setPendingOperation] = useState<Operation | null>(null)
 
   const runSeed = async () => {
     setLoading(true)
+    setOperation('seed')
     setError(null)
     setResult(null)
 
@@ -40,48 +50,305 @@ export default function SeedPage() {
       toast.error('Ошибка при выполнении запроса')
     } finally {
       setLoading(false)
+      setOperation(null)
     }
   }
 
+  const resetDatabase = async () => {
+    setLoading(true)
+    setOperation('reset')
+    setError(null)
+    setResult(null)
+
+    try {
+      const response = await fetch('/api/admin/reset-db', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setResult({
+          message: 'База данных успешно сброшена и заполнена тестовыми данными!',
+          stats: data.stats,
+        })
+        toast.success('База данных восстановлена!')
+      } else {
+        setError(data.error || 'Произошла ошибка')
+        toast.error(data.error || 'Произошла ошибка')
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка'
+      setError(errorMessage)
+      toast.error('Ошибка при выполнении запроса')
+    } finally {
+      setLoading(false)
+      setOperation(null)
+    }
+  }
+
+  const saveTemplate = async () => {
+    if (!templateName.trim()) {
+      toast.error('Введите название шаблона')
+      return
+    }
+
+    setLoading(true)
+    setOperation('save')
+    setError(null)
+    setResult(null)
+
+    try {
+      const response = await fetch('/api/admin/db-template', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'save',
+          name: templateName.trim()
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setResult({
+          message: `Шаблон "${templateName}" успешно сохранен!`,
+          snapshot: data.snapshot,
+        })
+        toast.success('Шаблон сохранен!')
+        setTemplateName('')
+      } else {
+        setError(data.error || 'Произошла ошибка')
+        toast.error(data.error || 'Произошла ошибка')
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка'
+      setError(errorMessage)
+      toast.error('Ошибка при выполнении запроса')
+    } finally {
+      setLoading(false)
+      setOperation(null)
+    }
+  }
+
+  const restoreTemplate = async () => {
+    if (!templateName.trim()) {
+      toast.error('Введите название шаблона')
+      return
+    }
+
+    setLoading(true)
+    setOperation('restore')
+    setError(null)
+    setResult(null)
+
+    try {
+      const response = await fetch('/api/admin/db-template', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'restore',
+          name: templateName.trim()
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setResult({
+          message: `Шаблон "${templateName}" успешно восстановлен!`,
+          stats: data.stats,
+        })
+        toast.success('Шаблон восстановлен!')
+      } else {
+        setError(data.error || 'Произошла ошибка')
+        toast.error(data.error || 'Произошла ошибка')
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка'
+      setError(errorMessage)
+      toast.error('Ошибка при выполнении запроса')
+    } finally {
+      setLoading(false)
+      setOperation(null)
+    }
+  }
+
+  const handleConfirmOperation = (op: Operation) => {
+    setPendingOperation(op)
+    setConfirmDialogOpen(true)
+  }
+
+  const executeOperation = () => {
+    setConfirmDialogOpen(false)
+    
+    switch (pendingOperation) {
+      case 'reset':
+        resetDatabase()
+        break
+      case 'restore':
+        restoreTemplate()
+        break
+      default:
+        break
+    }
+    
+    setPendingOperation(null)
+  }
+
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
+    <div className="container mx-auto py-8 px-4 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Создание тестовых пользователей</h1>
+        <h1 className="text-3xl font-bold mb-2">Управление тестовой базой данных</h1>
         <p className="text-gray-600">
-          Этот инструмент создаст 8 демо-пользователей для всех ролей системы
+          Создание пользователей, сброс базы и управление шаблонами для тестирования
         </p>
       </div>
 
+      <div className="grid md:grid-cols-2 gap-6 mb-6">
+        {/* Создание пользователей */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Users className="h-5 w-5 mr-2" />
+              Создать пользователей
+            </CardTitle>
+            <CardDescription>
+              Добавить 8 демо-пользователей (не удаляет существующие данные)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={runSeed} 
+              disabled={loading}
+              size="lg"
+              className="w-full"
+            >
+              {loading && operation === 'seed' ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Создание...
+                </>
+              ) : (
+                <>
+                  <Users className="h-4 w-4 mr-2" />
+                  Создать пользователей
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Полный сброс базы */}
+        <Card className="border-red-200">
+          <CardHeader>
+            <CardTitle className="flex items-center text-red-700">
+              <Trash2 className="h-5 w-5 mr-2" />
+              Сбросить базу
+            </CardTitle>
+            <CardDescription>
+              ⚠️ Удалит ВСЕ данные и создаст тестовое окружение
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={() => handleConfirmOperation('reset')} 
+              disabled={loading}
+              size="lg"
+              variant="destructive"
+              className="w-full"
+            >
+              {loading && operation === 'reset' ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Сброс...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Сбросить и заполнить
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Управление шаблонами */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center">
-            <Users className="h-5 w-5 mr-2" />
-            Seed Database
+            <Database className="h-5 w-5 mr-2" />
+            Шаблоны базы данных
           </CardTitle>
           <CardDescription>
-            Нажмите кнопку ниже, чтобы создать тестовых пользователей. 
-            Если пользователь уже существует, он будет пропущен (upsert).
+            Сохраните текущее состояние БД как шаблон для быстрого восстановления
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button 
-            onClick={runSeed} 
-            disabled={loading}
-            size="lg"
-            className="w-full"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Создание пользователей...
-              </>
-            ) : (
-              <>
-                <Users className="h-4 w-4 mr-2" />
-                Создать тестовых пользователей
-              </>
-            )}
-          </Button>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="templateName">Название шаблона</Label>
+            <Input
+              id="templateName"
+              placeholder="Например: initial-state, test-data-v1"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              disabled={loading}
+              className="mt-1"
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <Button 
+              onClick={saveTemplate} 
+              disabled={loading || !templateName.trim()}
+              variant="outline"
+              className="w-full"
+            >
+              {loading && operation === 'save' ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Сохранение...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Сохранить шаблон
+                </>
+              )}
+            </Button>
+
+            <Button 
+              onClick={() => handleConfirmOperation('restore')} 
+              disabled={loading || !templateName.trim()}
+              variant="outline"
+              className="w-full"
+            >
+              {loading && operation === 'restore' ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Восстановление...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Восстановить шаблон
+                </>
+              )}
+            </Button>
+          </div>
+
+          <div className="text-xs text-gray-500 space-y-1">
+            <p>💡 <strong>Совет:</strong> Создайте шаблон после настройки идеального тестового окружения</p>
+            <p>📁 Шаблоны сохраняются в <code className="bg-gray-100 px-1 rounded">data/templates/</code></p>
+          </div>
         </CardContent>
       </Card>
 
@@ -138,10 +405,10 @@ export default function SeedPage() {
         </Card>
       )}
 
-      <Card className="mt-6 bg-blue-50 border-blue-200">
+      <Card className="bg-blue-50 border-blue-200">
         <CardContent className="pt-6">
-          <h4 className="font-semibold mb-2 text-blue-900">📝 Список демо-аккаунтов:</h4>
-          <div className="space-y-1 text-sm text-blue-800">
+          <h4 className="font-semibold mb-3 text-blue-900">📝 Список демо-аккаунтов:</h4>
+          <div className="grid md:grid-cols-2 gap-2 text-sm text-blue-800">
             <p>👨‍💼 <strong>Админ:</strong> admin@shked.com / admin123</p>
             <p>🎓 <strong>Студент:</strong> student@demo.com / student123</p>
             <p>👨‍🏫 <strong>Преподаватель:</strong> teacher@demo.com / teacher123</p>
@@ -153,6 +420,21 @@ export default function SeedPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Диалог подтверждения */}
+      <ConfirmDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        onConfirm={executeOperation}
+        title={pendingOperation === 'reset' ? '⚠️ Подтверждение сброса' : '⚠️ Подтверждение восстановления'}
+        description={
+          pendingOperation === 'reset'
+            ? 'Вы уверены, что хотите удалить ВСЕ данные из базы? Это действие необратимо!'
+            : `Вы уверены, что хотите восстановить шаблон "${templateName}"? Все текущие данные будут заменены.`
+        }
+        confirmText="Да, продолжить"
+        cancelText="Отмена"
+      />
     </div>
   )
 }
