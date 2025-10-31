@@ -15,15 +15,15 @@ export default withAuth(
       return new Response('Forbidden', { status: 403 })
     }
     
-    // Проверка доступа к роутам преподавателя (teacher заменяет lector)
-    if (req.nextUrl.pathname.startsWith('/teacher') && 
-        !['teacher', 'lector', 'admin'].includes(role || '')) {
+    // Проверка доступа к роутам преподавателя (lector)
+    if (req.nextUrl.pathname.startsWith('/lector') && 
+        role !== 'lector' && role !== 'admin') {
       return new Response('Forbidden', { status: 403 })
     }
     
-    // Поддержка старых роутов /lector (редирект на /teacher)
-    if (req.nextUrl.pathname.startsWith('/lector')) {
-      const newPath = req.nextUrl.pathname.replace('/lector', '/teacher')
+    // Редирект /teacher на /lector для совместимости
+    if (req.nextUrl.pathname.startsWith('/teacher')) {
+      const newPath = req.nextUrl.pathname.replace('/teacher', '/lector')
       return Response.redirect(new URL(newPath + req.nextUrl.search, req.url))
     }
     
@@ -68,8 +68,8 @@ export const config = {
   matcher: [
     '/admin/:path*', 
     '/student/:path*', 
-    '/teacher/:path*',
-    '/lector/:path*', // Редирект старых роутов
+    '/lector/:path*',
+    '/teacher/:path*', // Редирект на /lector
     '/mentor/:path*',
     '/assistant/:path*',
     '/co-teacher/:path*',

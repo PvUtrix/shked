@@ -15,14 +15,12 @@ export default async function HomePage() {
     switch (session.user.role) {
       case 'admin':
         redirect('/admin')
-      case 'teacher':
-        redirect('/teacher')
-      case 'lector': // Обратная совместимость (deprecated)
-        redirect('/teacher')
+      case 'lector':
+        redirect('/lector')
       case 'assistant':
         redirect('/assistant')
       case 'co_teacher':
-        redirect('/teacher') // Со-преподаватели используют тот же интерфейс
+        redirect('/lector') // Со-преподаватели используют тот же интерфейс
       case 'mentor':
         redirect('/mentor')
       case 'education_office_head':

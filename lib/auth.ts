@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name || undefined,
           firstName: user.firstName || undefined,
           lastName: user.lastName || undefined,
-          role: user.role as 'admin' | 'student' | 'teacher' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin',
+          role: user.role as 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin',
           groupId: user.groupId || undefined
         }
       }
@@ -63,7 +63,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.sub!
-        session.user.role = token.role as 'admin' | 'student' | 'teacher' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin'
+        session.user.role = token.role as 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin'
         session.user.groupId = token.groupId as string | undefined
       }
       return session

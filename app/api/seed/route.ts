@@ -50,17 +50,17 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    const teacherPassword = await bcryptjs.hash('teacher123', 12)
-    const teacher = await prisma.user.upsert({
-      where: { email: 'teacher@demo.com' },
+    const lectorPassword = await bcryptjs.hash('lector123', 12)
+    const lector = await prisma.user.upsert({
+      where: { email: 'lector@demo.com' },
       update: {},
       create: {
-        email: 'teacher@demo.com',
-        password: teacherPassword,
+        email: 'lector@demo.com',
+        password: lectorPassword,
         firstName: 'Демо',
         lastName: 'Преподаватель',
         name: 'Демо Преподаватель',
-        role: 'teacher',
+        role: 'lector',
       },
     })
 
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
       users: [
         { email: 'admin@shked.com', password: 'admin123', role: 'admin' },
         { email: 'student@demo.com', password: 'student123', role: 'student' },
-        { email: 'teacher@demo.com', password: 'teacher123', role: 'teacher' },
+        { email: 'lector@demo.com', password: 'lector123', role: 'lector' },
         { email: 'mentor@demo.com', password: 'mentor123', role: 'mentor' },
         { email: 'assistant@demo.com', password: 'assistant123', role: 'assistant' },
         { email: 'coteacher@demo.com', password: 'coteacher123', role: 'co_teacher' },

@@ -3,7 +3,7 @@ import NextAuth from 'next-auth'
 
 declare module 'next-auth' {
   interface User {
-    role: 'admin' | 'student' | 'teacher' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin'
+    role: 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin'
     groupId?: string
     firstName?: string
     lastName?: string
@@ -14,13 +14,13 @@ declare module 'next-auth' {
       id: string
       email: string
       name: string
-      role: 'admin' | 'student' | 'teacher' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin'
+      role: 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin'
       groupId?: string | undefined
     }
   }
 
   interface JWT {
-    role: 'admin' | 'student' | 'teacher' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin'
+    role: 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_teacher' | 'education_office_head' | 'department_admin'
     groupId?: string
   }
 }
