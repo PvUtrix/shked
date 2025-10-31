@@ -102,8 +102,10 @@ export default function MentorReviewSubmissionPage({
         return false
       }
       // Проверяем что URL не пустой и не example.com
-      const isExampleDomain = parsedUrl.hostname.includes('example.com') || parsedUrl.hostname.includes('example.org')
-      return url.trim().length > 0 && !isExampleDomain
+      const forbiddenDomains = ['example.com', 'example.org']
+      const hostname = parsedUrl.hostname
+      const isForbiddenDomain = forbiddenDomains.some(fd => hostname === fd || hostname.endsWith('.' + fd))
+      return url.trim().length > 0 && !isForbiddenDomain
     } catch {
       return false
     }
