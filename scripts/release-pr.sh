@@ -4,6 +4,10 @@
 
 set -e
 
+# Загружаем nvm если установлен
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 RELEASE_TYPE="${1:-patch}"
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
