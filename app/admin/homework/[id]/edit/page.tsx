@@ -18,6 +18,7 @@ import {
 import Link from 'next/link'
 import { Homework, Subject, Group } from '@/lib/types'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface Material {
   name: string
@@ -31,6 +32,8 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
   const [groups, setGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [materialToDelete, setMaterialToDelete] = useState<number | null>(null)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -119,11 +122,21 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
     }))
   }
 
-  const removeMaterial = (index: number) => {
+  const handleRemoveMaterial = (index: number) => {
+    setMaterialToDelete(index)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmRemoveMaterial = () => {
+    if (materialToDelete === null) return
+    
     setFormData(prev => ({
       ...prev,
-      materials: prev.materials.filter((_, i) => i !== index)
+      materials: prev.materials.filter((_, i) => i !== materialToDelete)
     }))
+    
+    setDeleteDialogOpen(false)
+    setMaterialToDelete(null)
   }
 
   const updateMaterial = (index: number, field: keyof Material, value: string) => {
@@ -246,7 +259,7 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => removeMaterial(index)}
+                      onClick={() => handleRemoveMaterial(index)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -336,6 +349,18 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
           </div>
         </div>
       </form>
+
+      {/* Диалог подтверждения удаления материала */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Удалить материал"
+        description={`Вы уверены, что хотите удалить материал "${formData.materials[materialToDelete || 0]?.name || 'без названия'}"?`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        onConfirm={confirmRemoveMaterial}
+        variant="destructive"
+      />
     </div>
   )
 }

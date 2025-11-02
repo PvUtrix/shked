@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Search, Users, UserCheck, GraduationCap, BookOpen, UserCog, Plus, Edit, Trash2 } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Search, Users, UserCheck, GraduationCap, BookOpen, UserCog, Plus, Edit, Trash2, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { UserForm } from '@/components/admin/user-form'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -20,6 +22,7 @@ interface User {
   role: string
   groupId: string | null
   createdAt: string
+  isActive?: boolean
   group?: {
     id: string
     name: string
@@ -31,18 +34,22 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
+  const [showInactive, setShowInactive] = useState(false)
   const [userFormOpen, setUserFormOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false)
+  const [userToRestore, setUserToRestore] = useState<User | null>(null)
 
   useEffect(() => {
     fetchUsers()
-  }, [])
+  }, [showInactive])
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users')
+      const url = showInactive ? '/api/users?includeInactive=true' : '/api/users'
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         setUsers(data.users || [])
@@ -121,6 +128,35 @@ export default function UsersPage() {
     } finally {
       setDeleteDialogOpen(false)
       setUserToDelete(null)
+    }
+  }
+
+  const handleRestoreUser = (user: User) => {
+    setUserToRestore(user)
+    setRestoreDialogOpen(true)
+  }
+
+  const confirmRestoreUser = async () => {
+    if (!userToRestore) return
+
+    try {
+      const response = await fetch(`/api/users/${userToRestore.id}/restore`, {
+        method: 'PATCH',
+      })
+
+      if (response.ok) {
+        toast.success('Пользователь восстановлен')
+        await fetchUsers()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Ошибка при восстановлении пользователя')
+      }
+    } catch (error) {
+      console.error('Ошибка при восстановлении пользователя:', error)
+      toast.error('Произошла ошибка при восстановлении')
+    } finally {
+      setRestoreDialogOpen(false)
+      setUserToRestore(null)
     }
   }
 
@@ -244,37 +280,51 @@ export default function UsersPage() {
       </div>
 
       {/* Фильтры */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Поиск по имени, email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Поиск по имени, email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="w-full sm:w-48">
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Фильтр по роли" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все роли</SelectItem>
+                  <SelectItem value="admin">Администраторы</SelectItem>
+                  <SelectItem value="student">Студенты</SelectItem>
+                  <SelectItem value="teacher">Преподаватели</SelectItem>
+                  <SelectItem value="assistant">Ассистенты</SelectItem>
+                  <SelectItem value="co_lecturer">Со-преподаватели</SelectItem>
+                  <SelectItem value="mentor">Менторы</SelectItem>
+                  <SelectItem value="education_office_head">Учебный отдел</SelectItem>
+                  <SelectItem value="department_admin">Администраторы кафедры</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="show-inactive"
+                checked={showInactive}
+                onCheckedChange={setShowInactive}
+              />
+              <Label htmlFor="show-inactive" className="cursor-pointer">
+                Показать удалённых
+              </Label>
+            </div>
           </div>
-        </div>
-        <div className="w-full sm:w-48">
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Фильтр по роли" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все роли</SelectItem>
-              <SelectItem value="admin">Администраторы</SelectItem>
-              <SelectItem value="student">Студенты</SelectItem>
-              <SelectItem value="teacher">Преподаватели</SelectItem>
-              <SelectItem value="assistant">Ассистенты</SelectItem>
-              <SelectItem value="co_lecturer">Со-преподаватели</SelectItem>
-              <SelectItem value="mentor">Менторы</SelectItem>
-              <SelectItem value="education_office_head">Учебный отдел</SelectItem>
-              <SelectItem value="department_admin">Администраторы кафедры</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Список пользователей */}
       <div className="grid gap-4">
@@ -286,46 +336,67 @@ export default function UsersPage() {
             </CardContent>
           </Card>
         ) : (
-          filteredUsers.map((user) => (
-            <Card key={user.id}>
+          filteredUsers.map((user) => {
+            const isInactive = user.isActive === false
+            return (
+            <Card key={user.id} className={isInactive ? 'opacity-60 border-gray-300' : ''}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center space-x-2">
                       {getRoleIcon(user.role)}
-                      <CardTitle className="text-lg">
+                      <CardTitle className={`text-lg ${isInactive ? 'text-gray-500' : ''}`}>
                         {user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Без имени'}
                       </CardTitle>
                     </div>
                     <Badge className={getRoleColor(user.role)}>
                       {getRoleLabel(user.role)}
                     </Badge>
+                    {isInactive && (
+                      <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                        Удалён
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditUser(user)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteUser(user)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                    <Select
-                      value={user.role}
-                      onValueChange={(newRole) => updateUserRole(user.id, newRole)}
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Администратор</SelectItem>
-                        <SelectItem value="student">Студент</SelectItem>
+                    {isInactive ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRestoreUser(user)}
+                        title="Восстановить пользователя"
+                      >
+                        <RotateCcw className="h-4 w-4 text-green-600" />
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditUser(user)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                    {!isInactive && (
+                      <Select
+                        value={user.role}
+                        onValueChange={(newRole) => updateUserRole(user.id, newRole)}
+                      >
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Администратор</SelectItem>
+                          <SelectItem value="student">Студент</SelectItem>
                         <SelectItem value="teacher">Преподаватель</SelectItem>
                         <SelectItem value="assistant">Ассистент</SelectItem>
                         <SelectItem value="co_lecturer">Со-преподаватель</SelectItem>
@@ -334,6 +405,7 @@ export default function UsersPage() {
                         <SelectItem value="department_admin">Администратор кафедры</SelectItem>
                       </SelectContent>
                     </Select>
+                    )}
                   </div>
                 </div>
                 <CardDescription>
@@ -353,7 +425,8 @@ export default function UsersPage() {
                 </CardDescription>
               </CardHeader>
             </Card>
-          ))
+            )
+          })
         )}
       </div>
 
@@ -375,6 +448,18 @@ export default function UsersPage() {
         cancelText="Отмена"
         onConfirm={confirmDeleteUser}
         variant="destructive"
+      />
+
+      {/* Диалог подтверждения восстановления */}
+      <ConfirmDialog
+        open={restoreDialogOpen}
+        onOpenChange={setRestoreDialogOpen}
+        title="Восстановить пользователя"
+        description={`Вы уверены, что хотите восстановить пользователя "${userToRestore?.name || userToRestore?.email}"? Пользователь снова сможет войти в систему.`}
+        confirmText="Восстановить"
+        cancelText="Отмена"
+        onConfirm={confirmRestoreUser}
+        variant="default"
       />
     </div>
   )

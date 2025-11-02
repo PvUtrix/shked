@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const role = searchParams.get('role')
     const mentor = searchParams.get('mentor') === 'true'
     const groupId = searchParams.get('groupId')
+    const includeInactive = searchParams.get('includeInactive') === 'true'
 
     const where: any = {}
 
@@ -44,6 +45,12 @@ export async function GET(request: NextRequest) {
       where.groupId = groupId
     }
 
+    // Показываем только активных пользователей (если админ не запросил неактивных)
+    // Только админы могут запросить неактивных пользователей
+    if (!includeInactive || session.user.role !== 'admin') {
+      where.isActive = true
+    }
+
     const users = await prisma.user.findMany({
       where,
       select: {
@@ -55,6 +62,7 @@ export async function GET(request: NextRequest) {
         role: true,
         groupId: true,
         createdAt: true,
+        isActive: true,
         group: {
           select: {
             id: true,

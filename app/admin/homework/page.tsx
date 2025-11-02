@@ -18,6 +18,8 @@ import {
 } from 'lucide-react'
 import { Homework } from '@/lib/types'
 import Link from 'next/link'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { toast } from 'sonner'
 
 // Временные типы для совместимости
 type Subject = {
@@ -40,6 +42,8 @@ export default function AdminHomeworkPage() {
   const [filterSubject, setFilterSubject] = useState<string>('')
   const [filterGroup, setFilterGroup] = useState<string>('')
   const [searchTerm, setSearchTerm] = useState<string>('')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [homeworkToDelete, setHomeworkToDelete] = useState<Homework | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -110,6 +114,31 @@ export default function AdminHomeworkPage() {
       return 'Не сдано'
     }
     return `Сдано: ${submissions.length}`
+  }
+
+  const handleDeleteHomework = (hw: Homework) => {
+    setHomeworkToDelete(hw)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteHomework = async () => {
+    if (!homeworkToDelete) return
+
+    // TODO: Реализовать удаление домашнего задания через API
+    // const response = await fetch(`/api/homework/${homeworkToDelete.id}`, {
+    //   method: 'DELETE',
+    // })
+    // if (response.ok) {
+    //   toast.success('Домашнее задание удалено')
+    //   await fetchData()
+    // } else {
+    //   const error = await response.json()
+    //   toast.error(error.error || 'Ошибка при удалении задания')
+    // }
+
+    toast.info('Функция удаления будет реализована')
+    setDeleteDialogOpen(false)
+    setHomeworkToDelete(null)
   }
 
   const filteredHomework = Array.isArray(homework) ? homework.filter(hw => {
@@ -242,7 +271,7 @@ export default function AdminHomeworkPage() {
                         <Edit className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => alert('Функция удаления будет реализована')}>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteHomework(hw)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -314,6 +343,18 @@ export default function AdminHomeworkPage() {
           ))}
         </div>
       )}
+
+      {/* Диалог подтверждения удаления домашнего задания */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Удалить домашнее задание"
+        description={`Вы уверены, что хотите удалить домашнее задание "${homeworkToDelete?.title}"? Это действие нельзя отменить.`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        onConfirm={confirmDeleteHomework}
+        variant="destructive"
+      />
     </div>
   )
 }
