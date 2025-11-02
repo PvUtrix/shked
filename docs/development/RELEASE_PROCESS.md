@@ -96,7 +96,7 @@
 git commit -m "feat(homework): добавить возможность прикреплять файлы к домашним заданиям"
 
 # Fix - увеличит PATCH версию при релизе
-git commit -m "fix(auth): исправить ошибку авторизации для роли teacher"
+git commit -m "fix(auth): исправить ошибку авторизации для роли lector"
 
 # Breaking change - увеличит MAJOR версию при релизе
 git commit -m "feat(api)!: изменить формат API ответа для расписаний"

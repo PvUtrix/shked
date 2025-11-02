@@ -175,7 +175,6 @@ admin.*           - Административная панель
 student.*         - Интерфейс студента
 lector.*          - Интерфейс преподавателя
 mentor.*          - Интерфейс ментора
-teacher.*         - Интерфейс учителя
 ui.*              - UI компоненты
 ```
 
@@ -214,7 +213,7 @@ const t = await getTranslations()
 ## Текущий статус перевода
 
 ### Полностью переведено:
-- ✅ Все навигационные компоненты (admin, student, lector, mentor, teacher)
+- ✅ Все навигационные компоненты (admin, student, lector, mentor)
 - ✅ Аутентификация (login, logout)
 - ✅ UI компоненты (date-time-picker, confirm-dialog, gdpr-delete-dialog, file-uploader, markdown-editor, status-badge, attendance-badge, exam-grade-badge)
 - ✅ Footer
