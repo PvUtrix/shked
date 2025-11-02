@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -12,42 +13,44 @@ interface AttendanceBadgeProps {
   showIcon?: boolean
 }
 
-const statusConfig = {
-  PRESENT: {
-    label: 'Присутствовал',
-    shortLabel: 'П',
-    icon: CheckCircle2,
-    variant: 'default' as const,
-    className: 'bg-green-500 hover:bg-green-600 text-white'
-  },
-  ABSENT: {
-    label: 'Отсутствовал',
-    shortLabel: 'О',
-    icon: XCircle,
-    variant: 'destructive' as const,
-    className: 'bg-red-500 hover:bg-red-600 text-white'
-  },
-  LATE: {
-    label: 'Опоздал',
-    shortLabel: 'Оп',
-    icon: Clock,
-    variant: 'secondary' as const,
-    className: 'bg-yellow-500 hover:bg-yellow-600 text-white'
-  },
-  EXCUSED: {
-    label: 'Уважительная причина',
-    shortLabel: 'У',
-    icon: AlertCircle,
-    variant: 'outline' as const,
-    className: 'bg-blue-500 hover:bg-blue-600 text-white'
-  }
-}
-
 export function AttendanceBadge({
   status,
   className,
   showIcon = true
 }: AttendanceBadgeProps) {
+  const t = useTranslations()
+  
+  const statusConfig = {
+    PRESENT: {
+      label: t('ui.attendanceBadge.present'),
+      shortLabel: t('ui.attendanceBadge.presentShort'),
+      icon: CheckCircle2,
+      variant: 'default' as const,
+      className: 'bg-green-500 hover:bg-green-600 text-white'
+    },
+    ABSENT: {
+      label: t('ui.attendanceBadge.absent'),
+      shortLabel: t('ui.attendanceBadge.absentShort'),
+      icon: XCircle,
+      variant: 'destructive' as const,
+      className: 'bg-red-500 hover:bg-red-600 text-white'
+    },
+    LATE: {
+      label: t('ui.attendanceBadge.late'),
+      shortLabel: t('ui.attendanceBadge.lateShort'),
+      icon: Clock,
+      variant: 'secondary' as const,
+      className: 'bg-yellow-500 hover:bg-yellow-600 text-white'
+    },
+    EXCUSED: {
+      label: t('ui.attendanceBadge.excused'),
+      shortLabel: t('ui.attendanceBadge.excusedShort'),
+      icon: AlertCircle,
+      variant: 'outline' as const,
+      className: 'bg-blue-500 hover:bg-blue-600 text-white'
+    }
+  }
+
   const config = statusConfig[status]
   const Icon = config.icon
 
@@ -67,6 +70,39 @@ export function AttendanceBadgeFull({
   status,
   className,
 }: AttendanceBadgeProps) {
+  const t = useTranslations()
+  
+  const statusConfig = {
+    PRESENT: {
+      label: t('ui.attendanceBadge.present'),
+      shortLabel: t('ui.attendanceBadge.presentShort'),
+      icon: CheckCircle2,
+      variant: 'default' as const,
+      className: 'bg-green-500 hover:bg-green-600 text-white'
+    },
+    ABSENT: {
+      label: t('ui.attendanceBadge.absent'),
+      shortLabel: t('ui.attendanceBadge.absentShort'),
+      icon: XCircle,
+      variant: 'destructive' as const,
+      className: 'bg-red-500 hover:bg-red-600 text-white'
+    },
+    LATE: {
+      label: t('ui.attendanceBadge.late'),
+      shortLabel: t('ui.attendanceBadge.lateShort'),
+      icon: Clock,
+      variant: 'secondary' as const,
+      className: 'bg-yellow-500 hover:bg-yellow-600 text-white'
+    },
+    EXCUSED: {
+      label: t('ui.attendanceBadge.excused'),
+      shortLabel: t('ui.attendanceBadge.excusedShort'),
+      icon: AlertCircle,
+      variant: 'outline' as const,
+      className: 'bg-blue-500 hover:bg-blue-600 text-white'
+    }
+  }
+
   const config = statusConfig[status]
   const Icon = config.icon
 
@@ -94,6 +130,7 @@ interface AttendanceStatsProps {
 }
 
 export function AttendanceStats({ stats, className }: AttendanceStatsProps) {
+  const t = useTranslations()
   const percentage = stats.total > 0
     ? Math.round((stats.present / stats.total) * 100)
     : 0
@@ -101,7 +138,7 @@ export function AttendanceStats({ stats, className }: AttendanceStatsProps) {
   return (
     <div className={cn('space-y-2', className)}>
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">Посещаемость</span>
+        <span className="text-sm font-medium">{t('ui.attendanceBadge.attendance')}</span>
         <span className="text-2xl font-bold">{percentage}%</span>
       </div>
       

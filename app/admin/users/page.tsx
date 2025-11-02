@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +32,7 @@ interface User {
 }
 
 export default function UsersPage() {
+  const t = useTranslations()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -57,11 +59,11 @@ export default function UsersPage() {
         const data = await response.json()
         setUsers(data.users || [])
       } else {
-        toast.error('Ошибка при загрузке пользователей')
+        toast.error(t('admin.pages.users.toast.loadError'))
       }
     } catch (error) {
       console.error('Ошибка при загрузке пользователей:', error)
-      toast.error('Ошибка при загрузке пользователей')
+      toast.error(t('admin.pages.users.toast.loadError'))
     } finally {
       setLoading(false)
     }
@@ -84,14 +86,14 @@ export default function UsersPage() {
             user.id === userId ? { ...user, role: newRole } : user
           )
         )
-        toast.success('Роль пользователя обновлена')
+        toast.success(t('admin.pages.users.toast.roleUpdated'))
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Ошибка при обновлении роли')
+        toast.error(error.error || t('admin.pages.users.toast.roleUpdateError'))
       }
     } catch (error) {
       console.error('Ошибка при обновлении роли:', error)
-      toast.error('Ошибка при обновлении роли')
+      toast.error(t('admin.pages.users.toast.roleUpdateError'))
     }
   }
 
@@ -119,15 +121,15 @@ export default function UsersPage() {
       })
 
       if (response.ok) {
-        toast.success('Пользователь деактивирован')
+        toast.success(t('admin.pages.users.toast.userDeleted'))
         await fetchUsers()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Ошибка при деактивации пользователя')
+        toast.error(error.error || t('common.messages.errorOccurred'))
       }
     } catch (error) {
       console.error('Ошибка при деактивации пользователя:', error)
-      toast.error('Произошла ошибка при деактивации')
+      toast.error(t('common.messages.errorOccurred'))
     } finally {
       setDeleteDialogOpen(false)
       setUserToDelete(null)
@@ -148,15 +150,15 @@ export default function UsersPage() {
       })
 
       if (response.ok) {
-        toast.success('Пользователь восстановлен')
+        toast.success(t('admin.pages.users.toast.userRestored'))
         await fetchUsers()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Ошибка при восстановлении пользователя')
+        toast.error(error.error || t('common.messages.errorOccurred'))
       }
     } catch (error) {
       console.error('Ошибка при восстановлении пользователя:', error)
-      toast.error('Произошла ошибка при восстановлении')
+      toast.error(t('common.messages.errorOccurred'))
     } finally {
       setRestoreDialogOpen(false)
       setUserToRestore(null)
@@ -181,15 +183,15 @@ export default function UsersPage() {
       })
 
       if (response.ok) {
-        toast.success('Персональные данные пользователя удалены')
+        toast.success(t('admin.pages.users.toast.gdprDeleted'))
         await fetchUsers()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Ошибка при удалении персональных данных')
+        toast.error(error.error || t('common.messages.errorOccurred'))
       }
     } catch (error) {
       console.error('Ошибка при GDPR удалении пользователя:', error)
-      toast.error('Произошла ошибка при удалении')
+      toast.error(t('common.messages.errorOccurred'))
     } finally {
       setGdprDeleteDialogOpen(false)
       setUserToGdprDelete(null)
@@ -247,28 +249,11 @@ export default function UsersPage() {
   }
 
   const getRoleLabel = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'Администратор'
-      case 'student':
-        return 'Студент'
-      case 'teacher':
-        return 'Преподаватель'
-      case 'lector': // Обратная совместимость
-        return 'Преподаватель (legacy)'
-      case 'assistant':
-        return 'Ассистент'
-      case 'co_lecturer':
-        return 'Со-преподаватель'
-      case 'mentor':
-        return 'Ментор'
-      case 'education_office_head':
-        return 'Учебный отдел'
-      case 'department_admin':
-        return 'Администратор кафедры'
-      default:
-        return role
-    }
+    const roleKey = role === 'co_lecturer' ? 'coLecturer' : 
+                    role === 'education_office_head' ? 'educationOfficeHead' :
+                    role === 'department_admin' ? 'departmentAdmin' : role
+    
+    return t(`ui.statusBadge.roles.${roleKey}`, { defaultValue: role })
   }
 
   const filteredUsers = users.filter(user => {
@@ -288,7 +273,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Загрузка пользователей...</p>
+          <p className="mt-2 text-gray-600">{t('common.messages.loading')}</p>
         </div>
       </div>
     )
@@ -323,7 +308,7 @@ export default function UsersPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="Поиск по имени, email..."
+                  placeholder={t('admin.pages.users.search')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -333,18 +318,18 @@ export default function UsersPage() {
             <div className="w-full sm:w-48">
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Фильтр по роли" />
+                  <SelectValue placeholder={t('admin.pages.users.roleFilter')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Все роли</SelectItem>
-                  <SelectItem value="admin">Администраторы</SelectItem>
-                  <SelectItem value="student">Студенты</SelectItem>
-                  <SelectItem value="teacher">Преподаватели</SelectItem>
-                  <SelectItem value="assistant">Ассистенты</SelectItem>
-                  <SelectItem value="co_lecturer">Со-преподаватели</SelectItem>
-                  <SelectItem value="mentor">Менторы</SelectItem>
-                  <SelectItem value="education_office_head">Учебный отдел</SelectItem>
-                  <SelectItem value="department_admin">Администраторы кафедры</SelectItem>
+                  <SelectItem value="all">{t('common.filters.all')}</SelectItem>
+                  <SelectItem value="admin">{t('ui.statusBadge.roles.admin')}</SelectItem>
+                  <SelectItem value="student">{t('ui.statusBadge.roles.student')}</SelectItem>
+                  <SelectItem value="teacher">{t('ui.statusBadge.roles.teacher')}</SelectItem>
+                  <SelectItem value="assistant">{t('ui.statusBadge.roles.assistant')}</SelectItem>
+                  <SelectItem value="co_lecturer">{t('ui.statusBadge.roles.coLecturer')}</SelectItem>
+                  <SelectItem value="mentor">{t('ui.statusBadge.roles.mentor')}</SelectItem>
+                  <SelectItem value="education_office_head">{t('ui.statusBadge.roles.educationOfficeHead')}</SelectItem>
+                  <SelectItem value="department_admin">{t('ui.statusBadge.roles.departmentAdmin')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -355,7 +340,7 @@ export default function UsersPage() {
                 onCheckedChange={setShowInactive}
               />
               <Label htmlFor="show-inactive" className="cursor-pointer">
-                Показать удалённых
+                {t('common.filters.showInactive')}
               </Label>
             </div>
           </div>
@@ -368,7 +353,7 @@ export default function UsersPage() {
           <Card>
             <CardContent className="text-center py-8">
               <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Пользователи не найдены</p>
+              <p className="text-gray-600">{t('admin.pages.users.noUsers')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -489,10 +474,8 @@ export default function UsersPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Деактивировать пользователя"
-        description={`Вы уверены, что хотите деактивировать пользователя "${userToDelete?.name || userToDelete?.email}"? Пользователь не сможет войти в систему.`}
-        confirmText="Деактивировать"
-        cancelText="Отмена"
+        title={t('admin.pages.users.deleteConfirm', { name: userToDelete?.name || userToDelete?.email })}
+        description={t('admin.pages.users.deleteWarning')}
         onConfirm={confirmDeleteUser}
         variant="destructive"
       />
@@ -501,12 +484,9 @@ export default function UsersPage() {
       <ConfirmDialog
         open={restoreDialogOpen}
         onOpenChange={setRestoreDialogOpen}
-        title="Восстановить пользователя"
-        description={`Вы уверены, что хотите восстановить пользователя "${userToRestore?.name || userToRestore?.email}"? Пользователь снова сможет войти в систему.`}
-        confirmText="Восстановить"
-        cancelText="Отмена"
+        title={t('admin.pages.users.restoreConfirm', { name: userToRestore?.name || userToRestore?.email })}
+        description=""
         onConfirm={confirmRestoreUser}
-        variant="default"
       />
 
       {/* Диалог GDPR удаления */}

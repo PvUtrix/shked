@@ -3,6 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
 import { useSidebar } from '@/hooks/use-sidebar'
 import { LogoutButton } from '@/components/auth/logout-button'
@@ -19,39 +20,6 @@ import {
   ChevronRight
 } from 'lucide-react'
 
-const navItems = [
-  {
-    label: 'Расписание',
-    href: '/admin',
-    icon: Calendar
-  },
-  {
-    label: 'Группы',
-    href: '/admin/groups',
-    icon: Users
-  },
-  {
-    label: 'Предметы',
-    href: '/admin/subjects',
-    icon: BookOpen
-  },
-  {
-    label: 'Домашние задания',
-    href: '/admin/homework',
-    icon: ClipboardList
-  },
-  {
-    label: 'Пользователи',
-    href: '/admin/users',
-    icon: UserCog
-  },
-  {
-    label: 'Настройки',
-    href: '/admin/settings',
-    icon: Settings
-  }
-]
-
 interface AdminNavProps {
   user?: {
     name?: string
@@ -62,6 +30,40 @@ interface AdminNavProps {
 export function AdminNav({ user }: AdminNavProps) {
   const pathname = usePathname()
   const { isCollapsed, toggle } = useSidebar()
+  const t = useTranslations()
+
+  const navItems = [
+    {
+      label: t('admin.nav.schedule'),
+      href: '/admin',
+      icon: Calendar
+    },
+    {
+      label: t('admin.nav.groups'),
+      href: '/admin/groups',
+      icon: Users
+    },
+    {
+      label: t('admin.nav.subjects'),
+      href: '/admin/subjects',
+      icon: BookOpen
+    },
+    {
+      label: t('admin.nav.homework'),
+      href: '/admin/homework',
+      icon: ClipboardList
+    },
+    {
+      label: t('admin.nav.users'),
+      href: '/admin/users',
+      icon: UserCog
+    },
+    {
+      label: t('admin.nav.settings'),
+      href: '/admin/settings',
+      icon: Settings
+    }
+  ]
 
   return (
     <aside className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ${
@@ -70,21 +72,21 @@ export function AdminNav({ user }: AdminNavProps) {
       <div className={`p-6 ${isCollapsed ? 'px-3' : ''}`}>
         <div className={`flex items-center mb-8 ${isCollapsed ? 'justify-center' : 'space-x-2'}`}>
           <GraduationCap className="h-8 w-8 text-blue-600 flex-shrink-0" />
-          {!isCollapsed && <h1 className="text-xl font-bold text-gray-900">Шкед</h1>}
+          {!isCollapsed && <h1 className="text-xl font-bold text-gray-900">{t('common.appName')}</h1>}
         </div>
         
         {/* Кнопка сворачивания */}
         <button
           onClick={toggle}
           className="w-full mb-6 p-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
-          aria-label={isCollapsed ? 'Развернуть сайдбар' : 'Свернуть сайдбар'}
+          aria-label={isCollapsed ? t('admin.nav.expandSidebar') : t('admin.nav.collapseSidebar')}
         >
           {isCollapsed ? (
             <ChevronRight className="h-5 w-5 text-gray-600" />
           ) : (
             <>
               <ChevronLeft className="h-5 w-5 text-gray-600 mr-2" />
-              <span className="text-sm text-gray-600">Свернуть</span>
+              <span className="text-sm text-gray-600">{t('admin.nav.collapse')}</span>
             </>
           )}
         </button>
@@ -96,8 +98,8 @@ export function AdminNav({ user }: AdminNavProps) {
               <div className="flex items-center space-x-3">
                 <UserCircle className="h-8 w-8 text-blue-600" />
                 <div>
-                  <p className="font-medium text-gray-900">{user?.name || 'Администратор'}</p>
-                  <p className="text-sm text-gray-500">Администратор</p>
+                  <p className="font-medium text-gray-900">{user?.name || t('admin.defaultName')}</p>
+                  <p className="text-sm text-gray-500">{t('admin.role')}</p>
                 </div>
               </div>
             </CardContent>

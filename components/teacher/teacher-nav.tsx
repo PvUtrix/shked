@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
 import { LogoutButton } from '@/components/auth/logout-button'
 import { useSidebar } from '@/hooks/use-sidebar'
@@ -19,44 +20,6 @@ import {
   Award
 } from 'lucide-react'
 
-const navItems = [
-  {
-    label: 'Мои предметы',
-    href: '/teacher',
-    icon: BookOpen
-  },
-  {
-    label: 'Расписание',
-    href: '/teacher/schedule',
-    icon: Calendar
-  },
-  {
-    label: 'Домашние задания',
-    href: '/teacher/homework',
-    icon: ClipboardList
-  },
-  {
-    label: 'Посещаемость',
-    href: '/teacher/attendance',
-    icon: Users
-  },
-  {
-    label: 'Экзамены',
-    href: '/teacher/exams',
-    icon: Award
-  },
-  {
-    label: 'Документы',
-    href: '/teacher/documents',
-    icon: FileText
-  },
-  {
-    label: 'Профиль',
-    href: '/teacher/profile',
-    icon: User
-  }
-]
-
 interface TeacherNavProps {
   user?: {
     name?: string
@@ -67,6 +30,45 @@ interface TeacherNavProps {
 export function TeacherNav({ user }: TeacherNavProps) {
   const pathname = usePathname()
   const { isCollapsed, toggle } = useSidebar()
+  const t = useTranslations()
+
+  const navItems = [
+    {
+      label: t('teacher.nav.subjects'),
+      href: '/teacher',
+      icon: BookOpen
+    },
+    {
+      label: t('teacher.nav.schedule'),
+      href: '/teacher/schedule',
+      icon: Calendar
+    },
+    {
+      label: t('teacher.nav.homework'),
+      href: '/teacher/homework',
+      icon: ClipboardList
+    },
+    {
+      label: t('teacher.nav.attendance'),
+      href: '/teacher/attendance',
+      icon: Users
+    },
+    {
+      label: t('teacher.nav.exams'),
+      href: '/teacher/exams',
+      icon: Award
+    },
+    {
+      label: t('teacher.nav.documents'),
+      href: '/teacher/documents',
+      icon: FileText
+    },
+    {
+      label: t('teacher.nav.profile'),
+      href: '/teacher/profile',
+      icon: User
+    }
+  ]
 
   return (
     <aside className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ${
@@ -75,21 +77,21 @@ export function TeacherNav({ user }: TeacherNavProps) {
       <div className={`p-6 ${isCollapsed ? 'px-3' : ''}`}>
         <div className={`flex items-center mb-8 ${isCollapsed ? 'justify-center' : 'space-x-2'}`}>
           <GraduationCap className="h-8 w-8 text-purple-600 flex-shrink-0" />
-          {!isCollapsed && <h1 className="text-xl font-bold text-gray-900">Шкед</h1>}
+          {!isCollapsed && <h1 className="text-xl font-bold text-gray-900">{t('common.appName')}</h1>}
         </div>
         
         {/* Кнопка сворачивания */}
         <button
           onClick={toggle}
           className="w-full mb-6 p-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
-          aria-label={isCollapsed ? 'Развернуть сайдбар' : 'Свернуть сайдбар'}
+          aria-label={isCollapsed ? t('admin.nav.expandSidebar') : t('admin.nav.collapseSidebar')}
         >
           {isCollapsed ? (
             <ChevronRight className="h-5 w-5 text-gray-600" />
           ) : (
             <>
               <ChevronLeft className="h-5 w-5 text-gray-600 mr-2" />
-              <span className="text-sm text-gray-600">Свернуть</span>
+              <span className="text-sm text-gray-600">{t('admin.nav.collapse')}</span>
             </>
           )}
         </button>
@@ -101,8 +103,8 @@ export function TeacherNav({ user }: TeacherNavProps) {
               <div className="flex items-center space-x-3">
                 <UserCircle className="h-8 w-8 text-purple-600" />
                 <div>
-                  <p className="font-medium text-gray-900">{user?.name || 'Преподаватель'}</p>
-                  <p className="text-sm text-gray-500">Преподаватель</p>
+                  <p className="font-medium text-gray-900">{user?.name || t('teacher.defaultName')}</p>
+                  <p className="text-sm text-gray-500">{t('teacher.role')}</p>
                 </div>
               </div>
             </CardContent>

@@ -3,6 +3,7 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,6 +15,7 @@ export function LoginForm() {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const t = useTranslations()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,8 +30,8 @@ export function LoginForm() {
 
       if (result?.error) {
         toast({
-          title: 'Ошибка входа',
-          description: 'Неверные учетные данные',
+          title: t('auth.login.error'),
+          description: t('auth.login.invalidCredentials'),
           variant: 'destructive',
         })
         setIsLoading(false)
@@ -58,8 +60,8 @@ export function LoginForm() {
         
         // Показываем toast уведомление (не блокируем выполнение)
         toast({
-          title: 'Успешный вход',
-          description: 'Добро пожаловать в Шкед!',
+          title: t('auth.login.success'),
+          description: t('auth.login.welcome'),
         })
         
         // Ждем установки cookie сессии с повторными попытками
@@ -89,8 +91,8 @@ export function LoginForm() {
       }
     } catch (error) {
       toast({
-        title: 'Ошибка',
-        description: 'Произошла ошибка при входе',
+        title: t('common.messages.error'),
+        description: t('auth.login.errorOccurred'),
         variant: 'destructive',
       })
       setIsLoading(false)
@@ -100,21 +102,21 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Вход в систему</CardTitle>
+        <CardTitle className="text-2xl font-bold">{t('auth.login.title')}</CardTitle>
         <CardDescription>
-          Введите свои учетные данные для входа в Шкед
+          {t('auth.login.description')}
         </CardDescription>
         <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
-          <p className="font-medium mb-2">Демо аккаунты (8 ролей):</p>
+          <p className="font-medium mb-2">{t('auth.login.demoAccountsTitle')}</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-            <p><strong>👨‍💼 Админ:</strong> admin@shked.com / admin123</p>
-            <p><strong>🎓 Студент:</strong> student@demo.com / student123</p>
-            <p><strong>👨‍🏫 Преподаватель:</strong> lector@demo.com / lector123</p>
-            <p><strong>👤 Ментор:</strong> mentor@demo.com / mentor123</p>
-            <p><strong>🤝 Ассистент:</strong> assistant@demo.com / assistant123</p>
-            <p><strong>👥 Со-препод:</strong> coteacher@demo.com / coteacher123</p>
-            <p><strong>📊 Учебный отдел:</strong> eduoffice@demo.com / eduoffice123</p>
-            <p><strong>🏛️ Админ кафедры:</strong> deptadmin@demo.com / deptadmin123</p>
+            <p><strong>{t('auth.login.admin')}:</strong> admin@shked.com / admin123</p>
+            <p><strong>{t('auth.login.student')}:</strong> student@demo.com / student123</p>
+            <p><strong>{t('auth.login.lector')}:</strong> lector@demo.com / lector123</p>
+            <p><strong>{t('auth.login.mentor')}:</strong> mentor@demo.com / mentor123</p>
+            <p><strong>{t('auth.login.assistant')}:</strong> assistant@demo.com / assistant123</p>
+            <p><strong>{t('auth.login.coTeacher')}:</strong> coteacher@demo.com / coteacher123</p>
+            <p><strong>{t('auth.login.eduOffice')}:</strong> eduoffice@demo.com / eduoffice123</p>
+            <p><strong>{t('auth.login.deptAdmin')}:</strong> deptadmin@demo.com / deptadmin123</p>
           </div>
         </div>
       </CardHeader>
@@ -125,7 +127,7 @@ export function LoginForm() {
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 type="email"
-                placeholder="Email"
+                placeholder={t('auth.login.email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -138,7 +140,7 @@ export function LoginForm() {
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 type="password"
-                placeholder="Пароль"
+                placeholder={t('auth.login.password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -148,7 +150,7 @@ export function LoginForm() {
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             <LogIn className="w-4 h-4 mr-2" />
-            {isLoading ? 'Входим...' : 'Войти'}
+            {isLoading ? t('auth.login.loggingIn') : t('auth.login.submit')}
           </Button>
         </form>
       </CardContent>
