@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Search, Users, UserCheck, GraduationCap, BookOpen, UserCog, Plus, Edit, Trash2, RotateCcw } from 'lucide-react'
+import { Search, Users, UserCheck, GraduationCap, BookOpen, UserCog, Plus, Edit, Trash2, RotateCcw, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { UserForm } from '@/components/admin/user-form'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { GdprDeleteDialog } from '@/components/ui/gdpr-delete-dialog'
 
 interface User {
   id: string
@@ -41,6 +42,8 @@ export default function UsersPage() {
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false)
   const [userToRestore, setUserToRestore] = useState<User | null>(null)
+  const [gdprDeleteDialogOpen, setGdprDeleteDialogOpen] = useState(false)
+  const [userToGdprDelete, setUserToGdprDelete] = useState<User | null>(null)
 
   useEffect(() => {
     fetchUsers()
@@ -157,6 +160,39 @@ export default function UsersPage() {
     } finally {
       setRestoreDialogOpen(false)
       setUserToRestore(null)
+    }
+  }
+
+  const handleGdprDeleteUser = (user: User) => {
+    setUserToGdprDelete(user)
+    setGdprDeleteDialogOpen(true)
+  }
+
+  const confirmGdprDeleteUser = async (confirmedName: string) => {
+    if (!userToGdprDelete) return
+
+    try {
+      const response = await fetch(`/api/users/${userToGdprDelete.id}/gdpr-delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userName: confirmedName }),
+      })
+
+      if (response.ok) {
+        toast.success('Персональные данные пользователя удалены')
+        await fetchUsers()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Ошибка при удалении персональных данных')
+      }
+    } catch (error) {
+      console.error('Ошибка при GDPR удалении пользователя:', error)
+      toast.error('Произошла ошибка при удалении')
+    } finally {
+      setGdprDeleteDialogOpen(false)
+      setUserToGdprDelete(null)
     }
   }
 
@@ -374,6 +410,7 @@ export default function UsersPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEditUser(user)}
+                          title="Редактировать"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -381,8 +418,18 @@ export default function UsersPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteUser(user)}
+                          title="Деактивировать пользователя"
                         >
                           <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleGdprDeleteUser(user)}
+                          title="GDPR удаление (удалить персональные данные)"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <AlertTriangle className="h-4 w-4" />
                         </Button>
                       </>
                     )}
@@ -461,6 +508,17 @@ export default function UsersPage() {
         onConfirm={confirmRestoreUser}
         variant="default"
       />
+
+      {/* Диалог GDPR удаления */}
+      {userToGdprDelete && (
+        <GdprDeleteDialog
+          open={gdprDeleteDialogOpen}
+          onOpenChange={setGdprDeleteDialogOpen}
+          userName={userToGdprDelete.name || `${userToGdprDelete.firstName || ''} ${userToGdprDelete.lastName || ''}`.trim() || userToGdprDelete.email}
+          userEmail={userToGdprDelete.email}
+          onConfirm={confirmGdprDeleteUser}
+        />
+      )}
     </div>
   )
 }
