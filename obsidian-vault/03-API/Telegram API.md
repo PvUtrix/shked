@@ -249,7 +249,7 @@ const response = await fetch('/api/telegram/config', {
   connectionRate: string // Процент подключений "75%"
   byRole: [
     {
-      role: 'student' | 'teacher' | 'mentor' | 'admin'
+      role: 'student' | 'lector' | 'mentor' | 'admin'
       count: number
     }
   ]
@@ -456,7 +456,7 @@ NEXTAUTH_URL=https://shked.example.com
 ### Роли
 - [[Admin]] - управление ботом
 - [[Student]] - основной пользователь бота
-- [[Teacher]] - уведомления о занятиях
+- [[Lector]] - уведомления о занятиях
 
 ## Файлы
 

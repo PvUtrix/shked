@@ -5,6 +5,7 @@ import { jest } from '@jest/globals'
 
 // Prisma клиент для тестов
 let prisma: PrismaClient
+let dbAvailable = false
 
 /**
  * Получить Prisma клиент для тестов
@@ -21,6 +22,13 @@ export function getPrismaClient(): PrismaClient {
 }
 
 /**
+ * Проверка доступности БД
+ */
+export function isDbAvailable(): boolean {
+  return dbAvailable
+}
+
+/**
  * Инициализация тестовой БД
  * Просто убеждаемся что подключение работает
  */
@@ -29,8 +37,13 @@ export async function setupTestDb() {
   
   try {
     await prisma.$connect()
+    // Проверяем что можем выполнить простой запрос
+    await prisma.$queryRaw`SELECT 1`
+    dbAvailable = true
   } catch (error) {
+    dbAvailable = false
     console.warn('Не удалось подключиться к тестовой БД. Убедитесь что PostgreSQL запущен.')
+    console.warn('Интеграционные тесты будут пропущены.')
   }
 }
 
@@ -38,29 +51,46 @@ export async function setupTestDb() {
  * Очистка тестовой БД
  */
 export async function cleanupTestDb() {
+  if (!dbAvailable) {
+    return
+  }
+  
   const prisma = getPrismaClient()
   
-  // Удаляем все данные из таблиц в правильном порядке (из-за foreign keys)
-  await prisma.homeworkSubmission.deleteMany()
-  await prisma.homework.deleteMany()
-  await prisma.schedule.deleteMany()
-  await prisma.userGroup.deleteMany()
-  await prisma.telegramUser.deleteMany()
-  await prisma.session.deleteMany()
-  await prisma.account.deleteMany()
-  await prisma.user.deleteMany()
-  await prisma.subject.deleteMany()
-  await prisma.group.deleteMany()
-  await prisma.botSettings.deleteMany()
-  await prisma.verificationToken.deleteMany()
+  try {
+    // Удаляем все данные из таблиц в правильном порядке (из-за foreign keys)
+    await prisma.homeworkSubmission.deleteMany()
+    await prisma.homework.deleteMany()
+    await prisma.schedule.deleteMany()
+    await prisma.userGroup.deleteMany()
+    await prisma.telegramUser.deleteMany()
+    await prisma.session.deleteMany()
+    await prisma.account.deleteMany()
+    await prisma.user.deleteMany()
+    await prisma.subject.deleteMany()
+    await prisma.group.deleteMany()
+    await prisma.botSettings.deleteMany()
+    await prisma.verificationToken.deleteMany()
+  } catch (error) {
+    // Если БД стала недоступна, просто игнорируем ошибку
+    dbAvailable = false
+  }
 }
 
 /**
  * Отключение от БД
  */
 export async function disconnectDb() {
+  if (!dbAvailable) {
+    return
+  }
+  
   const prisma = getPrismaClient()
-  await prisma.$disconnect()
+  try {
+    await prisma.$disconnect()
+  } catch (error) {
+    // Игнорируем ошибки отключения
+  }
 }
 
 /**
@@ -75,6 +105,10 @@ export async function createTestUser(data: {
   lastName?: string
   groupId?: string
 }) {
+  if (!dbAvailable) {
+    throw new Error('БД недоступна для создания тестового пользователя')
+  }
+  
   const prisma = getPrismaClient()
   const hashedPassword = await bcryptjs.hash(data.password, 10)
   
@@ -100,6 +134,10 @@ export async function createTestGroup(data: {
   semester?: string
   year?: string
 }) {
+  if (!dbAvailable) {
+    throw new Error('БД недоступна для создания тестовой группы')
+  }
+  
   const prisma = getPrismaClient()
   
   return await prisma.group.create({
@@ -121,6 +159,10 @@ export async function createTestSubject(data: {
   instructor?: string
   lectorId?: string
 }) {
+  if (!dbAvailable) {
+    throw new Error('БД недоступна для создания тестового предмета')
+  }
+  
   const prisma = getPrismaClient()
   
   return await prisma.subject.create({
@@ -146,6 +188,10 @@ export async function createTestHomework(data: {
   groupId?: string
   materials?: any[]
 }) {
+  if (!dbAvailable) {
+    throw new Error('БД недоступна для создания тестового домашнего задания')
+  }
+  
   const prisma = getPrismaClient()
   
   return await prisma.homework.create({
@@ -265,5 +311,37 @@ export function createMockResponse() {
   }
   
   return response as any
+}
+
+/**
+ * Пропустить тест если БД недоступна
+ * Использовать в начале каждого теста: if (skipIfDbUnavailable()) return
+ */
+export function skipIfDbUnavailable(): boolean {
+  if (!dbAvailable) {
+    console.warn('Пропущен: БД недоступна')
+    return true
+  }
+  return false
+}
+
+/**
+ * Обертка для it(), которая автоматически пропускает тест если БД недоступна
+ * Использование: dbIt('тест', async () => { ... })
+ */
+export function dbIt(name: string, fn?: () => void | Promise<void>) {
+  const { it } = require('@jest/globals')
+  
+  if (!dbAvailable) {
+    return it.skip(name, fn)
+  }
+  
+  return it(name, async () => {
+    if (!dbAvailable) {
+      console.warn(`Пропущен тест "${name}": БД недоступна`)
+      return
+    }
+    return fn?.()
+  })
 }
 

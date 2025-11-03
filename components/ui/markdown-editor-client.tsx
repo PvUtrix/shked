@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { MDXEditor, type MDXEditorMethods } from '@mdxeditor/editor'
 import { 
   headingsPlugin,
@@ -31,11 +32,13 @@ import type { MarkdownEditorProps } from './markdown-editor'
 export default function MarkdownEditorClient({ 
   value, 
   onChange, 
-  placeholder = "Начните писать...",
+  placeholder,
   readOnly = false,
   className = "",
   height = "400px"
 }: MarkdownEditorProps) {
+  const t = useTranslations()
+  const defaultPlaceholder = placeholder || t('ui.markdownEditor.placeholder')
   const [editorRef, setEditorRef] = useState<MDXEditorMethods | null>(null)
 
   return (
@@ -44,7 +47,7 @@ export default function MarkdownEditorClient({
         ref={setEditorRef}
         markdown={value}
         onChange={onChange}
-        placeholder={placeholder}
+        placeholder={defaultPlaceholder}
         readOnly={readOnly}
         contentEditableClassName="prose prose-sm max-w-none p-4"
         plugins={[

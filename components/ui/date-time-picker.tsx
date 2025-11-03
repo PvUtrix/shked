@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Calendar } from '@/components/ui/calendar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,10 +23,12 @@ interface DateTimePickerProps {
 export function DateTimePicker({
   value,
   onChange,
-  placeholder = 'Выберите дату и время',
+  placeholder,
   className,
   disabled = false
 }: DateTimePickerProps) {
+  const t = useTranslations()
+  const defaultPlaceholder = placeholder || t('ui.dateTimePicker.placeholder')
   const [open, setOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(value)
   const [timeValue, setTimeValue] = useState(
@@ -77,13 +80,13 @@ export function DateTimePicker({
             disabled={disabled}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {value ? format(value, 'dd.MM.yyyy HH:mm', { locale: ru }) : placeholder}
+            {value ? format(value, 'dd.MM.yyyy HH:mm', { locale: ru }) : defaultPlaceholder}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div className="p-4 space-y-4">
             <div>
-              <Label className="text-sm font-medium">Дата</Label>
+              <Label className="text-sm font-medium">{t('ui.dateTimePicker.date')}</Label>
               <Calendar
                 mode="single"
                 selected={selectedDate}
@@ -93,7 +96,7 @@ export function DateTimePicker({
               />
             </div>
             <div>
-              <Label className="text-sm font-medium">Время</Label>
+              <Label className="text-sm font-medium">{t('ui.dateTimePicker.time')}</Label>
               <div className="flex items-center space-x-2">
                 <Clock className="h-4 w-4 text-gray-400" />
                 <Input
@@ -106,10 +109,10 @@ export function DateTimePicker({
             </div>
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setOpen(false)}>
-                Отмена
+                {t('ui.dateTimePicker.cancel')}
               </Button>
               <Button onClick={handleConfirm}>
-                Применить
+                {t('ui.dateTimePicker.apply')}
               </Button>
             </div>
           </div>

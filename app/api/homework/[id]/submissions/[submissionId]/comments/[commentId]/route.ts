@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // PUT /api/homework/[id]/submissions/[submissionId]/comments/[commentId] - обновление комментария
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; submissionId: string; commentId: string } }
+  { params }: { params: Promise<{ id: string; submissionId: string; commentId: string }> }
 ) {
   try {
+    const { commentId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -20,7 +21,7 @@ export async function PUT(
 
     // Получаем комментарий
     const comment = await prisma.homeworkComment.findUnique({
-      where: { id: params.commentId }
+      where: { id: commentId }
     })
 
     if (!comment) {
@@ -40,7 +41,7 @@ export async function PUT(
 
     // Обновляем комментарий
     const updatedComment = await prisma.homeworkComment.update({
-      where: { id: params.commentId },
+      where: { id: commentId },
       data: {
         ...(content !== undefined && { content }),
         ...(resolved !== undefined && { resolved })
@@ -72,9 +73,10 @@ export async function PUT(
 // DELETE /api/homework/[id]/submissions/[submissionId]/comments/[commentId] - удаление комментария
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; submissionId: string; commentId: string } }
+  { params }: { params: Promise<{ id: string; submissionId: string; commentId: string }> }
 ) {
   try {
+    const { commentId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -83,7 +85,7 @@ export async function DELETE(
 
     // Получаем комментарий
     const comment = await prisma.homeworkComment.findUnique({
-      where: { id: params.commentId }
+      where: { id: commentId }
     })
 
     if (!comment) {
@@ -103,7 +105,7 @@ export async function DELETE(
 
     // Удаляем комментарий
     await prisma.homeworkComment.delete({
-      where: { id: params.commentId }
+      where: { id: commentId }
     })
 
     return NextResponse.json({ message: 'Комментарий удален' })

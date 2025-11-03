@@ -5,10 +5,11 @@ import dynamic from 'next/dynamic'
 import '@mdxeditor/editor/style.css'
 
 // Динамический импорт всего компонента для избежания SSR проблем
+// В Next.js 16 ssr: false недопустим в Server Components, поэтому используем обычный dynamic import
+// Защита от hydration mismatch уже реализована через mounted state
 const MDXEditorWrapper = dynamic(
   () => import('./markdown-editor-client'),
   {
-    ssr: false,
     loading: () => (
       <div className="h-96 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse flex items-center justify-center">
         <div className="text-gray-600 dark:text-gray-400">Загрузка редактора...</div>

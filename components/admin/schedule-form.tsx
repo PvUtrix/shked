@@ -208,14 +208,17 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Группа</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={(value) => field.onChange(value === 'none' ? '' : value)} 
+                    value={field.value || 'none'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите группу" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Без группы</SelectItem>
+                      <SelectItem value="none">Без группы</SelectItem>
                       {groups.map((group) => (
                         <SelectItem key={group.id} value={group.id}>
                           {group.name}
@@ -252,14 +255,17 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Подгруппа</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select 
+                      onValueChange={(value) => field.onChange(value === 'none' ? '' : value)} 
+                      value={field.value || 'none'}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Вся группа" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Вся группа</SelectItem>
+                        <SelectItem value="none">Вся группа</SelectItem>
                         <SelectItem value="1">Подгруппа 1</SelectItem>
                         <SelectItem value="2">Подгруппа 2</SelectItem>
                         <SelectItem value="3">Подгруппа 3</SelectItem>

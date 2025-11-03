@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -38,6 +39,7 @@ interface Lector {
 }
 
 export default function SubjectsPage() {
+  const router = useRouter()
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [lectors, setLectors] = useState<Lector[]>([])
   const [loading, setLoading] = useState(true)
@@ -138,6 +140,17 @@ export default function SubjectsPage() {
 
   const handleFormSuccess = () => {
     fetchData()
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Загрузка предметов...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -247,7 +260,11 @@ export default function SubjectsPage() {
                     </div>
 
                     <div className="pt-2">
-                      <Button variant="outline" className="w-full" onClick={() => alert('Функция просмотра расписания по предмету будет реализована в следующей версии')}>
+                      <Button 
+                        variant="outline" 
+                        className="w-full" 
+                        onClick={() => router.push(`/admin/schedule?subject=${subject.id}`)}
+                      >
                         <BookOpen className="h-4 w-4 mr-2" />
                         Посмотреть расписание
                       </Button>

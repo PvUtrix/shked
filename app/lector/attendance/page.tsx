@@ -7,7 +7,7 @@ import { AttendanceForm } from '@/components/admin/attendance-form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Users, TrendingUp, AlertCircle } from 'lucide-react'
 
-export default async function TeacherAttendancePage({
+export default async function LectorAttendancePage({
   searchParams,
 }: {
   searchParams: { subject?: string }
@@ -18,7 +18,7 @@ export default async function TeacherAttendancePage({
     redirect('/login')
   }
 
-  const teacherId = session.user.id
+  const lectorId = session.user.id
   const subjectId = searchParams.subject
 
   // Получаем расписание преподавателя
@@ -28,9 +28,9 @@ export default async function TeacherAttendancePage({
       group: { isNot: null }, // Только с группами
     } : {
       subject: {
-        teachers: {
+        lectors: {
           some: {
-            userId: teacherId,
+            userId: lectorId,
           },
         },
       },

@@ -495,7 +495,7 @@ export function ThemeToggle() {
 - Все страницы используют Tailwind
 - [[Admin компоненты]]
 - [[Student компоненты]]
-- [[Teacher компоненты]]
+- [[Lector компоненты]]
 - [[Mentor компоненты]]
 
 ### Связанные решения

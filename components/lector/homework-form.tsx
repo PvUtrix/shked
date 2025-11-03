@@ -290,14 +290,17 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Группа</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select 
+                      onValueChange={(value) => field.onChange(value === 'none' ? '' : value)} 
+                      value={field.value || 'none'}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Выберите группу" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Все группы</SelectItem>
+                        <SelectItem value="none">Все группы</SelectItem>
                         {groups.map((group) => (
                           <SelectItem key={group.id} value={group.id}>
                             {group.name}

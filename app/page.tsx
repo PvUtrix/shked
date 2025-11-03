@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { Calendar, Users, BookOpen, Clock, ArrowRight, GraduationCap, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LogoWithText } from '@/components/ui/logo'
 import Link from 'next/link'
 
 export default async function HomePage() {
@@ -39,10 +40,7 @@ export default async function HomePage() {
       <header className="sticky top-0 z-50 bg-white/10 backdrop-blur-lg border-b border-white/20">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between max-w-6xl mx-auto">
-            <div className="flex items-center space-x-2">
-              <GraduationCap className="h-8 w-8 text-white" />
-              <h1 className="text-2xl font-bold text-white">Шкед</h1>
-            </div>
+            <LogoWithText size={32} variant="white" />
             <div className="space-x-4">
               <Button asChild variant="ghost" className="text-white hover:bg-white/20">
                 <Link href="/login">Войти</Link>

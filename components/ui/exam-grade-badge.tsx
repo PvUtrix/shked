@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { Award, XCircle } from 'lucide-react'
@@ -22,10 +23,12 @@ const gradeColors = {
 }
 
 export function ExamGradeBadge({ grade, status, className }: ExamGradeBadgeProps) {
+  const t = useTranslations()
+  
   if (status === 'NOT_TAKEN') {
     return (
       <Badge variant="outline" className={cn('text-muted-foreground', className)}>
-        Не сдавал
+        {t('ui.examGradeBadge.notTaken')}
       </Badge>
     )
   }
@@ -34,7 +37,7 @@ export function ExamGradeBadge({ grade, status, className }: ExamGradeBadgeProps
     return (
       <Badge className={cn('bg-red-500 hover:bg-red-600 text-white', className)}>
         <XCircle className="mr-1 h-3 w-3" />
-        {grade || 'Не сдал'}
+        {grade || t('ui.examGradeBadge.failed')}
       </Badge>
     )
   }
@@ -56,6 +59,8 @@ interface AverageGradeProps {
 }
 
 export function AverageGrade({ grades, className }: AverageGradeProps) {
+  const t = useTranslations()
+  
   const numericGrades = grades
     .filter((g) => g && !isNaN(Number(g)))
     .map((g) => Number(g))
@@ -63,7 +68,7 @@ export function AverageGrade({ grades, className }: AverageGradeProps) {
   if (numericGrades.length === 0) {
     return (
       <div className={cn('text-muted-foreground', className)}>
-        Нет оценок
+        {t('ui.examGradeBadge.noGrades')}
       </div>
     )
   }
@@ -79,7 +84,7 @@ export function AverageGrade({ grades, className }: AverageGradeProps) {
 
   return (
     <div className={cn('flex items-center space-x-2', className)}>
-      <span className="text-sm text-muted-foreground">Средний балл:</span>
+      <span className="text-sm text-muted-foreground">{t('ui.examGradeBadge.averageGrade')}</span>
       <span className={cn('text-2xl font-bold', colorClass)}>
         {rounded.toFixed(2)}
       </span>

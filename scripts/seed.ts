@@ -1,34 +1,30 @@
 
 import { PrismaClient } from '@prisma/client'
 import bcryptjs from 'bcryptjs'
-import fs from 'fs'
-import path from 'path'
 
 const prisma = new PrismaClient()
-
-interface ExcelAnalysis {
-  sheets: string[]
-  data: {
-    [key: string]: {
-      shape: number[]
-      columns: string[]
-      sample_data: any[]
-    }
-  }
-}
 
 async function main() {
   try {
     console.log('🌱 Начинаем заполнение базы данных...')
     
-    // Читаем анализ Excel файла
-    const analysisPath = path.join(__dirname, '..', 'data', 'excel_analysis.json')
-    const excelAnalysis: ExcelAnalysis = JSON.parse(fs.readFileSync(analysisPath, 'utf-8'))
+    // 1. Создание группы (создаем раньше, чтобы можно было назначить студента)
+    console.log('👥 Создание групп...')
+    const techPredGroup = await prisma.group.upsert({
+      where: { name: 'ТехПред МФТИ 2025-27' },
+      update: {},
+      create: {
+        name: 'ТехПред МФТИ 2025-27',
+        description: 'Магистратура Технологическое предпринимательство МФТИ 2025-27',
+        semester: '1 семестр',
+        year: '2025-27',
+      },
+    })
+
+    // 2. Создание демо аккаунтов (8 ролей)
+    console.log('👤 Создание демо аккаунтов...')
     
-    // 1. Создание тестовых пользователей
-    console.log('👤 Создание пользователей...')
-    
-    // Админ пользователь
+    // Админ
     const adminPassword = await bcryptjs.hash('admin123', 12)
     const admin = await prisma.user.upsert({
       where: { email: 'admin@shked.com' },
@@ -43,60 +39,32 @@ async function main() {
       },
     })
 
-    // Тестовый пользователь для системы
-    const testPassword = await bcryptjs.hash('johndoe123', 12)
-    const testUser = await prisma.user.upsert({
-      where: { email: 'john@doe.com' },
-      update: {},
-      create: {
-        email: 'john@doe.com',
-        password: testPassword,
-        firstName: 'John',
-        lastName: 'Doe',
-        name: 'John Doe',
-        role: 'admin',
-      },
-    })
-
-    // 2. Создание группы (создаем раньше, чтобы можно было назначить студента)
-    console.log('👥 Создание групп...')
-    const techPredGroup = await prisma.group.upsert({
-      where: { name: 'ТехПред МФТИ 2025-27' },
-      update: {},
-      create: {
-        name: 'ТехПред МФТИ 2025-27',
-        description: 'Магистратура Технологическое предпринимательство МФТИ 2025-27',
-        semester: '1 семестр',
-        year: '2025-27',
-      },
-    })
-
-    // Демо студент для тестирования (назначен в группу)
-    const demoStudentPassword = await bcryptjs.hash('student123', 12)
+    // Студент
+    const studentPassword = await bcryptjs.hash('student123', 12)
     const demoStudent = await prisma.user.upsert({
-      where: { email: 'student123@demo.com' },
+      where: { email: 'student@demo.com' },
       update: {
-        groupId: techPredGroup.id, // Обновляем группу для существующих пользователей
+        groupId: techPredGroup.id,
       },
       create: {
-        email: 'student123@demo.com',
-        password: demoStudentPassword,
+        email: 'student@demo.com',
+        password: studentPassword,
         firstName: 'Демо',
         lastName: 'Студент',
         name: 'Демо Студент',
         role: 'student',
-        groupId: techPredGroup.id, // Назначаем в группу
+        groupId: techPredGroup.id,
       },
     })
 
-    // Демо преподаватель
-    const demoLectorPassword = await bcryptjs.hash('lector123', 12)
+    // Преподаватель
+    const lectorPassword = await bcryptjs.hash('lector123', 12)
     const demoLector = await prisma.user.upsert({
       where: { email: 'lector@demo.com' },
       update: {},
       create: {
         email: 'lector@demo.com',
-        password: demoLectorPassword,
+        password: lectorPassword,
         firstName: 'Демо',
         lastName: 'Преподаватель',
         name: 'Демо Преподаватель',
@@ -104,14 +72,14 @@ async function main() {
       },
     })
 
-    // Демо ментор
-    const demoMentorPassword = await bcryptjs.hash('mentor123', 12)
+    // Ментор
+    const mentorPassword = await bcryptjs.hash('mentor123', 12)
     const demoMentor = await prisma.user.upsert({
       where: { email: 'mentor@demo.com' },
       update: {},
       create: {
         email: 'mentor@demo.com',
-        password: demoMentorPassword,
+        password: mentorPassword,
         firstName: 'Демо',
         lastName: 'Ментор',
         name: 'Демо Ментор',
@@ -119,7 +87,67 @@ async function main() {
       },
     })
 
-    // 3. Создание предметов на основе Excel данных
+    // Ассистент
+    const assistantPassword = await bcryptjs.hash('assistant123', 12)
+    const demoAssistant = await prisma.user.upsert({
+      where: { email: 'assistant@demo.com' },
+      update: {},
+      create: {
+        email: 'assistant@demo.com',
+        password: assistantPassword,
+        firstName: 'Демо',
+        lastName: 'Ассистент',
+        name: 'Демо Ассистент',
+        role: 'assistant',
+      },
+    })
+
+    // Со-преподаватель
+    const coLecturerPassword = await bcryptjs.hash('co_lecturer123', 12)
+    const demoCoLecturer = await prisma.user.upsert({
+      where: { email: 'co_lecturer@demo.com' },
+      update: {},
+      create: {
+        email: 'co_lecturer@demo.com',
+        password: coLecturerPassword,
+        firstName: 'Демо',
+        lastName: 'Со-преподаватель',
+        name: 'Демо Со-преподаватель',
+        role: 'co_lecturer',
+      },
+    })
+
+    // Учебный отдел
+    const eduOfficePassword = await bcryptjs.hash('eduoffice123', 12)
+    const demoEduOffice = await prisma.user.upsert({
+      where: { email: 'eduoffice@demo.com' },
+      update: {},
+      create: {
+        email: 'eduoffice@demo.com',
+        password: eduOfficePassword,
+        firstName: 'Демо',
+        lastName: 'Учебный отдел',
+        name: 'Демо Учебный отдел',
+        role: 'education_office_head',
+      },
+    })
+
+    // Админ кафедры
+    const deptAdminPassword = await bcryptjs.hash('deptadmin123', 12)
+    const demoDeptAdmin = await prisma.user.upsert({
+      where: { email: 'deptadmin@demo.com' },
+      update: {},
+      create: {
+        email: 'deptadmin@demo.com',
+        password: deptAdminPassword,
+        firstName: 'Демо',
+        lastName: 'Админ кафедры',
+        name: 'Демо Админ кафедры',
+        role: 'department_admin',
+      },
+    })
+
+    // 4. Создание предметов на основе Excel данных
     console.log('📚 Создание предметов...')
     const subjects = [
       {
@@ -184,110 +212,7 @@ async function main() {
       data: { mentorGroupIds: [techPredGroup.id] }
     })
 
-    // 4. Создание студентов на основе данных распределения
-    console.log('🎓 Создание студентов...')
-    const studentsData = excelAnalysis.data['1 семестр. Распределение на под'].sample_data
-    
-    const students = []
-    for (const studentData of studentsData) {
-      if (studentData?.Студент) {
-        const names = studentData.Студент.split(' ')
-        const firstName = names[1] || 'Студент'
-        const lastName = names[0] || 'Неизвестный'
-        const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@student.mipt.ru`.replace(/[^a-z0-9@.]/g, '')
-        
-        const studentPassword = await bcryptjs.hash('student123', 12)
-        const student = await prisma.user.upsert({
-          where: { email },
-          update: {},
-          create: {
-            email,
-            password: studentPassword,
-            firstName,
-            lastName,
-            name: studentData.Студент,
-            role: 'student',
-            groupId: techPredGroup.id,
-          },
-        })
-        
-        // Создание записи о распределении по подгруппам
-        await prisma.userGroup.upsert({
-          where: { 
-            userId_groupId: {
-              userId: student.id,
-              groupId: techPredGroup.id
-            }
-          },
-          update: {},
-          create: {
-            userId: student.id,
-            groupId: techPredGroup.id,
-            subgroupCommerce: studentData.Коммерциализация,
-            subgroupTutorial: studentData.Тьюториал,
-            subgroupFinance: studentData['Финансовое моделирование'],
-            subgroupSystemThinking: studentData['Системное мышление'],
-          },
-        })
-        
-        students.push(student)
-      }
-    }
-
-    // 5. Создание расписания на основе Excel данных
-    console.log('📅 Создание расписания...')
-    const scheduleData = excelAnalysis.data['1 семестр. Расписание'].sample_data
-    
-    for (let i = 7; i < scheduleData.length; i++) { // Начинаем с 7-й записи, где начинаются реальные данные
-      const row = scheduleData[i]
-      if (row?.['Проектирование венчурного предприятия (Тьюториал)/ Чикин В.Н., Бахчиев А.В.'] && 
-          typeof row['Проектирование венчурного предприятия (Тьюториал)/ Чикин В.Н., Бахчиев А.В.'] === 'string' &&
-          row['Проектирование венчурного предприятия (Тьюториал)/ Чикин В.Н., Бахчиев А.В.'].includes('2025')) {
-        
-        const dateStr = row['Проектирование венчурного предприятия (Тьюториал)/ Чикин В.Н., Бахчиев А.В.']
-        const dayOfWeek = row['Unnamed: 1']
-        const time = row['Unnamed: 2']
-        const eventName = row['Подгруппа 1']
-        const location = row['Unnamed: 19']
-        
-        if (dateStr && eventName && time) {
-          try {
-            const eventDate = new Date(dateStr)
-            if (!isNaN(eventDate.getTime())) {
-              // Определяем предмет по названию события
-              let subject = createdSubjects.find(s => s.name.includes('Общеинститутские'))
-              if (eventName.includes('семинар')) {
-                subject = createdSubjects.find(s => s.name.includes('Научный семинар'))
-              } else if (eventName.includes('Fest Tech')) {
-                subject = createdSubjects.find(s => s.name.includes('Общеинститутские'))
-              }
-              
-              if (subject) {
-                const [startTime, endTime] = time.includes('-') ? time.split('-') : [time, time]
-                
-                await prisma.schedule.create({
-                  data: {
-                    subjectId: subject.id,
-                    groupId: techPredGroup.id,
-                    date: eventDate,
-                    dayOfWeek: typeof dayOfWeek === 'number' ? dayOfWeek : eventDate.getDay(),
-                    startTime: startTime?.trim() || '09:00',
-                    endTime: endTime?.trim() || '18:00',
-                    location: location || 'Не указано',
-                    eventType: 'seminar',
-                    description: eventName,
-                  },
-                })
-              }
-            }
-          } catch (error) {
-            console.log(`Пропущена запись: ${error}`)
-          }
-        }
-      }
-    }
-
-    // 6. Добавление дополнительных тестовых расписаний
+    // 5. Добавление дополнительных тестовых расписаний
     console.log('📋 Добавление дополнительных занятий...')
     const additionalSchedules = [
       {
@@ -334,7 +259,7 @@ async function main() {
       }
     }
 
-    // 7. Создание тестовых домашних заданий
+    // 6. Создание тестовых домашних заданий
     console.log('📝 Создание домашних заданий...')
     const homeworkData = [
       {
@@ -389,11 +314,13 @@ async function main() {
       }
     }
 
-    // 8. Создание тестовых сдач домашних заданий
+    // 7. Создание тестовых сдач домашних заданий
     console.log('📤 Создание сдач домашних заданий...')
-    const sampleStudents = students.slice(0, 5) // Берем первых 5 студентов для демонстрации
     
-    for (const student of sampleStudents) {
+    // Используем только демо-студента для сдач
+    const students = [demoStudent]
+    
+    for (const student of students) {
       for (const homework of createdHomework) {
         // Создаем сдачу для каждого студента (некоторые сданы, некоторые нет)
         const shouldSubmit = Math.random() > 0.3 // 70% вероятность сдачи
@@ -405,8 +332,15 @@ async function main() {
             (grade === 5 ? 'Отличная работа! Очень детальный анализ.' : 'Хорошая работа, есть что улучшить.') : 
             null
 
-          await prisma.homeworkSubmission.create({
-            data: {
+          await prisma.homeworkSubmission.upsert({
+            where: {
+              homeworkId_userId: {
+                homeworkId: homework.id,
+                userId: student.id
+              }
+            },
+            update: {},
+            create: {
               homeworkId: homework.id,
               userId: student.id,
               submissionUrl: Math.random() > 0.5 
@@ -425,18 +359,22 @@ async function main() {
 
     console.log('✅ Заполнение базы данных завершено!')
     console.log(`📊 Создано:
-    - Пользователей: ${students.length + 4} (включая админа, тестового пользователя, демо студента, демо преподавателя, демо ментора)
+    - Пользователей: 8 (по одному на каждую роль)
     - Групп: 1
     - Предметов: ${createdSubjects.length}
-    - Расписаний: добавлены из Excel файла + дополнительные
+    - Расписаний: дополнительные тестовые
     - Домашних заданий: ${createdHomework.length}
-    - Сдач: созданы для демонстрации
-    - Демо аккаунты:
-      * admin@shked.com / admin123 (админ)
-      * john@doe.com / johndoe123 (админ)
-      * student123@demo.com / student123 (студент)
-      * lector@demo.com / lector123 (преподаватель)
-      * mentor@demo.com / mentor123 (ментор)`)
+    - Сдач: созданы для демо-студента
+    
+    🎯 Демо аккаунты (8 ролей):
+    - admin@shked.com / admin123 (👨‍💼 Админ)
+    - student@demo.com / student123 (🎓 Студент)
+    - lector@demo.com / lector123 (👨‍🏫 Преподаватель)
+    - mentor@demo.com / mentor123 (👤 Ментор)
+    - assistant@demo.com / assistant123 (🤝 Ассистент)
+    - co_lecturer@demo.com / co_lecturer123 (👥 Со-преподаватель)
+    - eduoffice@demo.com / eduoffice123 (📊 Учебный отдел)
+    - deptadmin@demo.com / deptadmin123 (🏛️ Админ кафедры)`)
     
   } catch (error) {
     console.error('❌ Ошибка при заполнении базы данных:', error)

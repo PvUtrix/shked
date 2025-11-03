@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import { Upload, X, File, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -21,6 +22,7 @@ export function FileUploader({
   className,
   disabled = false
 }: FileUploaderProps) {
+  const t = useTranslations()
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -40,7 +42,7 @@ export function FileUploader({
   // Валидация файла
   const validateFile = (file: File): string | null => {
     if (file.size > maxSize) {
-      return `Файл слишком большой. Максимальный размер: ${formatFileSize(maxSize)}`
+      return t('ui.fileUploader.fileTooLarge', { maxSize: formatFileSize(maxSize) })
     }
     return null
   }
@@ -81,7 +83,7 @@ export function FileUploader({
         inputRef.current.value = ''
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка при загрузке файла')
+      setError(err instanceof Error ? err.message : t('ui.fileUploader.uploadError'))
     } finally {
       setUploading(false)
     }
@@ -154,14 +156,14 @@ export function FileUploader({
                   onClick={() => inputRef.current?.click()}
                   disabled={disabled || uploading}
                 >
-                  Выбрать файл
+                  {t('ui.fileUploader.selectFile')}
                 </Button>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                или перетащите файл сюда
+                {t('ui.fileUploader.orDragDrop')}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Макс. размер: {formatFileSize(maxSize)}
+                {t('ui.fileUploader.maxSizeLabel', { maxSize: formatFileSize(maxSize) })}
               </p>
             </div>
           ) : (
@@ -200,7 +202,7 @@ export function FileUploader({
       {success && (
         <div className="flex items-center space-x-2 text-sm text-green-600">
           <CheckCircle2 className="h-4 w-4" />
-          <p>Файл успешно загружен</p>
+          <p>{t('ui.fileUploader.uploadSuccess')}</p>
         </div>
       )}
 
@@ -214,12 +216,12 @@ export function FileUploader({
           {uploading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Загрузка...
+              {t('ui.fileUploader.uploading')}
             </>
           ) : (
             <>
               <Upload className="mr-2 h-4 w-4" />
-              Загрузить файл
+              {t('ui.fileUploader.uploadFile')}
             </>
           )}
         </Button>

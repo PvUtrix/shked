@@ -1,15 +1,12 @@
+const createNextIntlPlugin = require('next-intl/plugin')(
+  './i18n/request.ts'
+)
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
   // Включаем детальные ошибки в development режиме
   reactStrictMode: true,
-  swcMinify: false,
-  // Отключаем ESLint в production build (ускоряет сборку)
-  eslint: {
-    // Предупреждение: Это отключает линтинг во время production build
-    // ESLint должен запускаться в CI/CD pipeline отдельно
-    ignoreDuringBuilds: true,
-  },
   // Отключаем строгую проверку типов в production build (ускоряет сборку)
   typescript: {
     // Предупреждение: Это отключает проверку типов во время production build
@@ -25,4 +22,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = createNextIntlPlugin(nextConfig)

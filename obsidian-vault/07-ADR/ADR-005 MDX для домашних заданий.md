@@ -267,8 +267,8 @@ export function MarkdownViewer({ content, className }: MarkdownViewerProps) {
 
 ### Использование
 
-#### Создание задания (Teacher)
-**Файл**: `components/Teacher/homework-form.tsx`
+#### Создание задания (Lector)
+**Файл**: `components/Lector/homework-form.tsx`
 
 ```typescript
 'use client'
@@ -475,7 +475,7 @@ def quicksort(arr):
 ### Затронутые области
 - [[Homework]] - поле `content` (MDX)
 - [[HomeworkSubmission]] - поля `content`, `comment`, `feedback` (MDX)
-- [[Teacher компоненты]] - формы создания ДЗ
+- [[Lector компоненты]] - формы создания ДЗ
 - [[Student компоненты]] - формы сдачи ДЗ
 - [[UI компоненты]] - markdown-editor, markdown-viewer
 

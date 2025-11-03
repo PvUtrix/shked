@@ -57,7 +57,7 @@
 - Документы предметов
 
 #### Преподаватели
-**Путь**: `/department/teachers`
+**Путь**: `/department/lectors`
 
 - Список преподавателей кафедры
 - Нагрузка преподавателей
@@ -86,7 +86,7 @@
 
 #### Просмотр данных
 - `GET /api/subjects?departmentId={myDepartmentId}` - предметы кафедры
-- `GET /api/users?role=teacher&departmentId={myDepartmentId}` - преподаватели
+- `GET /api/users?role=lector&departmentId={myDepartmentId}` - преподаватели
 - `GET /api/schedules?departmentId={myDepartmentId}` - расписание кафедры
 
 #### Отчеты
@@ -110,7 +110,7 @@ interface DepartmentAdmin extends User {
 ### Другие роли
 - [[Admin]] - администраторы
 - [[Education Office Head]] - начальник учебного отдела
-- [[Teacher]] - преподаватели
+- [[Lector]] - преподаватели
 
 ---
 

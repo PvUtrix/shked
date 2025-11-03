@@ -40,7 +40,7 @@ model Attendance {
 | `status` | String | Статус посещаемости |
 | `source` | String? | Источник данных (опционально) |
 | `notes` | String? | Заметки (опционально) |
-| `markedBy` | String | ID отметившего ([[Teacher]], [[Admin]]) |
+| `markedBy` | String | ID отметившего ([[Lector]], [[Admin]]) |
 | `markedAt` | DateTime | Дата и время отметки |
 
 ## Статусы
@@ -94,14 +94,14 @@ await prisma.attendance.createMany({
       userId: student1Id,
       status: 'PRESENT',
       source: 'MANUAL',
-      markedBy: teacherId
+      markedBy: lectorId
     },
     {
       scheduleId: scheduleId,
       userId: student2Id,
       status: 'ABSENT',
       source: 'MANUAL',
-      markedBy: teacherId
+      markedBy: lectorId
     }
   ],
   skipDuplicates: true
@@ -166,7 +166,7 @@ await prisma.attendance.update({
 | Роль | Создание | Просмотр | Редактирование |
 |------|----------|----------|----------------|
 | Admin | ✅ | ✅ | ✅ |
-| Teacher | ✅ | ✅ (свои предметы) | ✅ (свои) |
+| Lector | ✅ | ✅ (свои предметы) | ✅ (свои) |
 | Assistant | ❌ | ✅ (свои предметы) | ❌ |
 | Student | ❌ | ✅ (своя) | ❌ |
 | Education Office | ❌ | ✅ | ❌ |

@@ -118,7 +118,7 @@ interface EducationOfficeHead extends User {
 ### Другие роли
 - [[Admin]] - администраторы
 - [[Department Admin]] - администраторы кафедры
-- [[Teacher]] - преподаватели
+- [[Lector]] - преподаватели
 
 ### Функции
 - [[Система посещаемости]] - отчеты

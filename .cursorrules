@@ -13,6 +13,70 @@ SmartSchedule (Шкед) - современная веб-платформа дл
 - Документация и README должны быть на русском языке
 - Сообщения об ошибках и уведомления должны быть на русском языке
 
+## Интернационализация (i18n)
+
+### Критически важно:
+- **ЗАПРЕЩЕНО** использовать захардкоженные русские строки в UI компонентах
+- **ВСЕ** текстовые строки должны быть вынесены в файлы переводов (`messages/ru.json`)
+- Используйте ключи переводов вместо прямых строковых литералов
+
+### Структура переводов:
+- Файлы переводов: `messages/ru.json`, `messages/en.json` (для будущего)
+- Именование ключей: по функциональности (`admin.nav.schedule`, `student.homework.title`)
+- Плоская структура файлов (не модульная)
+
+### Использование переводов:
+
+#### Client Components:
+```typescript
+'use client'
+import { useTranslations } from 'next-intl'
+
+export function MyComponent() {
+  const t = useTranslations()
+  return <div>{t('common.buttons.save')}</div>
+}
+```
+
+#### Server Components:
+```typescript
+import { getTranslations } from 'next-intl/server'
+
+export default async function MyPage() {
+  const t = await getTranslations()
+  return <div>{t('common.buttons.save')}</div>
+}
+```
+
+### Правила:
+1. **Никогда** не используйте строковые литералы с русским текстом в JSX/TSX
+2. Всегда используйте `useTranslations()` в Client Components
+3. Всегда используйте `getTranslations()` в Server Components
+4. Добавляйте новые ключи в `messages/ru.json` при создании новых компонентов
+5. Используйте интерполяцию для динамических значений: `t('user.name', { name: userName })`
+6. Для вложенных объектов используйте точечную нотацию: `t('admin.nav.schedule')`
+
+### Примеры правильного использования:
+
+✅ Правильно:
+```typescript
+const t = useTranslations()
+<Button>{t('common.buttons.save')}</Button>
+<Label>{t('common.labels.name')}</Label>
+```
+
+❌ Неправильно:
+```typescript
+<Button>Сохранить</Button>
+<Label>Имя</Label>
+```
+
+### Конфигурация:
+- Конфигурация i18n: `i18n/config.ts`
+- Провайдер переводов: `components/providers.tsx`
+- Утилиты для Server Components: `i18n/request.ts`
+- Язык по умолчанию: русский (`ru`)
+
 ## Архитектура проекта
 
 ### Структура папок:
@@ -96,13 +160,16 @@ SmartSchedule (Шкед) - современная веб-платформа дл
 
 ### Перед коммитом:
 1. ✅ Все комментарии на русском языке
-2. ✅ UI элементы на русском языке
-3. ✅ Сообщения об ошибках на русском языке
-4. ✅ Названия переменных на английском (стандарт)
-5. ✅ TypeScript ошибки исправлены
-6. ✅ ESLint ошибки исправлены
-7. ✅ Компоненты правильно типизированы
-8. ✅ API routes защищены middleware
+2. ✅ UI элементы используют ключи переводов (не захардкоженные строки)
+3. ✅ Сообщения об ошибках используют ключи переводов
+4. ✅ Все новые строки добавлены в `messages/ru.json`
+5. ✅ Названия переменных на английском (стандарт)
+6. ✅ TypeScript ошибки исправлены
+7. ✅ ESLint ошибки исправлены
+8. ✅ Компоненты правильно типизированы
+9. ✅ API routes защищены middleware
+10. ✅ Client Components используют `useTranslations()`
+11. ✅ Server Components используют `getTranslations()`
 
 ### Тестирование:
 - Проверяйте работу на разных ролях (admin/student)

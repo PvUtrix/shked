@@ -140,6 +140,7 @@ export type UserFormData = {
   role: 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_lecturer' | 'education_office_head' | 'department_admin'
   groupId?: string
   status?: 'ACTIVE' | 'EXPELLED' | 'ACADEMIC_LEAVE'
+  mustChangePassword?: boolean
 }
 
 export type ScheduleFormData = {

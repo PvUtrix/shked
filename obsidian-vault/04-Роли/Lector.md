@@ -1,21 +1,21 @@
-# Teacher (Преподаватель)
+# Lector (Преподаватель)
 
 > Основной преподаватель предмета с правами создания заданий и проверки работ
 
 ## Описание роли
 
-**Teacher** (Преподаватель) - роль для преподавателей университета, ведущих предметы и проверяющих работы студентов.
+**Lector** (Преподаватель) - роль для преподавателей университета, ведущих предметы и проверяющих работы студентов.
 
-**Значение в системе**: `role = "teacher"`
+**Значение в системе**: `role = "lector"`
 
-**История**: В версии 2.0.0 роль была переименована с `teacher` на `teacher`. Миграция выполняется через `scripts/migrate-teacher-to-teacher.ts`.
+**История**: Роль lector является основной ролью для преподавателей в системе.
 
 ## Права доступа
 
 ### ✅ Разрешено
 
 #### Мои предметы
-- Просмотр назначенных предметов (через SubjectTeacher)
+- Просмотр назначенных предметов (через SubjectLector)
 - Просмотр списка групп по своим предметам
 - Просмотр расписания по своим предметам
 - Управление документами предмета (РПД, аннотации)
@@ -64,8 +64,8 @@
 ## Интерфейс
 
 ### Главная страница
-**Путь**: `/teacher`  
-**Компонент**: `app/teacher/page.tsx`
+**Путь**: `/lector`  
+**Компонент**: `app/lector/page.tsx`
 
 **Содержимое**:
 - Список назначенных предметов
@@ -77,8 +77,8 @@
 ### Разделы преподавателя
 
 #### Расписание
-**Путь**: `/teacher/schedule`  
-**Компонент**: `app/teacher/schedule/page.tsx`
+**Путь**: `/lector/schedule`  
+**Компонент**: `app/lector/schedule/page.tsx`
 
 - Расписание занятий по своим предметам
 - Календарный вид
@@ -88,8 +88,8 @@
 - Telegram уведомления о занятиях
 
 #### Домашние задания
-**Путь**: `/teacher/homework`  
-**Компонент**: `app/teacher/homework/page.tsx`
+**Путь**: `/lector/homework`  
+**Компонент**: `app/lector/homework/page.tsx`
 
 **Вкладки**:
 - **Мои задания** - созданные ДЗ
@@ -102,8 +102,8 @@
 - Просмотреть работы студентов
 
 #### Посещаемость
-**Путь**: `/teacher/attendance`  
-**Компонент**: `app/teacher/attendance/page.tsx`
+**Путь**: `/lector/attendance`  
+**Компонент**: `app/lector/attendance/page.tsx`
 
 - Список занятий для отметки
 - Быстрая отметка всех студентов
@@ -111,8 +111,8 @@
 - Экспорт отчетов
 
 #### Экзамены
-**Путь**: `/teacher/exams`  
-**Компонент**: `app/teacher/exams/page.tsx`
+**Путь**: `/lector/exams`  
+**Компонент**: `app/lector/exams/page.tsx`
 
 - Список экзаменов
 - Создание нового экзамена
@@ -120,8 +120,8 @@
 - Внесение результатов
 
 #### Профиль
-**Путь**: `/teacher/profile`  
-**Компонент**: `app/teacher/profile/page.tsx`
+**Путь**: `/lector/profile`  
+**Компонент**: `app/lector/profile/page.tsx`
 
 **Информация**:
 - Личные данные
@@ -130,7 +130,7 @@
 - Настройки уведомлений
 
 ### Навигация
-**Компонент**: `components/teacher/teacher-nav.tsx`
+**Компонент**: `components/lector/lector-nav.tsx`
 
 Боковое меню:
 - 🏠 Главная
@@ -144,10 +144,10 @@
 
 **Документация**: [[Homework API]], [[Schedules API]], [[API.md]]
 
-### Доступные для Teacher
+### Доступные для Lector
 
 #### Предметы
-- `GET /api/subjects?teacherId={myId}` - свои предметы
+- `GET /api/subjects?lectorId={myId}` - свои предметы
 - `GET /api/subjects/{id}/documents` - документы предмета
 - `POST /api/subjects/{id}/documents` - загрузить документ (РПД)
 - `GET /api/subjects/{id}/resources` - ресурсы предмета
@@ -159,7 +159,7 @@
 - `POST /api/schedules/{id}/resources` - добавить ресурс к занятию
 
 #### Домашние задания
-- `GET /api/homework?teacherId={myId}` - свои задания
+- `GET /api/homework?lectorId={myId}` - свои задания
 - `POST /api/homework` - создать задание
 - `PUT /api/homework/[id]` - редактировать свое задание
 - `DELETE /api/homework/[id]` - удалить свое задание
@@ -186,12 +186,12 @@
 ## Модель данных
 
 **Модель**: [[User]]  
-**Роль**: `role = "teacher"`
+**Роль**: `role = "lector"`
 
 ```typescript
-interface Teacher extends User {
-  role: 'teacher'
-  teacherSubjects: SubjectTeacher[]  // Назначенные предметы
+interface Lector extends User {
+  role: 'lector'
+  lectorSubjects: SubjectLector[]  // Назначенные предметы
   uploadedDocuments: SubjectDocument[]  // Загруженные документы
   markedAttendance: Attendance[]  // Отметки посещаемости
   recordedExams: ExamResult[]  // Внесенные результаты экзаменов
@@ -202,7 +202,7 @@ interface Teacher extends User {
 ## Связи
 
 ### Основные
-- [[SubjectTeacher]] - привязка к предметам (может быть TEACHER, ASSISTANT, CO_TEACHER)
+- [[SubjectLector]] - привязка к предметам (может быть LECTOR, ASSISTANT, CO_LECTOR)
 - [[Subject]] - назначенные предметы
 - [[Homework]] - созданные задания
 - [[HomeworkComment]] - комментарии к работам студентов
@@ -223,11 +223,11 @@ interface Teacher extends User {
 
 ```typescript
 // Новая система (с версии 2.0.0)
-await prisma.subjectTeacher.create({
+await prisma.subjectLector.create({
   data: {
     subjectId: subjectId,
-    userId: teacherId,
-    role: 'TEACHER'  // или 'ASSISTANT', 'CO_TEACHER'
+    userId: lectorId,
+    role: 'LECTOR'  // или 'ASSISTANT', 'CO_LECTOR'
   }
 })
 
@@ -235,7 +235,7 @@ await prisma.subjectTeacher.create({
 await prisma.subject.update({
   where: { id: subjectId },
   data: {
-    teacherId: teacherId  // Устаревшее поле
+    lectorId: lectorId  // Устаревшее поле
   }
 })
 ```
@@ -254,15 +254,15 @@ await prisma.subject.update({
 ```typescript
 const mySubjects = await prisma.subject.findMany({
   where: {
-    teachers: {
+    lectors: {
       some: {
-        userId: teacherId,
-        role: 'TEACHER'
+        userId: lectorId,
+        role: 'LECTOR'
       }
     }
   },
   include: {
-    teachers: {
+    lectors: {
       include: {
         user: true
       }
@@ -354,7 +354,7 @@ async function createExam({
 
 ### Общая статистика
 ```typescript
-const teacherStats = {
+const lectorStats = {
   totalSubjects: 3,
   totalHomework: 15,
   pendingReviews: 8,
@@ -390,12 +390,12 @@ const teacherStats = {
 - [[Student]] - студенты
 - [[Mentor]] - менторы
 - [[Assistant]] - ассистенты преподавателя
-- [[Co-Teacher]] - со-преподаватели
+- [[Co-Lector]] - со-преподаватели
 
 ### Модели
 - [[User]] - модель пользователя
 - [[Subject]] - предметы преподавателя
-- [[SubjectTeacher]] - привязка к предметам
+- [[SubjectLector]] - привязка к предметам
 - [[Homework]] - созданные задания
 - [[HomeworkSubmission]] - работы на проверку
 - [[HomeworkComment]] - inline комментарии
@@ -420,21 +420,20 @@ const teacherStats = {
 
 ## Файлы
 
-- **Модель**: `prisma/schema.prisma` (User с role="teacher")
-- **Страницы**: `app/teacher/**/*.tsx`
-- **Компоненты**: `components/teacher/**/*.tsx`
+- **Модель**: `prisma/schema.prisma` (User с role="lector")
+- **Страницы**: `app/lector/**/*.tsx`
+- **Компоненты**: `components/lector/**/*.tsx`
 - **API**: Используют общие endpoints с проверкой прав
-- **Миграция**: `scripts/migrate-teacher-to-teacher.ts`
 
 ## Официальная документация
 
-- [docs/features/USER_ROLES.md](../../docs/features/USER_ROLES.md#преподаватель-teacher)
+- [docs/features/USER_ROLES.md](../../docs/features/USER_ROLES.md#преподаватель-lector)
 - [docs/features/ATTENDANCE_TRACKING.md](../../docs/features/ATTENDANCE_TRACKING.md)
 - [docs/features/EXAM_MANAGEMENT.md](../../docs/features/EXAM_MANAGEMENT.md)
 - [docs/API.md](../../docs/API.md)
 
 ---
 
-#role #teacher #homework #attendance #exams #education
+#role #lector #homework #attendance #exams #education
 
 

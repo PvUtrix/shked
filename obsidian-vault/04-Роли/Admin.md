@@ -241,7 +241,7 @@ const newStudent = await fetch('/api/users', {
 await fetch(`/api/users/${userId}/role`, {
   method: 'PUT',
   body: JSON.stringify({
-    role: 'teacher'
+    role: 'lector'
   })
 })
 ```
@@ -251,7 +251,7 @@ await fetch(`/api/users/${userId}/role`, {
 await prisma.subject.update({
   where: { id: subjectId },
   data: {
-    teacherId: teacherUserId
+    lectorId: lectorUserId
   }
 })
 ```
@@ -283,7 +283,7 @@ await prisma.schedule.create({
 
 ### Best Practices
 
-1. **Не давайте роль admin без необходимости** - используйте teacher/mentor для преподавателей
+1. **Не давайте роль admin без необходимости** - используйте lector/mentor для преподавателей
 2. **Регулярно проверяйте список администраторов** - минимизируйте количество
 3. **Логируйте критичные действия** - изменения ролей, удаление данных
 4. **Используйте 2FA** (если реализовано) для админ-аккаунтов
@@ -301,7 +301,7 @@ await prisma.schedule.create({
 
 ### Другие роли
 - [[Student]] - студенты
-- [[Teacher]] - преподаватели
+- [[Lector]] - преподаватели
 - [[Mentor]] - менторы
 
 ### Модели

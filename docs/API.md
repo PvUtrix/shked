@@ -27,10 +27,10 @@ Cookie: next-auth.session-token=<token>
 
 - `admin` - Администратор
 - `student` - Студент
-- `teacher` - Преподаватель
+- `lector` - Преподаватель
 - `mentor` - Ментор/Научный руководитель
 - `assistant` - Ассистент
-- `co_teacher` - Со-преподаватель
+- `co_lecturer` - Со-преподаватель
 - `education_office_head` - Начальник учебного отдела
 - `department_admin` - Администратор кафедры
 
@@ -127,7 +127,7 @@ Cookie: next-auth.session-token=<token>
 #### PATCH /api/subjects/{id}
 Обновить предмет
 
-**Права:** admin, teacher
+**Права:** admin, lector
 
 #### DELETE /api/subjects/{id}
 Удалить предмет
@@ -251,7 +251,7 @@ Cookie: next-auth.session-token=<token>
 #### POST /api/schedules/{scheduleId}/attendance
 Отметить посещаемость
 
-**Права:** admin, teacher, assistant
+**Права:** admin, lector, assistant
 
 **Тело запроса:**
 ```json
@@ -270,12 +270,12 @@ Cookie: next-auth.session-token=<token>
 #### GET /api/schedules/{scheduleId}/attendance
 Получить посещаемость занятия
 
-**Права:** admin, teacher, student (своя)
+**Права:** admin, lector, student (своя)
 
 #### GET /api/attendance/report
 Сформировать отчет по посещаемости
 
-**Права:** admin, teacher, education_office_head, department_admin
+**Права:** admin, lector, education_office_head, department_admin
 
 **Параметры запроса:**
 - `groupId` - Фильтр по группе
@@ -300,7 +300,7 @@ Cookie: next-auth.session-token=<token>
 #### POST /api/exams
 Создать экзамен
 
-**Права:** admin, teacher
+**Права:** admin, lector
 
 **Тело запроса:**
 ```json
@@ -322,7 +322,7 @@ Cookie: next-auth.session-token=<token>
 #### PATCH /api/exams/{id}
 Обновить экзамен
 
-**Права:** admin, teacher
+**Права:** admin, lector
 
 #### DELETE /api/exams/{id}
 Удалить экзамен
@@ -332,7 +332,7 @@ Cookie: next-auth.session-token=<token>
 #### POST /api/exams/{examId}/results
 Внести результат экзамена
 
-**Права:** admin, teacher
+**Права:** admin, lector
 
 **Тело запроса:**
 ```json
@@ -347,7 +347,7 @@ Cookie: next-auth.session-token=<token>
 #### GET /api/exams/{examId}/results
 Получить ведомость экзамена
 
-**Права:** admin, teacher, student (свой результат)
+**Права:** admin, lector, student (свой результат)
 
 ### Менторские встречи
 
@@ -435,7 +435,7 @@ Cookie: next-auth.session-token=<token>
 #### PATCH /api/forum/topics/{id}
 Обновить тему
 
-**Права:** admin, автор, teacher (модерация)
+**Права:** admin, автор, lector (модерация)
 
 #### DELETE /api/forum/topics/{id}
 Удалить тему
@@ -490,7 +490,7 @@ Cookie: next-auth.session-token=<token>
 #### POST /api/subjects/{subjectId}/documents
 Загрузить документ
 
-**Права:** admin, teacher
+**Права:** admin, lector
 
 **Content-Type:** `multipart/form-data`
 
@@ -507,12 +507,12 @@ Cookie: next-auth.session-token=<token>
 #### PATCH /api/subjects/{subjectId}/documents/{docId}
 Обновить документ
 
-**Права:** admin, teacher (загрузивший)
+**Права:** admin, lector (загрузивший)
 
 #### DELETE /api/subjects/{subjectId}/documents/{docId}
 Удалить документ
 
-**Права:** admin, teacher (загрузивший)
+**Права:** admin, lector (загрузивший)
 
 #### GET /api/subjects/{subjectId}/resources
 Получить внешние ресурсы предмета
@@ -525,7 +525,7 @@ Cookie: next-auth.session-token=<token>
 #### POST /api/subjects/{subjectId}/resources
 Добавить внешний ресурс
 
-**Права:** admin, teacher
+**Права:** admin, lector
 
 **Тело запроса:**
 ```json
@@ -545,7 +545,7 @@ Cookie: next-auth.session-token=<token>
 #### POST /api/schedules/{scheduleId}/resources
 Добавить ресурс к занятию
 
-**Права:** admin, teacher
+**Права:** admin, lector
 
 #### GET /api/resources/{id}
 Получить детали ресурса
@@ -555,12 +555,12 @@ Cookie: next-auth.session-token=<token>
 #### PATCH /api/resources/{id}
 Обновить ресурс
 
-**Права:** admin, teacher (создатель)
+**Права:** admin, lector (создатель)
 
 #### DELETE /api/resources/{id}
 Удалить ресурс
 
-**Права:** admin, teacher (создатель)
+**Права:** admin, lector (создатель)
 
 ## Коды ответов
 
@@ -620,6 +620,6 @@ GET /api/endpoint?page=1&limit=20
 ---
 
 *Документация обновлена: 30 октября 2025*
-*Версия системы: 2.0.0*
+*Версия системы: 0.1.0-alpha*
 
 

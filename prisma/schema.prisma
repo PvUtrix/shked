@@ -1,6 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x", "darwin-arm64"]
 }
 
 datasource db {
@@ -50,6 +50,7 @@ model User {
   mentorGroupIds Json?      // Группы для ментора (массив ID групп)
   status        String      @default("ACTIVE") // ACTIVE, EXPELLED, ACADEMIC_LEAVE
   isActive      Boolean     @default(true)
+  mustChangePassword Boolean @default(false) // Принудительная смена пароля при следующем логине
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   accounts      Account[]
@@ -58,9 +59,9 @@ model User {
   group         Group?      @relation(fields: [groupId], references: [id])
   telegramUser  TelegramUser?
   homeworkSubmissions HomeworkSubmission[]
-  assignedSubjects Subject[] // Предметы для преподавателя (deprecated, use teacherSubjects)
+  assignedSubjects Subject[] // Предметы для преподавателя (deprecated, use lectorSubjects)
   homeworkComments HomeworkComment[] @relation("HomeworkCommentAuthor") // Комментарии к работам
-  teacherSubjects      SubjectTeacher[]
+  lectorSubjects      SubjectLector[]
   uploadedDocuments    SubjectDocument[]
   markedAttendance     Attendance[] @relation("AttendanceMarker")
   studentAttendance    Attendance[] @relation("AttendanceStudent")
@@ -108,14 +109,14 @@ model Subject {
   name        String     @unique
   description String?
   instructor  String?
-  lectorId    String?    // ID преподавателя (deprecated, use teachers)
+  lectorId    String?    // ID преподавателя (deprecated, use lectors)
   isActive    Boolean    @default(true)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   schedules   Schedule[]
   homework    Homework[]
   lector      User?      @relation(fields: [lectorId], references: [id])
-  teachers    SubjectTeacher[]
+  lectors     SubjectLector[]
   documents   SubjectDocument[]
   resources   ExternalResource[]
   subgroups   Subgroup[]
@@ -263,19 +264,19 @@ model HomeworkComment {
 
 // Новые модели для КТП
 
-model SubjectTeacher {
+model SubjectLector {
   id        String   @id @default(cuid())
   subjectId String
   userId    String
   role      String   // LECTOR, ASSISTANT, CO_LECTOR
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
-  
+
   subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  teacher   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  lector    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([subjectId, userId])
-  @@map("subject_teachers")
+  @@map("subject_lectors")
 }
 
 model SubjectDocument {
@@ -351,7 +352,7 @@ model Attendance {
   status     String   // PRESENT, ABSENT, LATE, EXCUSED
   source     String?  // MANUAL, ZOOM_AUTO, VISUAL
   notes      String?
-  markedBy   String   // userId admin/teacher
+  markedBy   String   // userId admin/lector
   markedAt   DateTime @default(now())
   
   schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
@@ -389,7 +390,7 @@ model ExamResult {
   status     String    @default("NOT_TAKEN") // NOT_TAKEN, PASSED, FAILED
   notes      String?
   takenAt    DateTime?
-  recordedBy String    // userId teacher
+  recordedBy String    // userId lector
   createdAt  DateTime  @default(now())
   
   exam       Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)

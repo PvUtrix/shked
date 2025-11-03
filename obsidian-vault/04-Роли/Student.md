@@ -390,7 +390,7 @@ const subjectStats = progressBySubject.map(subject => ({
 
 ### Другие роли
 - [[Admin]] - администраторы
-- [[Teacher]] - преподаватели
+- [[Lector]] - преподаватели
 - [[Mentor]] - менторы
 
 ### Модели

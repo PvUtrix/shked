@@ -92,13 +92,13 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    const coTeacherPassword = await bcryptjs.hash('coteacher123', 12)
-    const coTeacher = await prisma.user.upsert({
-      where: { email: 'coteacher@demo.com' },
+    const coLectorPassword = await bcryptjs.hash('co_lecturer123', 12)
+    const coLector = await prisma.user.upsert({
+      where: { email: 'co_lecturer@demo.com' },
       update: {},
       create: {
-        email: 'coteacher@demo.com',
-        password: coTeacherPassword,
+        email: 'co_lecturer@demo.com',
+        password: coLectorPassword,
         firstName: 'Демо',
         lastName: 'Со-преподаватель',
         name: 'Демо Со-преподаватель',

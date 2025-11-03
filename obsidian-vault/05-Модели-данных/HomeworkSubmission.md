@@ -202,7 +202,7 @@ const pendingReview = await prisma.homeworkSubmission.findMany({
     status: 'SUBMITTED',
     homework: {
       subject: {
-        teacherId: session.user.id  // Только мои предметы
+        lectorId: session.user.id  // Только мои предметы
       }
     }
   },
@@ -236,7 +236,7 @@ const submission = await prisma.homeworkSubmission.findUnique({
       include: {
         subject: {
           include: {
-            teacher: true
+            lector: true
           }
         }
       }
@@ -421,11 +421,11 @@ Response: HomeworkSubmissionWithRelations
 POST /api/homework/[id]/submission
 Body: { content: string }
 
-// Получить все работы по заданию (teacher only)
+// Получить все работы по заданию (lector only)
 GET /api/homework/[id]/submissions
 Response: HomeworkSubmissionWithRelations[]
 
-// Проверить работу (teacher only)
+// Проверить работу (lector only)
 PATCH /api/homework/submissions/[id]/review
 Body: { grade: number, feedback?: string, status: 'REVIEWED' | 'RETURNED' }
 ```
@@ -448,7 +448,7 @@ Body: { grade: number, feedback?: string, status: 'REVIEWED' | 'RETURNED' }
 
 ```typescript
 // Уведомить лектора о новой работе
-await sendNotification(homework.subject.teacherId, {
+await sendNotification(homework.subject.lectorId, {
   title: 'Новая работа на проверку',
   message: `${student.name} сдал работу по "${homework.title}"`
 })
@@ -496,7 +496,7 @@ if (student.telegramUser?.notifications) {
 
 ### Роли
 - [[Student]] - сдает работы
-- [[Teacher]] - проверяет работы
+- [[Lector]] - проверяет работы
 - [[Mentor]] - помогает студентам
 
 ## Файлы
@@ -504,7 +504,7 @@ if (student.telegramUser?.notifications) {
 - **Схема**: `prisma/schema.prisma`
 - **Типы**: `lib/types.ts`
 - **API**: `app/api/homework/**/*.ts`
-- **Страницы**: `app/student/homework/**/*.tsx`, `app/teacher/homework/**/*.tsx`
+- **Страницы**: `app/student/homework/**/*.tsx`, `app/lector/homework/**/*.tsx`
 - **Компоненты**: `components/student/homework-submission-form.tsx`
 
 ## Официальная документация

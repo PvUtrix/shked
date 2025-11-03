@@ -70,7 +70,7 @@ export default function GroupStudentsPage() {
   }
 
   const handleSubgroupChange = (studentId: string, subgroupType: string, value: string) => {
-    const numericValue = value === '' ? null : parseInt(value)
+    const numericValue = value === '' || value === 'none' ? null : parseInt(value)
     
     // Сохраняем изменения локально
     const studentChanges = changes.get(studentId) || {}
@@ -250,14 +250,14 @@ export default function GroupStudentsPage() {
                       </td>
                       <td className="py-3 px-4">
                         <Select
-                          value={student.subgroups.subgroupCommerce?.toString() || ''}
+                          value={student.subgroups.subgroupCommerce?.toString() || 'none'}
                           onValueChange={(value) => handleSubgroupChange(student.id, 'subgroupCommerce', value)}
                         >
                           <SelectTrigger className="w-24">
                             <SelectValue placeholder="-" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">-</SelectItem>
+                            <SelectItem value="none">-</SelectItem>
                             <SelectItem value="1">1</SelectItem>
                             <SelectItem value="2">2</SelectItem>
                             <SelectItem value="3">3</SelectItem>
@@ -267,14 +267,14 @@ export default function GroupStudentsPage() {
                       </td>
                       <td className="py-3 px-4">
                         <Select
-                          value={student.subgroups.subgroupTutorial?.toString() || ''}
+                          value={student.subgroups.subgroupTutorial?.toString() || 'none'}
                           onValueChange={(value) => handleSubgroupChange(student.id, 'subgroupTutorial', value)}
                         >
                           <SelectTrigger className="w-24">
                             <SelectValue placeholder="-" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">-</SelectItem>
+                            <SelectItem value="none">-</SelectItem>
                             <SelectItem value="1">1</SelectItem>
                             <SelectItem value="2">2</SelectItem>
                             <SelectItem value="3">3</SelectItem>
@@ -284,14 +284,14 @@ export default function GroupStudentsPage() {
                       </td>
                       <td className="py-3 px-4">
                         <Select
-                          value={student.subgroups.subgroupFinance?.toString() || ''}
+                          value={student.subgroups.subgroupFinance?.toString() || 'none'}
                           onValueChange={(value) => handleSubgroupChange(student.id, 'subgroupFinance', value)}
                         >
                           <SelectTrigger className="w-24">
                             <SelectValue placeholder="-" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">-</SelectItem>
+                            <SelectItem value="none">-</SelectItem>
                             <SelectItem value="1">1</SelectItem>
                             <SelectItem value="2">2</SelectItem>
                             <SelectItem value="3">3</SelectItem>
@@ -301,14 +301,14 @@ export default function GroupStudentsPage() {
                       </td>
                       <td className="py-3 px-4">
                         <Select
-                          value={student.subgroups.subgroupSystemThinking?.toString() || ''}
+                          value={student.subgroups.subgroupSystemThinking?.toString() || 'none'}
                           onValueChange={(value) => handleSubgroupChange(student.id, 'subgroupSystemThinking', value)}
                         >
                           <SelectTrigger className="w-24">
                             <SelectValue placeholder="-" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">-</SelectItem>
+                            <SelectItem value="none">-</SelectItem>
                             <SelectItem value="1">1</SelectItem>
                             <SelectItem value="2">2</SelectItem>
                             <SelectItem value="3">3</SelectItem>

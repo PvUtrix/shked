@@ -18,7 +18,7 @@ Telegram интеграция - важная часть системы Шкед,
 - 💬 Запросы на естественном языке
 - 📊 Дневные и еженедельные сводки
 
-### Для преподавателей [[Teacher]]
+### Для преподавателей [[Lector]]
 - 📅 Расписание своих занятий
 - 🔔 Уведомления о занятиях
 - 📬 Уведомления о сданных работах
@@ -329,7 +329,7 @@ graph LR
 
 ### Генерация токена
 
-**Страница**: `/student/profile`, `/teacher/profile`  
+**Страница**: `/student/profile`, `/lector/profile`  
 **API**: `GET /api/telegram/link`
 
 ```typescript
@@ -400,7 +400,7 @@ async function checkScheduleReminders() {
       isActive: true
     },
     include: {
-      subject: { include: { teacher: { include: { telegramUser: true }}}},
+      subject: { include: { lector: { include: { telegramUser: true }}}},
       group: { include: { users: { include: { telegramUser: true }}}}
     }
   })
@@ -412,7 +412,7 @@ async function checkScheduleReminders() {
     }
     
     // Уведомить лектора
-    await sendScheduleReminder(schedule.subject.teacher.id, schedule)
+    await sendScheduleReminder(schedule.subject.lector.id, schedule)
   }
 }
 ```
@@ -620,7 +620,7 @@ NEXTAUTH_URL=https://shked.example.com
 ### Роли
 - [[Admin]] - управление ботом
 - [[Student]] - основной пользователь бота
-- [[Teacher]] - уведомления о занятиях
+- [[Lector]] - уведомления о занятиях
 
 ## Файлы
 

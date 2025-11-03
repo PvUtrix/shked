@@ -5,9 +5,10 @@ import { prisma } from '@/lib/db'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     // Проверяем права администратора
@@ -15,12 +16,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
-    const { id } = params
     const body = await request.json()
     const { role } = body
 
-    // Валидация роли
-    const validRoles = ['admin', 'student', 'lector', 'mentor']
+    // Валидация роли - все роли из схемы Prisma
+    const validRoles = ['admin', 'student', 'lector', 'mentor', 'assistant', 'co_lecturer', 'education_office_head', 'department_admin']
     if (!role || !validRoles.includes(role)) {
       return NextResponse.json(
         { error: 'Недопустимая роль' },

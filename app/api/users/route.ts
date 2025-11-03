@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import bcryptjs from 'bcryptjs'
 
 // GET /api/users - получение списка пользователей
 export async function GET(request: NextRequest) {
@@ -16,6 +17,7 @@ export async function GET(request: NextRequest) {
     const role = searchParams.get('role')
     const mentor = searchParams.get('mentor') === 'true'
     const groupId = searchParams.get('groupId')
+    const includeInactive = searchParams.get('includeInactive') === 'true'
 
     const where: any = {}
 
@@ -44,6 +46,12 @@ export async function GET(request: NextRequest) {
       where.groupId = groupId
     }
 
+    // Показываем только активных пользователей (если админ не запросил неактивных)
+    // Только админы могут запросить неактивных пользователей
+    if (!includeInactive || session.user.role !== 'admin') {
+      where.isActive = true
+    }
+
     const users = await prisma.user.findMany({
       where,
       select: {
@@ -55,6 +63,7 @@ export async function GET(request: NextRequest) {
         role: true,
         groupId: true,
         createdAt: true,
+        isActive: true,
         group: {
           select: {
             id: true,
@@ -112,8 +121,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Проверка существования группы (если указана)
-    if (body.groupId) {
+    // Валидация роли - все роли из схемы Prisma
+    const validRoles = ['admin', 'student', 'lector', 'mentor', 'assistant', 'co_lecturer', 'education_office_head', 'department_admin']
+    if (body.role && !validRoles.includes(body.role)) {
+      return NextResponse.json(
+        { error: 'Недопустимая роль' },
+        { status: 400 }
+      )
+    }
+
+    // Проверка существования группы (если указана и не пустая)
+    let groupId: string | null = null
+    if (body.groupId && body.groupId.trim() !== '') {
       const group = await prisma.group.findUnique({
         where: { id: body.groupId }
       })
@@ -124,18 +143,32 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         )
       }
+      groupId = body.groupId
+    }
+
+    // Хешируем пароль
+    const hashedPassword = await bcryptjs.hash(body.password, 12)
+
+    // Подготавливаем данные для создания пользователя
+    const userData: any = {
+      email: body.email,
+      password: hashedPassword,
+      name: body.name,
+      firstName: body.firstName,
+      lastName: body.lastName,
+      role: body.role || 'student',
+      mustChangePassword: body.mustChangePassword || false
+    }
+
+    // Добавляем связь с группой, если группа указана
+    if (groupId) {
+      userData.group = {
+        connect: { id: groupId }
+      }
     }
 
     const user = await prisma.user.create({
-      data: {
-        email: body.email,
-        password: body.password, // В реальном приложении нужно хешировать
-        name: body.name,
-        firstName: body.firstName,
-        lastName: body.lastName,
-        role: body.role || 'student',
-        groupId: body.groupId
-      },
+      data: userData,
       select: {
         id: true,
         name: true,
@@ -177,15 +210,76 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    // Валидация роли (если указана)
+    const validRoles = ['admin', 'student', 'lector', 'mentor', 'assistant', 'co_lecturer', 'education_office_head', 'department_admin']
+    if (body.role && !validRoles.includes(body.role)) {
+      return NextResponse.json(
+        { error: 'Недопустимая роль' },
+        { status: 400 }
+      )
+    }
+
+    // Проверка существования группы (если указана и не пустая)
+    let groupId: string | null = null
+    if (body.groupId !== undefined && body.groupId !== null && body.groupId.trim() !== '') {
+      const group = await prisma.group.findUnique({
+        where: { id: body.groupId }
+      })
+
+      if (!group) {
+        return NextResponse.json(
+          { error: 'Группа не найдена' },
+          { status: 404 }
+        )
+      }
+      groupId = body.groupId
+    } else if (body.groupId === '') {
+      groupId = null
+    }
+
+    // Подготавливаем данные для обновления
+    const updateData: any = {
+      name: body.name,
+      firstName: body.firstName,
+      lastName: body.lastName
+    }
+
+    // Обновляем роль, если указана
+    if (body.role !== undefined) {
+      updateData.role = body.role
+    }
+
+    // Обновляем группу, если указана
+    if (body.groupId !== undefined) {
+      if (groupId !== null) {
+        // Используем связь через group.connect
+        updateData.group = {
+          connect: { id: groupId }
+        }
+      } else {
+        // Если передан пустой groupId, отключаем связь с группой
+        updateData.group = {
+          disconnect: true
+        }
+      }
+    }
+
+    // Обновляем пароль, если указан и не пустой
+    if (body.password && body.password.trim() !== '') {
+      // Хешируем пароль
+      updateData.password = await bcryptjs.hash(body.password, 12)
+      // Если пароль меняется, сбрасываем флаг mustChangePassword
+      updateData.mustChangePassword = false
+    }
+
+    // Обновляем флаг mustChangePassword, если указан
+    if (body.mustChangePassword !== undefined) {
+      updateData.mustChangePassword = body.mustChangePassword
+    }
+
     const user = await prisma.user.update({
       where: { id: body.id },
-      data: {
-        name: body.name,
-        firstName: body.firstName,
-        lastName: body.lastName
-        // Временно отключаем mentorGroupIds до применения миграции
-        // mentorGroupIds: body.mentorGroupIds
-      },
+      data: updateData,
       select: {
         id: true,
         name: true,

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,6 +45,7 @@ interface Group {
 }
 
 export default function SchedulePage() {
+  const searchParams = useSearchParams()
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [groups, setGroups] = useState<Group[]>([])
@@ -58,8 +60,13 @@ export default function SchedulePage() {
   const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(null)
 
   useEffect(() => {
+    // Читаем параметр subject из URL и устанавливаем фильтр
+    const subjectParam = searchParams.get('subject')
+    if (subjectParam) {
+      setSubjectFilter(subjectParam)
+    }
     fetchData()
-  }, [])
+  }, [searchParams])
 
   const fetchData = async () => {
     try {

@@ -414,7 +414,7 @@ export default function SeedPage() {
             <p>👨‍🏫 <strong>Преподаватель:</strong> lector@demo.com / lector123</p>
             <p>👤 <strong>Ментор:</strong> mentor@demo.com / mentor123</p>
             <p>🤝 <strong>Ассистент:</strong> assistant@demo.com / assistant123</p>
-            <p>👥 <strong>Со-препод:</strong> coteacher@demo.com / coteacher123</p>
+            <p>👥 <strong>Со-препод:</strong> co_lecturer@demo.com / co_lecturer123</p>
             <p>📊 <strong>Учебный отдел:</strong> eduoffice@demo.com / eduoffice123</p>
             <p>🏛️ <strong>Админ кафедры:</strong> deptadmin@demo.com / deptadmin123</p>
           </div>

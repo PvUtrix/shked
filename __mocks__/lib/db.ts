@@ -1,5 +1,6 @@
 // Manual mock для @/lib/db
 // Этот файл автоматически используется Jest когда модуль замокан через jest.mock('@/lib/db')
+import { jest } from '@jest/globals'
 
 export const prisma = {
   botSettings: {
