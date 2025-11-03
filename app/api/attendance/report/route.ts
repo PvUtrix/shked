@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+// Помечаем route как динамический (использует headers)
+export const dynamic = 'force-dynamic'
+
 // GET /api/attendance/report - Получить отчет по посещаемости
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Проверка прав доступа
-    if (!['admin', 'teacher', 'department_admin', 'education_office_head'].includes(session.user.role)) {
+    if (!['admin', 'lector', 'department_admin', 'education_office_head'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
