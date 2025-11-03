@@ -12,3 +12,19 @@ export function formatDuration(seconds: number): string {
 
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
 }
+
+// Формирует полное имя пользователя из firstName + middleName + lastName
+// Поле name больше не используется - используем только компоненты имени
+export function getFullName(user: {
+  firstName?: string | null
+  middleName?: string | null
+  lastName?: string | null
+}): string {
+  const parts = [
+    user.firstName,
+    user.middleName,
+    user.lastName
+  ].filter(Boolean)
+  
+  return parts.length > 0 ? parts.join(' ') : ''
+}

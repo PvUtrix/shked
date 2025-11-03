@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/activity-log'
 
 // GET /api/homework/[id]/submissions/[submissionId]/comments - получение всех комментариев
 export async function GET(
@@ -156,8 +157,41 @@ export async function POST(
             lastName: true,
             email: true
           }
+        },
+        submission: {
+          select: {
+            id: true,
+            homeworkId: true,
+            homework: {
+              select: {
+                id: true,
+                title: true
+              }
+            }
+          }
         }
       }
+    })
+
+    // Логируем создание комментария
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'HomeworkComment',
+      entityId: comment.id,
+      request,
+      details: {
+        after: {
+          id: comment.id,
+          submissionId: comment.submissionId,
+          homeworkId: comment.submission.homeworkId,
+          homeworkTitle: comment.submission.homework.title,
+          contentLength: content.length,
+          startOffset,
+          endOffset
+        }
+      },
+      result: 'SUCCESS'
     })
 
     return NextResponse.json(comment, { status: 201 })

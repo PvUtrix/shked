@@ -198,11 +198,58 @@ export async function POST(request: NextRequest) {
     const date = new Date(body.date)
     const dayOfWeek = date.getDay()
 
+    // Обрабатываем subgroupId
+    // Если subgroupId пустой или равен 'none', устанавливаем null
+    // Если subgroupId это просто номер (строка "1", "2", "3", "4"), пытаемся найти реальную подгруппу
+    let subgroupId: string | null = null
+    if (body.subgroupId && body.subgroupId.trim() !== '' && body.subgroupId !== 'none') {
+      // Проверяем, является ли это ID подгруппы (cuid имеет длину ~25 символов)
+      // или это просто номер подгруппы (1-2 символа)
+      if (body.subgroupId.length <= 4 && /^\d+$/.test(body.subgroupId)) {
+        // Это номер подгруппы, пытаемся найти реальную подгруппу
+        const subgroupNumber = parseInt(body.subgroupId, 10)
+        if (body.groupId) {
+          const subgroup = await prisma.subgroup.findFirst({
+            where: {
+              groupId: body.groupId,
+              number: subgroupNumber,
+              // Ищем либо общую подгруппу (subjectId = null), либо подгруппу для этого предмета
+              OR: [
+                { subjectId: null },
+                { subjectId: body.subjectId }
+              ],
+              isActive: true
+            }
+          })
+          
+          if (subgroup) {
+            subgroupId = subgroup.id
+          } else {
+            // Если подгруппа не найдена, просто не устанавливаем subgroupId (null)
+            // Это означает, что занятие для всей группы
+            subgroupId = null
+          }
+        }
+      } else {
+        // Это похоже на реальный ID подгруппы, проверяем его существование
+        const subgroup = await prisma.subgroup.findUnique({
+          where: { id: body.subgroupId }
+        })
+        
+        if (subgroup) {
+          subgroupId = body.subgroupId
+        } else {
+          // Если подгруппа не найдена, устанавливаем null
+          subgroupId = null
+        }
+      }
+    }
+
     const schedule = await prisma.schedule.create({
       data: {
         subjectId: body.subjectId,
         groupId: body.groupId,
-        subgroupId: body.subgroupId,
+        subgroupId: subgroupId,
         date: date,
         dayOfWeek: dayOfWeek,
         startTime: body.startTime,
@@ -346,7 +393,56 @@ export async function PUT(request: NextRequest) {
     
     if (body.subjectId !== undefined) updateData.subjectId = body.subjectId
     if (body.groupId !== undefined) updateData.groupId = body.groupId
-    if (body.subgroupId !== undefined) updateData.subgroupId = body.subgroupId
+    // Обрабатываем subgroupId
+    if (body.subgroupId !== undefined) {
+      // Если subgroupId пустой или равен 'none', устанавливаем null
+      if (!body.subgroupId || body.subgroupId.trim() === '' || body.subgroupId === 'none') {
+        updateData.subgroupId = null
+      } else {
+        // Проверяем, является ли это ID подгруппы или номер подгруппы
+        if (body.subgroupId.length <= 4 && /^\d+$/.test(body.subgroupId)) {
+          // Это номер подгруппы, пытаемся найти реальную подгруппу
+          const subgroupNumber = parseInt(body.subgroupId, 10)
+          const existingSchedule = await prisma.schedule.findUnique({
+            where: { id: body.id },
+            select: { groupId: true, subjectId: true }
+          })
+          
+          if (existingSchedule?.groupId) {
+            const subgroup = await prisma.subgroup.findFirst({
+              where: {
+                groupId: existingSchedule.groupId,
+                number: subgroupNumber,
+                OR: [
+                  { subjectId: null },
+                  { subjectId: existingSchedule.subjectId }
+                ],
+                isActive: true
+              }
+            })
+            
+            if (subgroup) {
+              updateData.subgroupId = subgroup.id
+            } else {
+              updateData.subgroupId = null
+            }
+          } else {
+            updateData.subgroupId = null
+          }
+        } else {
+          // Это похоже на реальный ID подгруппы, проверяем его существование
+          const subgroup = await prisma.subgroup.findUnique({
+            where: { id: body.subgroupId }
+          })
+          
+          if (subgroup) {
+            updateData.subgroupId = body.subgroupId
+          } else {
+            updateData.subgroupId = null
+          }
+        }
+      }
+    }
     if (body.date) {
       const date = new Date(body.date)
       updateData.date = date

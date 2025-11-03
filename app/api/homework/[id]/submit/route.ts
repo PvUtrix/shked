@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { HomeworkSubmissionFormData } from '@/lib/types'
+import { logActivity } from '@/lib/activity-log'
 
 // POST /api/homework/[id]/submit - сдача домашнего задания
 export async function POST(
@@ -55,6 +56,16 @@ export async function POST(
       )
     }
 
+    // Проверяем, существует ли уже работа
+    const existingSubmission = await prisma.homeworkSubmission.findUnique({
+      where: {
+        homeworkId_userId: {
+          homeworkId: params.id,
+          userId: session.user.id
+        }
+      }
+    })
+
     // Создание или обновление работы студента
     const submission = await prisma.homeworkSubmission.upsert({
       where: {
@@ -94,6 +105,33 @@ export async function POST(
           }
         }
       }
+    })
+
+    // Логируем сдачу домашнего задания
+    await logActivity({
+      userId: session.user.id,
+      action: existingSubmission ? 'UPDATE' : 'CREATE',
+      entityType: 'HomeworkSubmission',
+      entityId: submission.id,
+      request,
+      details: {
+        before: existingSubmission ? {
+          id: existingSubmission.id,
+          homeworkId: existingSubmission.homeworkId,
+          status: existingSubmission.status,
+          submittedAt: existingSubmission.submittedAt?.toISOString()
+        } : undefined,
+        after: {
+          id: submission.id,
+          homeworkId: submission.homeworkId,
+          homeworkTitle: submission.homework.title,
+          status: submission.status,
+          submittedAt: submission.submittedAt?.toISOString(),
+          hasContent: !!submission.content,
+          hasUrl: !!submission.submissionUrl
+        }
+      },
+      result: 'SUCCESS'
     })
 
     return NextResponse.json(submission, { status: 201 })
@@ -187,6 +225,33 @@ export async function PUT(
           }
         }
       }
+    })
+
+    // Логируем обновление работы
+    await logActivity({
+      userId: session.user.id,
+      action: 'UPDATE',
+      entityType: 'HomeworkSubmission',
+      entityId: submission.id,
+      request,
+      details: {
+        before: {
+          id: existingSubmission.id,
+          homeworkId: existingSubmission.homeworkId,
+          status: existingSubmission.status,
+          submittedAt: existingSubmission.submittedAt?.toISOString()
+        },
+        after: {
+          id: submission.id,
+          homeworkId: submission.homeworkId,
+          homeworkTitle: submission.homework.title,
+          status: submission.status,
+          submittedAt: submission.submittedAt?.toISOString(),
+          hasContent: !!submission.content,
+          hasUrl: !!submission.submissionUrl
+        }
+      },
+      result: 'SUCCESS'
     })
 
     return NextResponse.json(submission)

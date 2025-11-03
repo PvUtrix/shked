@@ -108,6 +108,39 @@ function calculateChanges(
 }
 
 /**
+ * Получает реальный ID пользователя из базы данных по ID из сессии или email
+ * Это необходимо, так как ID в сессии может быть устаревшим после сброса БД
+ */
+async function getActualUserId(userIdOrEmail: string): Promise<string | null> {
+  try {
+    // Сначала пытаемся найти по ID
+    const userById = await prisma.user.findUnique({
+      where: { id: userIdOrEmail },
+      select: { id: true }
+    })
+
+    if (userById) {
+      return userById.id
+    }
+
+    // Если не найден по ID, пробуем найти по email
+    const userByEmail = await prisma.user.findUnique({
+      where: { email: userIdOrEmail },
+      select: { id: true }
+    })
+
+    if (userByEmail) {
+      return userByEmail.id
+    }
+
+    return null
+  } catch (error) {
+    console.error('[ActivityLog] Ошибка при получении ID пользователя:', error)
+    return null
+  }
+}
+
+/**
  * Логирует действие пользователя
  */
 export async function logActivity({
@@ -123,30 +156,69 @@ export async function logActivity({
     const ipAddress = getIpAddress(request)
 
     // Подготавливаем детали для сохранения
+    // Сохраняем только измененные значения для лучшей читаемости
     let logDetails: ActivityDetails | undefined = undefined
 
     if (details) {
-      logDetails = {
-        ...details,
-        // Вычисляем изменения, если они не указаны явно
-        changes: details.changes || calculateChanges(details.before, details.after)
-      }
+      // Вычисляем изменения, если они не указаны явно
+      const changes = details.changes || calculateChanges(details.before, details.after)
 
-      // Убираем пароли из логов
-      if (logDetails.before && 'password' in logDetails.before) {
-        logDetails.before = { ...logDetails.before }
-        delete logDetails.before.password
+      // Для CREATE операций сохраняем только after (новые данные)
+      if (action === 'CREATE' && details.after) {
+        // Убираем пароли из логов
+        const afterCleaned = { ...details.after }
+        delete afterCleaned.password
+        delete afterCleaned.updatedAt
+        
+        logDetails = {
+          after: afterCleaned
+        }
       }
-      if (logDetails.after && 'password' in logDetails.after) {
-        logDetails.after = { ...logDetails.after }
-        delete logDetails.after.password
+      // Для UPDATE и DELETE операций сохраняем только измененные поля
+      else if (changes && changes.length > 0) {
+        // Фильтруем изменения, убирая пароли и другие чувствительные данные
+        const filteredChanges = changes.filter(change => 
+          change.field !== 'password' && 
+          change.field !== 'updatedAt'
+        )
+        
+        if (filteredChanges.length > 0) {
+          logDetails = {
+            changes: filteredChanges
+          }
+        }
+      }
+      // Если нет изменений, но есть только after (для CREATE без изменений)
+      else if (details.after) {
+        const afterCleaned = { ...details.after }
+        delete afterCleaned.password
+        delete afterCleaned.updatedAt
+        
+        logDetails = {
+          after: afterCleaned
+        }
+      }
+      // Если есть только error
+      else if (details.error) {
+        logDetails = {
+          error: details.error
+        }
       }
     }
 
-    // Сохраняем лог в базу данных
+    // Получаем реальный ID пользователя из базы данных
+    // Это необходимо, так как ID в сессии может быть устаревшим после сброса БД
+    const actualUserId = await getActualUserId(userId)
+
+    if (!actualUserId) {
+      console.warn(`[ActivityLog] Пользователь с ID/email ${userId} не найден в базе данных, пропускаем логирование`)
+      return
+    }
+
+    // Сохраняем лог в базу данных с реальным ID пользователя
     await prisma.activityLog.create({
       data: {
-        userId,
+        userId: actualUserId,
         action,
         entityType: entityType || null,
         entityId: entityId || null,

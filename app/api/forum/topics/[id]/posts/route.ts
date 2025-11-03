@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/activity-log'
 
 // POST /api/forum/topics/[id]/posts - Создать пост в топике
 export async function POST(
@@ -54,6 +55,12 @@ export async function POST(
             firstName: true,
             lastName: true
           }
+        },
+        topic: {
+          select: {
+            id: true,
+            title: true
+          }
         }
       }
     })
@@ -62,6 +69,24 @@ export async function POST(
     await prisma.forumTopic.update({
       where: { id: params.id },
       data: { updatedAt: new Date() }
+    })
+
+    // Логируем создание поста
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'ForumPost',
+      entityId: post.id,
+      request,
+      details: {
+        after: {
+          id: post.id,
+          topicId: post.topicId,
+          topicTitle: post.topic.title,
+          contentLength: content.length
+        }
+      },
+      result: 'SUCCESS'
     })
 
     return NextResponse.json(post, { status: 201 })

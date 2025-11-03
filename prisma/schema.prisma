@@ -43,6 +43,10 @@ model User {
   password            String
   firstName           String?
   lastName            String?
+  middleName          String? // Отчество
+  birthday            DateTime? // Дата рождения
+  snils               String? // СНИЛС (только цифры)
+  sex                 String? // Пол (male/female)
   role                String               @default("student") // admin, student, lector, mentor, assistant, co_lecturer, education_office_head, department_admin
   groupId             String?
   canHelp             String? // Чем могу быть полезен

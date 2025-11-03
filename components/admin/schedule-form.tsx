@@ -29,14 +29,22 @@ import { ScheduleFormData } from '@/lib/types'
 import { toast } from 'sonner'
 
 const scheduleSchema = z.object({
-  subjectId: z.string().min(1, 'Предмет обязателен'),
+  subjectId: z.string().refine((val) => val && val.trim().length > 0, {
+    message: 'Предмет обязателен',
+  }),
   groupId: z.string().optional(),
   subgroupId: z.string().optional(),
-  date: z.string().min(1, 'Дата обязательна'),
-  startTime: z.string().min(1, 'Время начала обязательно'),
-  endTime: z.string().min(1, 'Время окончания обязательно'),
+  date: z.string().refine((val) => val && val.trim().length > 0, {
+    message: 'Дата обязательна',
+  }),
+  startTime: z.string().refine((val) => val && val.trim().length > 0, {
+    message: 'Время начала обязательно',
+  }),
+  endTime: z.string().refine((val) => val && val.trim().length > 0, {
+    message: 'Время окончания обязательно',
+  }),
   location: z.string().optional(),
-  eventType: z.string().optional(),
+  eventType: z.enum(['Лекция', 'Семинар', 'Практика', 'Лабораторная', 'Консультация', 'Экзамен']).optional().or(z.literal('')),
   description: z.string().optional(),
 })
 
@@ -55,6 +63,8 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
 
   const form = useForm<ScheduleFormData>({
     resolver: zodResolver(scheduleSchema),
+    mode: 'onChange', // Валидация при изменении полей
+    reValidateMode: 'onChange', // Повторная валидация при изменении
     defaultValues: {
       subjectId: '',
       groupId: '',
@@ -70,6 +80,8 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
 
   // Загружаем списки предметов и групп
   useEffect(() => {
+    let isMounted = true
+    
     const fetchData = async () => {
       try {
         const [subjectsResponse, groupsResponse] = await Promise.all([
@@ -79,55 +91,137 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
 
         if (subjectsResponse.ok) {
           const subjectsData = await subjectsResponse.json()
-          setSubjects(subjectsData.subjects || [])
+          if (isMounted) {
+            setSubjects(subjectsData.subjects || [])
+          }
         }
 
         if (groupsResponse.ok) {
           const groupsData = await groupsResponse.json()
-          setGroups(groupsData.groups || [])
+          if (isMounted) {
+            setGroups(groupsData.groups || [])
+          }
         }
       } catch (error) {
-        console.error('Ошибка при загрузке данных:', error)
+        if (isMounted) {
+          console.error('Ошибка при загрузке данных:', error)
+        }
       }
     }
 
     if (open) {
       fetchData()
     }
+    
+    return () => {
+      isMounted = false
+    }
   }, [open])
 
   // Заполняем форму при редактировании
   useEffect(() => {
-    if (schedule) {
-      const date = new Date(schedule.date)
-      form.reset({
-        subjectId: schedule.subjectId || '',
-        groupId: schedule.groupId || '',
-        subgroupId: schedule.subgroupId || '',
-        date: date.toISOString().split('T')[0],
-        startTime: schedule.startTime || '',
-        endTime: schedule.endTime || '',
-        location: schedule.location || '',
-        eventType: schedule.eventType || '',
-        description: schedule.description || '',
-      })
-    } else {
-      form.reset({
-        subjectId: '',
-        groupId: '',
-        subgroupId: '',
-        date: '',
-        startTime: '',
-        endTime: '',
-        location: '',
-        eventType: '',
-        description: '',
-      })
+    if (open) {
+      if (schedule) {
+        try {
+          const date = new Date(schedule.date)
+          form.reset({
+            subjectId: schedule.subjectId || '',
+            groupId: schedule.groupId || '',
+            subgroupId: schedule.subgroupId || '',
+            date: date.toISOString().split('T')[0],
+            startTime: schedule.startTime || '',
+            endTime: schedule.endTime || '',
+            location: schedule.location || '',
+            eventType: schedule.eventType || '',
+            description: schedule.description || '',
+          }, {
+            keepErrors: false,
+            keepDirty: false,
+            keepDefaultValues: false,
+          })
+        } catch (error) {
+          console.error('Ошибка при форматировании даты:', error)
+          form.reset({
+            subjectId: schedule.subjectId || '',
+            groupId: schedule.groupId || '',
+            subgroupId: schedule.subgroupId || '',
+            date: '',
+            startTime: schedule.startTime || '',
+            endTime: schedule.endTime || '',
+            location: schedule.location || '',
+            eventType: schedule.eventType || '',
+            description: schedule.description || '',
+          }, {
+            keepErrors: false,
+            keepDirty: false,
+            keepDefaultValues: false,
+          })
+        }
+      } else {
+        form.reset({
+          subjectId: '',
+          groupId: '',
+          subgroupId: '',
+          date: '',
+          startTime: '',
+          endTime: '',
+          location: '',
+          eventType: '',
+          description: '',
+        }, {
+          keepErrors: false,
+          keepDirty: false,
+          keepDefaultValues: false,
+        })
+      }
+      
+      // Не валидируем при загрузке данных - валидация будет при изменении полей
+      // Это предотвращает ошибки ZodError при загрузке существующих данных
     }
-  }, [schedule, form])
+  }, [schedule, open, form])
 
   const onSubmit = async (data: ScheduleFormData) => {
+    // Принудительно валидируем все поля перед отправкой
+    const isValid = await form.trigger()
+    if (!isValid) {
+      // Получаем первое поле с ошибкой и переводим на него фокус
+      const errorFields = Object.keys(form.formState.errors)
+      if (errorFields.length > 0) {
+        const firstError = errorFields[0]
+        // Для Select полей нужно искать по другому селектору
+        let fieldElement = document.querySelector(`[name="${firstError}"]`) as HTMLElement
+        if (!fieldElement) {
+          // Для Select полей ищем по data-атрибуту или через aria-invalid
+          fieldElement = document.querySelector(`[data-field="${firstError}"]`) as HTMLElement
+        }
+        if (!fieldElement) {
+          // Пробуем найти через aria-invalid
+          fieldElement = document.querySelector(`[aria-invalid="true"]`) as HTMLElement
+        }
+        if (fieldElement) {
+          fieldElement.focus()
+          // Прокручиваем к полю с ошибкой
+          setTimeout(() => {
+            fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }, 100)
+        } else {
+          // Если не нашли напрямую, ищем SelectTrigger для Select полей
+          const selectTrigger = document.querySelector(`button[data-field="${firstError}"]`) as HTMLElement
+          if (selectTrigger) {
+            selectTrigger.focus()
+            setTimeout(() => {
+              selectTrigger.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }, 100)
+          }
+        }
+      }
+      toast.error('Пожалуйста, заполните все обязательные поля')
+      return
+    }
+
     setLoading(true)
+    let isMounted = true
+    
     try {
       const url = '/api/schedules'
       const method = isEditing ? 'PUT' : 'POST'
@@ -141,6 +235,10 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
         body: JSON.stringify(body),
       })
 
+      if (!isMounted) {
+        return
+      }
+
       if (response.ok) {
         toast.success(
           isEditing ? 'Расписание обновлено' : 'Расписание создано'
@@ -153,10 +251,14 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
         toast.error(error.error || 'Произошла ошибка')
       }
     } catch (error) {
-      console.error('Ошибка при сохранении расписания:', error)
-      toast.error('Произошла ошибка при сохранении')
+      if (isMounted) {
+        console.error('Ошибка при сохранении расписания:', error)
+        toast.error('Произошла ошибка при сохранении')
+      }
     } finally {
-      setLoading(false)
+      if (isMounted) {
+        setLoading(false)
+      }
     }
   }
 
@@ -183,9 +285,9 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Предмет *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger data-field="subjectId">
                         <SelectValue placeholder="Выберите предмет" />
                       </SelectTrigger>
                     </FormControl>
@@ -241,7 +343,8 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
                     <FormControl>
                       <Input 
                         type="date" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
@@ -288,7 +391,8 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
                     <FormControl>
                       <Input 
                         type="time" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
@@ -305,7 +409,8 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
                     <FormControl>
                       <Input 
                         type="time" 
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
@@ -335,9 +440,25 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Тип занятия</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Лекция, семинар, практика" {...field} />
-                    </FormControl>
+                    <Select 
+                      onValueChange={(value) => field.onChange(value === 'none' ? '' : value)} 
+                      value={field.value || 'none'}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите тип занятия" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">Не указан</SelectItem>
+                        <SelectItem value="Лекция">Лекция</SelectItem>
+                        <SelectItem value="Семинар">Семинар</SelectItem>
+                        <SelectItem value="Практика">Практика</SelectItem>
+                        <SelectItem value="Лабораторная">Лабораторная</SelectItem>
+                        <SelectItem value="Консультация">Консультация</SelectItem>
+                        <SelectItem value="Экзамен">Экзамен</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -370,7 +491,7 @@ export function ScheduleForm({ open, onOpenChange, schedule, onSuccess }: Schedu
               >
                 Отмена
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading || !form.formState.isValid}>
                 {loading ? 'Сохранение...' : (isEditing ? 'Обновить' : 'Создать')}
               </Button>
             </DialogFooter>

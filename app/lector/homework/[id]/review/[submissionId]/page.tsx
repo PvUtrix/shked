@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { getFullName } from '@/lib/utils'
 
 interface Submission {
   id: string
@@ -39,6 +40,7 @@ interface Submission {
     name?: string
     firstName?: string
     lastName?: string
+    middleName?: string
     email: string
   }
 }
@@ -198,9 +200,7 @@ export default function LectorReviewSubmissionPage({
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Проверка домашнего задания</h1>
             <p className="text-gray-600">
-              {submission.user?.name || 
-               `${submission.user?.firstName || ''} ${submission.user?.lastName || ''}`.trim() ||
-               submission.user?.email}
+              {submission.user ? (getFullName(submission.user) || submission.user.email) : 'Неизвестный пользователь'}
             </p>
           </div>
         </div>
@@ -348,9 +348,7 @@ export default function LectorReviewSubmissionPage({
                 <User className="h-4 w-4 text-gray-400" />
                 <div>
                   <p className="font-medium">
-                    {submission.user?.name || 
-                     `${submission.user?.firstName || ''} ${submission.user?.lastName || ''}`.trim() ||
-                     'Имя не указано'}
+                    {submission.user ? (getFullName(submission.user) || 'Имя не указано') : 'Имя не указано'}
                   </p>
                   <p className="text-sm text-gray-500">{submission.user?.email}</p>
                 </div>

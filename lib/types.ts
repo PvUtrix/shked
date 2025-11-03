@@ -134,9 +134,13 @@ export type SubjectFormData = {
 export type UserFormData = {
   email: string
   password?: string // Только для создания
-  name?: string
+  // name больше не используется - используем только firstName, lastName, middleName
   firstName?: string
   lastName?: string
+  middleName?: string // Отчество
+  birthday?: string // Дата рождения (ISO string)
+  snils?: string // СНИЛС
+  sex?: string // Пол (male/female)
   role: 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_lecturer' | 'education_office_head' | 'department_admin'
   groupId?: string
   status?: 'ACTIVE' | 'EXPELLED' | 'ACADEMIC_LEAVE'

@@ -20,10 +20,14 @@ import {
   FileText
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
+import { getFullName } from '@/lib/utils'
 
 interface AdminNavProps {
   user?: {
     name?: string
+    firstName?: string
+    lastName?: string
+    middleName?: string
     email?: string
   }
 }
@@ -110,7 +114,7 @@ export function AdminNav({ user }: AdminNavProps) {
               <div className="flex items-center space-x-3">
                 <UserCircle className="h-8 w-8 text-blue-600" />
                 <div>
-                  <p className="font-medium text-gray-900">{user?.name || t('admin.defaultName')}</p>
+                  <p className="font-medium text-gray-900">{user ? getFullName(user) || t('admin.defaultName') : t('admin.defaultName')}</p>
                   <p className="text-sm text-gray-500">{t('admin.role')}</p>
                 </div>
               </div>

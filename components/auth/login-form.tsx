@@ -40,7 +40,7 @@ export function LoginForm() {
         const normalizedEmail = email.toLowerCase().trim()
         let redirectPath = '/student' // По умолчанию
         
-        if (normalizedEmail === 'admin@shked.com' || normalizedEmail === 'john@doe.com') {
+        if (normalizedEmail === 'admin@shked.com') {
           redirectPath = '/admin'
         } else if (normalizedEmail === 'lector@demo.com') {
           redirectPath = '/lector'

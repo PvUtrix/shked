@@ -108,6 +108,7 @@ export function AttendanceForm({
 
   const onSubmit = async () => {
     setLoading(true)
+    let isMounted = true
 
     try {
       const attendanceList = students.map(student => ({
@@ -125,6 +126,10 @@ export function AttendanceForm({
         body: JSON.stringify({ attendanceList }),
       })
 
+      if (!isMounted) {
+        return
+      }
+
       if (!response.ok) {
         throw new Error('Ошибка при сохранении посещаемости')
       }
@@ -137,13 +142,17 @@ export function AttendanceForm({
       router.refresh()
       onSuccess?.()
     } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: error instanceof Error ? error.message : 'Не удалось сохранить посещаемость',
-        variant: 'destructive',
-      })
+      if (isMounted) {
+        toast({
+          title: 'Ошибка',
+          description: error instanceof Error ? error.message : 'Не удалось сохранить посещаемость',
+          variant: 'destructive',
+        })
+      }
     } finally {
-      setLoading(false)
+      if (isMounted) {
+        setLoading(false)
+      }
     }
   }
 

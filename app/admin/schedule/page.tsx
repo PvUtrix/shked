@@ -138,7 +138,8 @@ export default function SchedulePage() {
   }
 
   const handleFormSuccess = () => {
-    fetchData()
+    setEditingSchedule(null) // Сбрасываем editingSchedule после успешного сохранения
+    fetchData() // Обновляем список расписаний
   }
 
   const formatDate = (dateString: string) => {
@@ -360,7 +361,13 @@ export default function SchedulePage() {
       {/* Форма расписания */}
       <ScheduleForm
         open={scheduleFormOpen}
-        onOpenChange={setScheduleFormOpen}
+        onOpenChange={(open) => {
+          setScheduleFormOpen(open)
+          if (!open) {
+            // Сбрасываем editingSchedule при закрытии формы
+            setEditingSchedule(null)
+          }
+        }}
         schedule={editingSchedule}
         onSuccess={handleFormSuccess}
       />

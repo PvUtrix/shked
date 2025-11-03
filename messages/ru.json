@@ -27,7 +27,19 @@
       "description": "Описание",
       "title": "Название",
       "status": "Статус",
-      "role": "Роль"
+      "role": "Роль",
+      "filter": "Фильтр",
+      "middleName": "Отчество",
+      "birthday": "Дата рождения",
+      "snils": "СНИЛС",
+      "sex": "Пол",
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "fullName": "Полное имя"
+    },
+    "sex": {
+      "male": "Мужской",
+      "female": "Женский"
     },
     "messages": {
       "success": "Успешно",

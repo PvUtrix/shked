@@ -10,6 +10,7 @@ import { BookOpen, Plus, Edit, Trash2, User, UserCheck } from 'lucide-react'
 import { SubjectForm } from '@/components/admin/subject-form'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { toast } from 'sonner'
+import { getFullName } from '@/lib/utils'
 
 interface Subject {
   id: string
@@ -22,6 +23,7 @@ interface Subject {
     name?: string
     firstName?: string
     lastName?: string
+    middleName?: string
     email: string
   }
   _count?: {
@@ -139,7 +141,8 @@ export default function SubjectsPage() {
   }
 
   const handleFormSuccess = () => {
-    fetchData()
+    setEditingSubject(null) // Сбрасываем editingSubject после успешного сохранения
+    fetchData() // Обновляем список предметов
   }
 
   if (loading) {
@@ -247,14 +250,14 @@ export default function SubjectsPage() {
                           <SelectItem value="none">Без преподавателя</SelectItem>
                           {lectors.map(lector => (
                             <SelectItem key={lector.id} value={lector.id}>
-                              {lector.name || `${lector.firstName || ''} ${lector.lastName || ''}`.trim() || lector.email}
+                              {getFullName(lector) || lector.email}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                       {subject?.lector && (
                         <p className="text-xs text-gray-500">
-                          Назначен: {subject.lector.name || `${subject.lector.firstName || ''} ${subject.lector.lastName || ''}`.trim() || subject.lector.email}
+                          Назначен: {subject.lector ? (getFullName(subject.lector) || subject.lector.email) : 'Не назначен'}
                         </p>
                       )}
                     </div>
@@ -280,7 +283,13 @@ export default function SubjectsPage() {
       {/* Форма предмета */}
       <SubjectForm
         open={subjectFormOpen}
-        onOpenChange={setSubjectFormOpen}
+        onOpenChange={(open) => {
+          setSubjectFormOpen(open)
+          if (!open) {
+            // Сбрасываем editingSubject при закрытии формы
+            setEditingSubject(null)
+          }
+        }}
         subject={editingSubject}
         onSuccess={handleFormSuccess}
       />

@@ -122,7 +122,7 @@ export function DocumentUploadForm({
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Тип документа</FormLabel>
+              <FormLabel>Тип документа *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -166,7 +166,7 @@ export function DocumentUploadForm({
         />
 
         <div>
-          <FormLabel>Файл документа</FormLabel>
+          <FormLabel>Файл документа *</FormLabel>
           <div className="mt-2">
             <FileUploader
               onUpload={handleFileUpload}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/activity-log'
 
 // POST /api/homework/[id]/submissions/[submissionId]/review - проверка работы студента
 export async function POST(
@@ -80,8 +81,42 @@ export async function POST(
             lastName: true,
             email: true
           }
+        },
+        homework: {
+          select: {
+            id: true,
+            title: true
+          }
         }
       }
+    })
+
+    // Логируем проверку работы
+    await logActivity({
+      userId: session.user.id,
+      action: 'UPDATE',
+      entityType: 'HomeworkSubmission',
+      entityId: updatedSubmission.id,
+      request,
+      details: {
+        before: {
+          id: submission.id,
+          homeworkId: submission.homeworkId,
+          grade: submission.grade,
+          status: submission.status
+        },
+        after: {
+          id: updatedSubmission.id,
+          homeworkId: updatedSubmission.homeworkId,
+          homeworkTitle: updatedSubmission.homework.title,
+          grade: updatedSubmission.grade,
+          status: updatedSubmission.status,
+          hasComment: !!updatedSubmission.comment,
+          hasFeedback: !!updatedSubmission.feedback,
+          studentId: updatedSubmission.userId
+        }
+      },
+      result: 'SUCCESS'
     })
 
     return NextResponse.json(updatedSubmission)

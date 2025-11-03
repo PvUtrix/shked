@@ -7,7 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserCircle, Mail, User, Users, BookOpen, Calendar, Save, MessageSquare, Copy, Check, HandHeart, Search } from 'lucide-react'
+import { getFullName } from '@/lib/utils'
 
 interface UserGroup {
   subgroupCommerce?: number | null
@@ -42,7 +44,11 @@ export default function StudentProfilePage() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    middleName: '',
     email: '',
+    birthday: '',
+    snils: '',
+    sex: '',
     canHelp: '',
     lookingFor: ''
   })
@@ -54,9 +60,13 @@ export default function StudentProfilePage() {
   useEffect(() => {
     if (session?.user) {
       setFormData({
-        firstName: session.user.name?.split(' ')[0] || '',
-        lastName: session.user.name?.split(' ')[1] || '',
+        firstName: session.user.firstName || '',
+        lastName: session.user.lastName || '',
+        middleName: '',
         email: session.user.email || '',
+        birthday: '',
+        snils: '',
+        sex: '',
         canHelp: '',
         lookingFor: ''
       })
@@ -74,6 +84,10 @@ export default function StudentProfilePage() {
           ...prev,
           firstName: profileData.user.firstName || '',
           lastName: profileData.user.lastName || '',
+          middleName: profileData.user.middleName || '',
+          birthday: profileData.user.birthday ? new Date(profileData.user.birthday).toISOString().split('T')[0] : '',
+          snils: profileData.user.snils || '',
+          sex: profileData.user.sex || '',
           canHelp: profileData.user.canHelp || '',
           lookingFor: profileData.user.lookingFor || ''
         }))
@@ -156,6 +170,10 @@ export default function StudentProfilePage() {
         body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
+          middleName: formData.middleName,
+          birthday: formData.birthday || null,
+          snils: formData.snils,
+          sex: formData.sex || null,
           canHelp: formData.canHelp,
           lookingFor: formData.lookingFor
         })
@@ -237,7 +255,7 @@ export default function StudentProfilePage() {
                 <UserCircle className="h-16 w-16 text-gray-400" />
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900">
-                    {session?.user?.name || 'Студент'}
+                    {getFullName(session?.user || {}) || 'Студент'}
                   </h3>
                   <p className="text-gray-500">Студент</p>
                 </div>
@@ -270,6 +288,85 @@ export default function StudentProfilePage() {
                     <p className="text-gray-900">{formData.lastName || 'Не указано'}</p>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Отчество
+                </label>
+                {isEditing ? (
+                  <Input
+                    value={formData.middleName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, middleName: e.target.value }))}
+                    placeholder="Отчество"
+                  />
+                ) : (
+                  <p className="text-gray-900">{formData.middleName || 'Не указано'}</p>
+                )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Дата рождения
+                  </label>
+                  {isEditing ? (
+                    <Input
+                      type="date"
+                      max={(() => {
+                        // Максимальная дата: сегодня минус 10 лет
+                        const today = new Date()
+                        const maxDate = new Date(today)
+                        maxDate.setFullYear(today.getFullYear() - 10)
+                        return maxDate.toISOString().split('T')[0]
+                      })()}
+                      min={(() => {
+                        // Минимальная дата: сегодня минус 150 лет
+                        const today = new Date()
+                        const minDate = new Date(today)
+                        minDate.setFullYear(today.getFullYear() - 150)
+                        return minDate.toISOString().split('T')[0]
+                      })()}
+                      value={formData.birthday}
+                      onChange={(e) => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
+                    />
+                  ) : (
+                    <p className="text-gray-900">{formData.birthday ? new Date(formData.birthday).toLocaleDateString('ru-RU') : 'Не указано'}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Пол
+                  </label>
+                  {isEditing ? (
+                    <Select value={formData.sex} onValueChange={(value) => setFormData(prev => ({ ...prev, sex: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите пол" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Мужской</SelectItem>
+                        <SelectItem value="female">Женский</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-gray-900">{formData.sex === 'male' ? 'Мужской' : formData.sex === 'female' ? 'Женский' : 'Не указано'}</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  СНИЛС
+                </label>
+                {isEditing ? (
+                  <Input
+                    value={formData.snils}
+                    onChange={(e) => setFormData(prev => ({ ...prev, snils: e.target.value }))}
+                    placeholder="СНИЛС (только цифры)"
+                  />
+                ) : (
+                  <p className="text-gray-900">{formData.snils || 'Не указано'}</p>
+                )}
               </div>
 
               <div>

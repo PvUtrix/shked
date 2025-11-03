@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Label } from '@/components/ui/label'
-import { Search, Filter, Calendar, RefreshCw, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Filter, Calendar, RefreshCw, Eye, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ActivityLog {
@@ -59,6 +60,35 @@ export default function ActivityLogPage() {
   })
   const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
+
+  // Функция для получения URL сущности на основе типа
+  const getEntityUrl = (entityType: string | null, entityId: string | null): string | null => {
+    if (!entityType || !entityId) {
+      return null
+    }
+
+    const entityRoutes: Record<string, string> = {
+      'User': `/admin/users`,
+      'Group': `/admin/groups`,
+      'Subject': `/admin/subjects`,
+      'Schedule': `/admin/schedule`,
+      'Homework': `/admin/homework`,
+      'Exam': `/admin/exams`,
+      'Attendance': `/admin/attendance`,
+      'Subgroup': `/admin/subgroups`,
+      'ExternalResource': `/admin/resources`,
+      'BotSettings': `/admin/settings`
+    }
+
+    const baseUrl = entityRoutes[entityType]
+    if (!baseUrl) {
+      return null
+    }
+
+    // Для некоторых сущностей можно добавить параметр поиска или идентификатор
+    // Но так как большинство страниц - это списки, просто возвращаем базовый URL
+    return baseUrl
+  }
 
   useEffect(() => {
     fetchLogs()
@@ -177,12 +207,12 @@ export default function ActivityLogPage() {
             </div>
             <div>
               <Label htmlFor="action" className="mb-2 block">{t('admin.pages.activityLog.filters.action')}</Label>
-              <Select value={filters.action} onValueChange={(value) => handleFilterChange('action', value)}>
+              <Select value={filters.action || undefined} onValueChange={(value) => handleFilterChange('action', value === 'all' ? '' : value)}>
                 <SelectTrigger id="action">
                   <SelectValue placeholder={t('admin.pages.activityLog.filters.actionPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t('common.filters.all')}</SelectItem>
+                  <SelectItem value="all">{t('common.filters.all')}</SelectItem>
                   <SelectItem value="CREATE">{t('admin.pages.activityLog.actions.create')}</SelectItem>
                   <SelectItem value="UPDATE">{t('admin.pages.activityLog.actions.update')}</SelectItem>
                   <SelectItem value="DELETE">{t('admin.pages.activityLog.actions.delete')}</SelectItem>
@@ -192,12 +222,12 @@ export default function ActivityLogPage() {
             </div>
             <div>
               <Label htmlFor="entityType" className="mb-2 block">{t('admin.pages.activityLog.filters.entityType')}</Label>
-              <Select value={filters.entityType} onValueChange={(value) => handleFilterChange('entityType', value)}>
+              <Select value={filters.entityType || undefined} onValueChange={(value) => handleFilterChange('entityType', value === 'all' ? '' : value)}>
                 <SelectTrigger id="entityType">
                   <SelectValue placeholder={t('admin.pages.activityLog.filters.entityTypePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t('common.filters.all')}</SelectItem>
+                  <SelectItem value="all">{t('common.filters.all')}</SelectItem>
                   <SelectItem value="User">{t('admin.pages.activityLog.entities.user')}</SelectItem>
                   <SelectItem value="Group">{t('admin.pages.activityLog.entities.group')}</SelectItem>
                   <SelectItem value="Subject">{t('admin.pages.activityLog.entities.subject')}</SelectItem>
@@ -392,6 +422,25 @@ export default function ActivityLogPage() {
                     <span className="text-gray-500">{t('admin.pages.activityLog.details.action')}:</span>
                     <div>{getActionLabel(selectedLog.action)}</div>
                   </div>
+                  {selectedLog.entityType && (
+                    <div>
+                      <span className="text-gray-500">Сущность:</span>
+                      <div className="font-medium">{selectedLog.entityType}</div>
+                      {selectedLog.entityId && (
+                        <div className="text-xs text-gray-500 font-mono mt-1">{selectedLog.entityId}</div>
+                      )}
+                      {getEntityUrl(selectedLog.entityType, selectedLog.entityId) && (
+                        <Link
+                          href={getEntityUrl(selectedLog.entityType, selectedLog.entityId)!}
+                          className="inline-flex items-center mt-2 text-sm text-blue-600 hover:text-blue-800"
+                          onClick={() => setDetailsOpen(false)}
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Перейти к сущности
+                        </Link>
+                      )}
+                    </div>
+                  )}
                   <div>
                     <span className="text-gray-500">{t('admin.pages.activityLog.details.result')}:</span>
                     <div>{getResultBadge(selectedLog.result)}</div>
@@ -407,9 +456,61 @@ export default function ActivityLogPage() {
               {selectedLog.details && (
                 <div>
                   <h3 className="font-semibold mb-2">{t('admin.pages.activityLog.details.changes')}</h3>
-                  <pre className="bg-gray-50 p-4 rounded-lg overflow-x-auto text-xs">
-                    {JSON.stringify(selectedLog.details, null, 2)}
-                  </pre>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    {selectedLog.details.changes && selectedLog.details.changes.length > 0 ? (
+                      <div className="space-y-3">
+                        {selectedLog.details.changes.map((change: any, index: number) => (
+                          <div key={index} className="border-b border-gray-200 pb-2 last:border-0">
+                            <div className="font-medium text-sm mb-1">{change.field}</div>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <span className="text-gray-500">Было:</span>
+                                <div className="bg-red-50 p-2 rounded mt-1">
+                                  {change.oldValue === null ? (
+                                    <span className="text-gray-400 italic">null</span>
+                                  ) : typeof change.oldValue === 'object' ? (
+                                    <pre className="text-xs">{JSON.stringify(change.oldValue, null, 2)}</pre>
+                                  ) : (
+                                    String(change.oldValue)
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Стало:</span>
+                                <div className="bg-green-50 p-2 rounded mt-1">
+                                  {change.newValue === null ? (
+                                    <span className="text-gray-400 italic">null</span>
+                                  ) : typeof change.newValue === 'object' ? (
+                                    <pre className="text-xs">{JSON.stringify(change.newValue, null, 2)}</pre>
+                                  ) : (
+                                    String(change.newValue)
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : selectedLog.details.after ? (
+                      <div className="space-y-2">
+                        <div className="text-sm text-gray-600 mb-2">Созданные/новые данные:</div>
+                        <div className="bg-green-50 p-3 rounded">
+                          <pre className="text-xs overflow-x-auto">
+                            {JSON.stringify(selectedLog.details.after, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
+                    ) : selectedLog.details.error ? (
+                      <div className="bg-red-50 p-3 rounded">
+                        <div className="text-sm text-red-600 font-medium">Ошибка:</div>
+                        <div className="text-sm text-red-800 mt-1">{selectedLog.details.error}</div>
+                      </div>
+                    ) : (
+                      <pre className="text-xs overflow-x-auto">
+                        {JSON.stringify(selectedLog.details, null, 2)}
+                      </pre>
+                    )}
+                  </div>
                 </div>
               )}
             </CardContent>

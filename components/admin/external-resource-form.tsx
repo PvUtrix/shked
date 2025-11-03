@@ -57,6 +57,8 @@ export function ExternalResourceForm({
 
   const form = useForm<ResourceFormValues>({
     resolver: zodResolver(resourceFormSchema),
+    mode: 'onChange', // Валидация при изменении полей
+    reValidateMode: 'onChange', // Повторная валидация при изменении
     defaultValues: {
       type: 'EOR',
       title: '',
@@ -66,6 +68,32 @@ export function ExternalResourceForm({
   })
 
   const onSubmit = async (data: ResourceFormValues) => {
+    // Принудительно валидируем все поля перед отправкой
+    const isValid = await form.trigger()
+    if (!isValid) {
+      // Получаем первое поле с ошибкой и переводим на него фокус
+      const errorFields = Object.keys(form.formState.errors)
+      if (errorFields.length > 0) {
+        const firstError = errorFields[0]
+        let fieldElement = document.querySelector(`[name="${firstError}"]`) as HTMLElement
+        if (!fieldElement) {
+          fieldElement = document.querySelector(`[aria-invalid="true"]`) as HTMLElement
+        }
+        if (fieldElement) {
+          fieldElement.focus()
+          setTimeout(() => {
+            fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }, 100)
+        }
+      }
+      toast({
+        title: 'Ошибка',
+        description: 'Пожалуйста, заполните все обязательные поля',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -117,7 +145,7 @@ export function ExternalResourceForm({
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Тип ресурса</FormLabel>
+              <FormLabel>Тип ресурса *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -146,7 +174,7 @@ export function ExternalResourceForm({
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Название</FormLabel>
+              <FormLabel>Название *</FormLabel>
               <FormControl>
                 <Input placeholder="Zoom встреча - Лекция №5" {...field} />
               </FormControl>
@@ -163,7 +191,7 @@ export function ExternalResourceForm({
           name="url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>URL ссылка</FormLabel>
+              <FormLabel>URL ссылка *</FormLabel>
               <FormControl>
                 <Input
                   type="url"
@@ -210,7 +238,7 @@ export function ExternalResourceForm({
               Отмена
             </Button>
           )}
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading || !form.formState.isValid}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
