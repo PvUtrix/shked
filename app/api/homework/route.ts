@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { HomeworkFormData } from '@/lib/types'
+import { logActivity } from '@/lib/activity-log'
 
 // GET /api/homework - получение списка домашних заданий
 export async function GET(request: NextRequest) {
@@ -201,10 +202,45 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Логируем создание домашнего задания
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'Homework',
+      entityId: homework.id,
+      request,
+      details: {
+        after: {
+          id: homework.id,
+          title: homework.title,
+          subjectId: homework.subjectId,
+          groupId: homework.groupId,
+          deadline: homework.deadline.toISOString()
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json(homework, { status: 201 })
 
   } catch (error) {
     console.error('Ошибка при создании домашнего задания:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'CREATE',
+        entityType: 'Homework',
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

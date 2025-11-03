@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/activity-log'
 
 // GET /api/schedules - получение списка расписания
 export async function GET(request: NextRequest) {
@@ -226,10 +227,46 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Логируем создание расписания
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'Schedule',
+      entityId: schedule.id,
+      request,
+      details: {
+        after: {
+          id: schedule.id,
+          subjectId: schedule.subjectId,
+          groupId: schedule.groupId,
+          date: schedule.date.toISOString(),
+          startTime: schedule.startTime,
+          endTime: schedule.endTime
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json(schedule, { status: 201 })
 
   } catch (error) {
     console.error('Ошибка при создании расписания:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'CREATE',
+        entityType: 'Schedule',
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
@@ -257,7 +294,17 @@ export async function PUT(request: NextRequest) {
 
     // Проверка существования расписания
     const existingSchedule = await prisma.schedule.findUnique({
-      where: { id: body.id }
+      where: { id: body.id },
+      select: {
+        id: true,
+        subjectId: true,
+        groupId: true,
+        date: true,
+        startTime: true,
+        endTime: true,
+        location: true,
+        isActive: true
+      }
     })
 
     if (!existingSchedule) {
@@ -330,10 +377,58 @@ export async function PUT(request: NextRequest) {
       }
     })
 
+    // Логируем обновление расписания
+    await logActivity({
+      userId: session.user.id,
+      action: 'UPDATE',
+      entityType: 'Schedule',
+      entityId: schedule.id,
+      request,
+      details: {
+        before: {
+          id: existingSchedule.id,
+          subjectId: existingSchedule.subjectId,
+          groupId: existingSchedule.groupId,
+          date: existingSchedule.date.toISOString(),
+          startTime: existingSchedule.startTime,
+          endTime: existingSchedule.endTime,
+          location: existingSchedule.location,
+          isActive: existingSchedule.isActive
+        },
+        after: {
+          id: schedule.id,
+          subjectId: schedule.subjectId,
+          groupId: schedule.groupId,
+          date: schedule.date.toISOString(),
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          location: schedule.location
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json(schedule)
 
   } catch (error) {
     console.error('Ошибка при обновлении расписания:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user && body?.id) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'UPDATE',
+        entityType: 'Schedule',
+        entityId: body.id,
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
@@ -378,10 +473,49 @@ export async function DELETE(request: NextRequest) {
       data: { isActive: false }
     })
 
+    // Логируем удаление расписания
+    await logActivity({
+      userId: session.user.id,
+      action: 'DELETE',
+      entityType: 'Schedule',
+      entityId: id,
+      request,
+      details: {
+        before: {
+          id: existingSchedule.id,
+          subjectId: existingSchedule.subjectId,
+          groupId: existingSchedule.groupId,
+          isActive: existingSchedule.isActive
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json({ message: 'Расписание удалено' })
 
   } catch (error) {
     console.error('Ошибка при удалении расписания:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      const { searchParams } = new URL(request.url)
+      const id = searchParams.get('id')
+      if (id) {
+        await logActivity({
+          userId: session.user.id,
+          action: 'DELETE',
+          entityType: 'Schedule',
+          entityId: id,
+          request,
+          details: {
+            error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+          },
+          result: 'FAILURE'
+        })
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

@@ -15,7 +15,8 @@
       "loading": "Загрузка...",
       "search": "Поиск",
       "filter": "Фильтр",
-      "reset": "Сбросить"
+      "reset": "Сбросить",
+      "refresh": "Обновить"
     },
     "labels": {
       "name": "Имя",
@@ -95,7 +96,8 @@
       "expand": "Развернуть",
       "sidebar": "Сайдбар",
       "expandSidebar": "Развернуть сайдбар",
-      "collapseSidebar": "Свернуть сайдбар"
+      "collapseSidebar": "Свернуть сайдбар",
+      "activityLog": "Лог активности"
     },
     "title": "Администратор",
     "role": "Администратор",
@@ -175,6 +177,70 @@
           "uploader": "Загружен",
           "date": "Дата",
           "size": "Размер"
+        }
+      },
+      "activityLog": {
+        "title": "Лог активности",
+        "description": "Просмотр всех действий пользователей в системе",
+        "filters": {
+          "user": "Пользователь",
+          "userPlaceholder": "ID пользователя",
+          "action": "Действие",
+          "actionPlaceholder": "Все действия",
+          "entityType": "Тип сущности",
+          "entityTypePlaceholder": "Все типы",
+          "startDate": "Дата начала",
+          "endDate": "Дата окончания"
+        },
+        "actions": {
+          "create": "Создание",
+          "update": "Обновление",
+          "delete": "Удаление",
+          "login": "Вход",
+          "logout": "Выход",
+          "settingsChange": "Изменение настроек"
+        },
+        "entities": {
+          "user": "Пользователь",
+          "group": "Группа",
+          "subject": "Предмет",
+          "schedule": "Расписание",
+          "homework": "Домашнее задание",
+          "settings": "Настройки"
+        },
+        "result": {
+          "success": "Успешно",
+          "failure": "Ошибка"
+        },
+        "table": {
+          "title": "Логи активности",
+          "description": "Всего записей: {total}",
+          "noData": "Логи не найдены",
+          "columns": {
+            "time": "Время",
+            "user": "Пользователь",
+            "action": "Действие",
+            "entity": "Сущность",
+            "ipAddress": "IP адрес",
+            "result": "Результат",
+            "actions": "Действия"
+          }
+        },
+        "pagination": {
+          "info": "Страница {page} из {pages} (всего {total} записей)"
+        },
+        "details": {
+          "title": "Детали действия",
+          "basicInfo": "Основная информация",
+          "time": "Время",
+          "user": "Пользователь",
+          "action": "Действие",
+          "result": "Результат",
+          "ipAddress": "IP адрес",
+          "changes": "Детали изменений"
+        },
+        "toast": {
+          "loadError": "Ошибка при загрузке логов"
         }
       }
     }

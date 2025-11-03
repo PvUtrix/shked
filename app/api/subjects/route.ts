@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/activity-log'
 
 // GET /api/subjects - получение списка предметов
 export async function GET(request: NextRequest) {
@@ -181,10 +182,44 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Логируем создание предмета
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'Subject',
+      entityId: subject.id,
+      request,
+      details: {
+        after: {
+          id: subject.id,
+          name: subject.name,
+          description: subject.description,
+          instructor: subject.instructor
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json(subject, { status: 201 })
 
   } catch (error) {
     console.error('Ошибка при создании предмета:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'CREATE',
+        entityType: 'Subject',
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
@@ -211,9 +246,28 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    // Получаем текущее состояние предмета для логирования
+    const existingSubject = await prisma.subject.findUnique({
+      where: { id: body.id },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        instructor: true,
+        isActive: true
+      }
+    })
+
+    if (!existingSubject) {
+      return NextResponse.json(
+        { error: 'Предмет не найден' },
+        { status: 404 }
+      )
+    }
+
     // Для преподавателей проверяем, что предмет принадлежит им
     if (session.user.role === 'lector') {
-      const existingSubject = await prisma.subject.findUnique({
+      const subjectWithLectors = await prisma.subject.findUnique({
         where: { id: body.id },
         include: {
           lectors: {
@@ -225,7 +279,7 @@ export async function PUT(request: NextRequest) {
         }
       })
 
-      if (!existingSubject || existingSubject.lectors.length === 0) {
+      if (!subjectWithLectors || subjectWithLectors.lectors.length === 0) {
         return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
       }
     }
@@ -262,10 +316,52 @@ export async function PUT(request: NextRequest) {
       }
     })
 
+    // Логируем обновление предмета
+    await logActivity({
+      userId: session.user.id,
+      action: 'UPDATE',
+      entityType: 'Subject',
+      entityId: subject.id,
+      request,
+      details: {
+        before: {
+          id: existingSubject.id,
+          name: existingSubject.name,
+          description: existingSubject.description,
+          instructor: existingSubject.instructor,
+          isActive: existingSubject.isActive
+        },
+        after: {
+          id: subject.id,
+          name: subject.name,
+          description: subject.description,
+          instructor: subject.instructor
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json(subject)
 
   } catch (error) {
     console.error('Ошибка при обновлении предмета:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user && body?.id) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'UPDATE',
+        entityType: 'Subject',
+        entityId: body.id,
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
@@ -311,10 +407,49 @@ export async function DELETE(request: NextRequest) {
       data: { isActive: false }
     })
 
+    // Логируем удаление предмета
+    await logActivity({
+      userId: session.user.id,
+      action: 'DELETE',
+      entityType: 'Subject',
+      entityId: id,
+      request,
+      details: {
+        before: {
+          id: existingSubject.id,
+          name: existingSubject.name,
+          description: existingSubject.description,
+          isActive: existingSubject.isActive
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json({ message: 'Предмет удален' })
 
   } catch (error) {
     console.error('Ошибка при удалении предмета:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      const { searchParams } = new URL(request.url)
+      const id = searchParams.get('id')
+      if (id) {
+        await logActivity({
+          userId: session.user.id,
+          action: 'DELETE',
+          entityType: 'Subject',
+          entityId: id,
+          request,
+          details: {
+            error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+          },
+          result: 'FAILURE'
+        })
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

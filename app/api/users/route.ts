@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import bcryptjs from 'bcryptjs'
+import { logActivity } from '@/lib/activity-log'
 
 // GET /api/users - получение списка пользователей
 export async function GET(request: NextRequest) {
@@ -181,10 +182,45 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Логируем создание пользователя
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'User',
+      entityId: user.id,
+      request,
+      details: {
+        after: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          groupId: user.groupId
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json({ user }, { status: 201 })
 
   } catch (error) {
     console.error('Ошибка при создании пользователя:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'CREATE',
+        entityType: 'User',
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
@@ -207,6 +243,28 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         { error: 'ID пользователя обязателен' },
         { status: 400 }
+      )
+    }
+
+    // Получаем текущее состояние пользователя для логирования
+    const existingUser = await prisma.user.findUnique({
+      where: { id: body.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        groupId: true,
+        isActive: true
+      }
+    })
+
+    if (!existingUser) {
+      return NextResponse.json(
+        { error: 'Пользователь не найден' },
+        { status: 404 }
       )
     }
 
@@ -294,10 +352,54 @@ export async function PUT(request: NextRequest) {
       }
     })
 
+    // Логируем обновление пользователя
+    await logActivity({
+      userId: session.user.id,
+      action: 'UPDATE',
+      entityType: 'User',
+      entityId: user.id,
+      request,
+      details: {
+        before: {
+          id: existingUser.id,
+          name: existingUser.name,
+          email: existingUser.email,
+          role: existingUser.role,
+          groupId: existingUser.groupId,
+          isActive: existingUser.isActive
+        },
+        after: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          groupId: user.groupId
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json({ user })
 
   } catch (error) {
     console.error('Ошибка при обновлении пользователя:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user && body?.id) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'UPDATE',
+        entityType: 'User',
+        entityId: body.id,
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
@@ -350,10 +452,50 @@ export async function DELETE(request: NextRequest) {
       data: { isActive: false }
     })
 
+    // Логируем удаление пользователя
+    await logActivity({
+      userId: session.user.id,
+      action: 'DELETE',
+      entityType: 'User',
+      entityId: id,
+      request,
+      details: {
+        before: {
+          id: existingUser.id,
+          name: existingUser.name,
+          email: existingUser.email,
+          role: existingUser.role,
+          isActive: existingUser.isActive
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json({ message: 'Пользователь деактивирован' })
 
   } catch (error) {
     console.error('Ошибка при удалении пользователя:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      const { searchParams } = new URL(request.url)
+      const id = searchParams.get('id')
+      if (id) {
+        await logActivity({
+          userId: session.user.id,
+          action: 'DELETE',
+          entityType: 'User',
+          entityId: id,
+          request,
+          details: {
+            error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+          },
+          result: 'FAILURE'
+        })
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

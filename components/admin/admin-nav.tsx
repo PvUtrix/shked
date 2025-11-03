@@ -16,7 +16,8 @@ import {
   ClipboardList,
   UserCog,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 
@@ -65,6 +66,11 @@ export function AdminNav({ user }: AdminNavProps) {
       label: t('admin.nav.settings'),
       href: '/admin/settings',
       icon: Settings
+    },
+    {
+      label: t('admin.nav.activityLog'),
+      href: '/admin/activity-log',
+      icon: FileText
     }
   ]
 
@@ -119,7 +125,7 @@ export function AdminNav({ user }: AdminNavProps) {
         <nav className="space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
             
             return (
               <Link

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { setWebhook, getWebhookInfo, getBotInfo } from '@/lib/telegram/bot'
+import { logActivity } from '@/lib/activity-log'
 
 export async function GET(request: NextRequest) {
   try {
@@ -122,6 +123,11 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Получаем текущие настройки для логирования
+    const oldSettings = await prisma.botSettings.findFirst({
+      orderBy: { createdAt: 'desc' }
+    })
+
     // Если токен бота указан, устанавливаем webhook
     if (telegramBotToken && isActive) {
       const webhookSuccess = await setWebhook(webhookUrl)
@@ -129,6 +135,30 @@ export async function POST(request: NextRequest) {
         console.warn('Не удалось установить webhook')
       }
     }
+
+    // Логируем изменение настроек
+    await logActivity({
+      userId: session.user.id,
+      action: 'SETTINGS_CHANGE',
+      entityType: 'BotSettings',
+      entityId: settings.id,
+      request,
+      details: {
+        before: oldSettings ? {
+          isActive: oldSettings.isActive,
+          notificationsEnabled: oldSettings.notificationsEnabled,
+          reminderMinutes: oldSettings.reminderMinutes,
+          dailySummaryTime: oldSettings.dailySummaryTime
+        } : undefined,
+        after: {
+          isActive: settings.isActive,
+          notificationsEnabled: settings.notificationsEnabled,
+          reminderMinutes: settings.reminderMinutes,
+          dailySummaryTime: settings.dailySummaryTime
+        }
+      },
+      result: 'SUCCESS'
+    })
 
     return NextResponse.json({
       message: 'Настройки сохранены',
@@ -140,6 +170,22 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Ошибка при сохранении настроек бота:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'SETTINGS_CHANGE',
+        entityType: 'BotSettings',
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

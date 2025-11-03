@@ -35,43 +35,44 @@ model Session {
 }
 
 model User {
-  id            String      @id @default(cuid())
-  name          String?
-  email         String      @unique
-  emailVerified DateTime?
-  image         String?
-  password      String
-  firstName     String?
-  lastName      String?
-  role          String      @default("student") // admin, student, lector, mentor, assistant, co_lecturer, education_office_head, department_admin
-  groupId       String?
-  canHelp       String?     // Чем могу быть полезен
-  lookingFor    String?     // Что ищу
-  mentorGroupIds Json?      // Группы для ментора (массив ID групп)
-  status        String      @default("ACTIVE") // ACTIVE, EXPELLED, ACADEMIC_LEAVE
-  isActive      Boolean     @default(true)
-  mustChangePassword Boolean @default(false) // Принудительная смена пароля при следующем логине
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  userGroups    UserGroup[]
-  group         Group?      @relation(fields: [groupId], references: [id])
-  telegramUser  TelegramUser?
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String               @unique
+  emailVerified       DateTime?
+  image               String?
+  password            String
+  firstName           String?
+  lastName            String?
+  role                String               @default("student") // admin, student, lector, mentor, assistant, co_lecturer, education_office_head, department_admin
+  groupId             String?
+  canHelp             String? // Чем могу быть полезен
+  lookingFor          String? // Что ищу
+  mentorGroupIds      Json? // Группы для ментора (массив ID групп)
+  status              String               @default("ACTIVE") // ACTIVE, EXPELLED, ACADEMIC_LEAVE
+  isActive            Boolean              @default(true)
+  mustChangePassword  Boolean              @default(false) // Принудительная смена пароля при следующем логине
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  accounts            Account[]
+  sessions            Session[]
+  userGroups          UserGroup[]
+  group               Group?               @relation(fields: [groupId], references: [id])
+  telegramUser        TelegramUser?
   homeworkSubmissions HomeworkSubmission[]
-  assignedSubjects Subject[] // Предметы для преподавателя (deprecated, use lectorSubjects)
-  homeworkComments HomeworkComment[] @relation("HomeworkCommentAuthor") // Комментарии к работам
+  assignedSubjects    Subject[] // Предметы для преподавателя (deprecated, use lectorSubjects)
+  homeworkComments    HomeworkComment[]    @relation("HomeworkCommentAuthor") // Комментарии к работам
   lectorSubjects      SubjectLector[]
-  uploadedDocuments    SubjectDocument[]
-  markedAttendance     Attendance[] @relation("AttendanceMarker")
-  studentAttendance    Attendance[] @relation("AttendanceStudent")
-  recordedExams        ExamResult[] @relation("ExamRecorder")
-  studentExams         ExamResult[] @relation("ExamStudent")
-  mentorMeetings       MentorMeeting[] @relation("MentorMeetings")
-  studentMeetings      MentorMeeting[] @relation("StudentMeetings")
-  forumTopics          ForumTopic[]
-  forumPosts           ForumPost[]
-  subgroupMemberships  SubgroupStudent[]
+  uploadedDocuments   SubjectDocument[]
+  markedAttendance    Attendance[]         @relation("AttendanceMarker")
+  studentAttendance   Attendance[]         @relation("AttendanceStudent")
+  recordedExams       ExamResult[]         @relation("ExamRecorder")
+  studentExams        ExamResult[]         @relation("ExamStudent")
+  mentorMeetings      MentorMeeting[]      @relation("MentorMeetings")
+  studentMeetings     MentorMeeting[]      @relation("StudentMeetings")
+  forumTopics         ForumTopic[]
+  forumPosts          ForumPost[]
+  subgroupMemberships SubgroupStudent[]
+  activityLogs        ActivityLog[]
 
   @@map("users")
 }
@@ -85,14 +86,14 @@ model VerificationToken {
 }
 
 model Group {
-  id          String      @id @default(cuid())
-  name        String      @unique
+  id          String       @id @default(cuid())
+  name        String       @unique
   description String?
   semester    String?
   year        String?
-  isActive    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   schedules   Schedule[]
   userGroups  UserGroup[]
   users       User[]
@@ -105,17 +106,17 @@ model Group {
 }
 
 model Subject {
-  id          String     @id @default(cuid())
-  name        String     @unique
+  id          String             @id @default(cuid())
+  name        String             @unique
   description String?
   instructor  String?
-  lectorId    String?    // ID преподавателя (deprecated, use lectors)
-  isActive    Boolean    @default(true)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  lectorId    String? // ID преподавателя (deprecated, use lectors)
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
   schedules   Schedule[]
   homework    Homework[]
-  lector      User?      @relation(fields: [lectorId], references: [id])
+  lector      User?              @relation(fields: [lectorId], references: [id])
   lectors     SubjectLector[]
   documents   SubjectDocument[]
   resources   ExternalResource[]
@@ -127,7 +128,7 @@ model Subject {
 }
 
 model Schedule {
-  id              String       @id @default(cuid())
+  id              String             @id @default(cuid())
   subjectId       String
   groupId         String?
   subgroupId      String?
@@ -138,15 +139,15 @@ model Schedule {
   location        String?
   eventType       String?
   description     String?
-  videoUrl        String?      // Ссылка на запись занятия (Яндекс.Диск)
-  recordingStatus String?      // NOT_RECORDED, RECORDING, UPLOADED, ERROR
-  zoomMeetingId   String?      // ID встречи Zoom
-  isActive        Boolean      @default(true)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  group           Group?       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  subject         Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  subgroup        Subgroup?    @relation(fields: [subgroupId], references: [id])
+  videoUrl        String? // Ссылка на запись занятия (Яндекс.Диск)
+  recordingStatus String? // NOT_RECORDED, RECORDING, UPLOADED, ERROR
+  zoomMeetingId   String? // ID встречи Zoom
+  isActive        Boolean            @default(true)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  group           Group?             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  subject         Subject            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subgroup        Subgroup?          @relation(fields: [subgroupId], references: [id])
   attendance      Attendance[]
   resources       ExternalResource[]
 
@@ -181,7 +182,7 @@ model TelegramUser {
   notifications Boolean  @default(true)
   createdAt     DateTime @default(now())
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@map("telegram_users")
 }
 
@@ -196,7 +197,7 @@ model BotSettings {
   dailySummaryTime     String   @default("07:00")
   updatedAt            DateTime @updatedAt
   createdAt            DateTime @default(now())
-  
+
   @@map("bot_settings")
 }
 
@@ -204,61 +205,61 @@ model Homework {
   id          String   @id @default(cuid())
   title       String
   description String?
-  content     String?  // MDX контент задания
-  taskUrl     String?  // Ссылка на задание
+  content     String? // MDX контент задания
+  taskUrl     String? // Ссылка на задание
   deadline    DateTime
-  materials   Json?    // Дополнительные материалы (массив объектов)
+  materials   Json? // Дополнительные материалы (массив объектов)
   subjectId   String
   groupId     String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  group       Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  subject     Subject              @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  group       Group?               @relation(fields: [groupId], references: [id], onDelete: Cascade)
   submissions HomeworkSubmission[]
-  
+
   @@map("homework")
 }
 
 model HomeworkSubmission {
-  id          String   @id @default(cuid())
-  homeworkId  String
-  userId      String
-  content     String?  // MDX контент работы студента
+  id            String    @id @default(cuid())
+  homeworkId    String
+  userId        String
+  content       String? // MDX контент работы студента
   submissionUrl String? // Ссылка на выполненное задание
-  status      String   @default("NOT_SUBMITTED") // NOT_SUBMITTED, SUBMITTED, REVIEWED
-  grade       Int?     // Оценка (1-5 или 1-100)
-  comment     String?  // Комментарий преподавателя (MDX)
-  feedback    String?  // Развернутая обратная связь (MDX)
-  submittedAt DateTime?
-  reviewedAt  DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  homework    Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comments    HomeworkComment[] // Inline комментарии к работе
-  
+  status        String    @default("NOT_SUBMITTED") // NOT_SUBMITTED, SUBMITTED, REVIEWED
+  grade         Int? // Оценка (1-5 или 1-100)
+  comment       String? // Комментарий преподавателя (MDX)
+  feedback      String? // Развернутая обратная связь (MDX)
+  submittedAt   DateTime?
+  reviewedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  homework Homework          @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments HomeworkComment[] // Inline комментарии к работе
+
   @@unique([homeworkId, userId])
   @@map("homework_submissions")
 }
 
 model HomeworkComment {
   id           String   @id @default(cuid())
-  submissionId String   // ID работы студента
-  authorId     String   // ID автора комментария (обычно лектор)
-  content      String   // Текст комментария
-  startOffset  Int      // Начальная позиция выделенного текста
-  endOffset    Int      // Конечная позиция выделенного текста
+  submissionId String // ID работы студента
+  authorId     String // ID автора комментария (обычно лектор)
+  content      String // Текст комментария
+  startOffset  Int // Начальная позиция выделенного текста
+  endOffset    Int // Конечная позиция выделенного текста
   selectedText String   @db.Text // Выделенный текст для контекста
   resolved     Boolean  @default(false) // Помечен ли как решенный
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  
-  submission   HomeworkSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  author       User              @relation("HomeworkCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  
+
+  submission HomeworkSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  author     User               @relation("HomeworkCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
   @@map("homework_comments")
 }
 
@@ -268,12 +269,12 @@ model SubjectLector {
   id        String   @id @default(cuid())
   subjectId String
   userId    String
-  role      String   // LECTOR, ASSISTANT, CO_LECTOR
+  role      String // LECTOR, ASSISTANT, CO_LECTOR
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  lector    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  lector  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([subjectId, userId])
   @@map("subject_lectors")
@@ -282,52 +283,52 @@ model SubjectLector {
 model SubjectDocument {
   id         String   @id @default(cuid())
   subjectId  String
-  type       String   // RPD (Рабочая программа дисциплины), ANNOTATION, MATERIALS
+  type       String // RPD (Рабочая программа дисциплины), ANNOTATION, MATERIALS
   fileName   String
-  fileUrl    String   // URL файла в хранилище
+  fileUrl    String // URL файла в хранилище
   fileSize   Int?
-  uploadedBy String   // userId
+  uploadedBy String // userId
   uploadedAt DateTime @default(now())
   isActive   Boolean  @default(true)
-  
-  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  uploader   User     @relation(fields: [uploadedBy], references: [id])
-  
+
+  subject  Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  uploader User    @relation(fields: [uploadedBy], references: [id])
+
   @@map("subject_documents")
 }
 
 model ExternalResource {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   subjectId   String?
   scheduleId  String?
-  type        String    // EOR, ZOOM, CHAT, MIRO, EXCEL, VIDEO, OTHER
+  type        String // EOR, ZOOM, CHAT, MIRO, EXCEL, VIDEO, OTHER
   title       String
   url         String
   description String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  
-  subject     Subject?  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  schedule    Schedule? @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  subject  Subject?  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  schedule Schedule? @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
   @@map("external_resources")
 }
 
 model Subgroup {
   id          String   @id @default(cuid())
   groupId     String
-  subjectId   String?  // null = общая подгруппа для всех предметов
-  name        String   // "Подгруппа 1", "Подгруппа Коммерция" и т.д.
-  number      Int      // 1, 2, 3...
+  subjectId   String? // null = общая подгруппа для всех предметов
+  name        String // "Подгруппа 1", "Подгруппа Коммерция" и т.д.
+  number      Int // 1, 2, 3...
   description String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
-  
-  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  subject     Subject? @relation(fields: [subjectId], references: [id])
-  students    SubgroupStudent[]
-  schedules   Schedule[]
-  
+
+  group     Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  subject   Subject?          @relation(fields: [subjectId], references: [id])
+  students  SubgroupStudent[]
+  schedules Schedule[]
+
   @@unique([groupId, subjectId, number])
   @@map("subgroups")
 }
@@ -337,10 +338,10 @@ model SubgroupStudent {
   subgroupId String
   userId     String
   createdAt  DateTime @default(now())
-  
-  subgroup   Subgroup @relation(fields: [subgroupId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
+  subgroup Subgroup @relation(fields: [subgroupId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([subgroupId, userId])
   @@map("subgroup_students")
 }
@@ -349,16 +350,16 @@ model Attendance {
   id         String   @id @default(cuid())
   scheduleId String
   userId     String
-  status     String   // PRESENT, ABSENT, LATE, EXCUSED
-  source     String?  // MANUAL, ZOOM_AUTO, VISUAL
+  status     String // PRESENT, ABSENT, LATE, EXCUSED
+  source     String? // MANUAL, ZOOM_AUTO, VISUAL
   notes      String?
-  markedBy   String   // userId admin/lector
+  markedBy   String // userId admin/lector
   markedAt   DateTime @default(now())
-  
-  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  student    User     @relation("AttendanceStudent", fields: [userId], references: [id], onDelete: Cascade)
-  marker     User     @relation("AttendanceMarker", fields: [markedBy], references: [id], onDelete: Cascade)
-  
+
+  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  student  User     @relation("AttendanceStudent", fields: [userId], references: [id], onDelete: Cascade)
+  marker   User     @relation("AttendanceMarker", fields: [markedBy], references: [id], onDelete: Cascade)
+
   @@unique([scheduleId, userId])
   @@map("attendance")
 }
@@ -367,18 +368,18 @@ model Exam {
   id          String   @id @default(cuid())
   subjectId   String
   groupId     String
-  type        String   // EXAM, CREDIT, DIFF_CREDIT
-  format      String   // ORAL, WRITTEN, MIXED
+  type        String // EXAM, CREDIT, DIFF_CREDIT
+  format      String // ORAL, WRITTEN, MIXED
   date        DateTime
   location    String?
   description String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
-  
-  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  results     ExamResult[]
-  
+
+  subject Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  group   Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  results ExamResult[]
+
   @@map("exams")
 }
 
@@ -386,17 +387,17 @@ model ExamResult {
   id         String    @id @default(cuid())
   examId     String
   userId     String
-  grade      String?   // 5, 4, 3, 2, ЗАЧЕТ, НЕ ЗАЧЕТ
+  grade      String? // 5, 4, 3, 2, ЗАЧЕТ, НЕ ЗАЧЕТ
   status     String    @default("NOT_TAKEN") // NOT_TAKEN, PASSED, FAILED
   notes      String?
   takenAt    DateTime?
-  recordedBy String    // userId lector
+  recordedBy String // userId lector
   createdAt  DateTime  @default(now())
-  
-  exam       Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
-  student    User      @relation("ExamStudent", fields: [userId], references: [id], onDelete: Cascade)
-  recorder   User      @relation("ExamRecorder", fields: [recordedBy], references: [id], onDelete: Cascade)
-  
+
+  exam     Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student  User @relation("ExamStudent", fields: [userId], references: [id], onDelete: Cascade)
+  recorder User @relation("ExamRecorder", fields: [recordedBy], references: [id], onDelete: Cascade)
+
   @@unique([examId, userId])
   @@map("exam_results")
 }
@@ -406,18 +407,18 @@ model MentorMeeting {
   mentorId    String
   studentId   String
   scheduledAt DateTime
-  duration    Int      // минуты
+  duration    Int // минуты
   status      String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
   agenda      String?
-  notes       String?  // Заметки после встречи (MDX)
+  notes       String? // Заметки после встречи (MDX)
   location    String?
-  meetingType String?  // VKR, ACADEMIC, PERSONAL, OTHER
+  meetingType String? // VKR, ACADEMIC, PERSONAL, OTHER
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  mentor      User     @relation("MentorMeetings", fields: [mentorId], references: [id], onDelete: Cascade)
-  student     User     @relation("StudentMeetings", fields: [studentId], references: [id], onDelete: Cascade)
-  
+
+  mentor  User @relation("MentorMeetings", fields: [mentorId], references: [id], onDelete: Cascade)
+  student User @relation("StudentMeetings", fields: [studentId], references: [id], onDelete: Cascade)
+
   @@map("mentor_meetings")
 }
 
@@ -432,25 +433,45 @@ model ForumTopic {
   isClosed  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  subject   Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  group     Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  posts     ForumPost[]
-  
+
+  subject Subject?    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  group   Group?      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  author  User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  posts   ForumPost[]
+
   @@map("forum_topics")
 }
 
 model ForumPost {
-  id        String     @id @default(cuid())
+  id        String   @id @default(cuid())
   topicId   String
   authorId  String
-  content   String     @db.Text
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  
-  topic     ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  topic  ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  author User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
   @@map("forum_posts")
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, SETTINGS_CHANGE
+  entityType String? // User, Group, Subject, Schedule, Homework, Settings и т.д.
+  entityId   String? // ID затронутой сущности
+  ipAddress  String?
+  details    Json? // { before: {...}, after: {...}, changes: [...] }
+  result     String   @default("SUCCESS") // SUCCESS, FAILURE
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("activity_logs")
 }
