@@ -96,7 +96,7 @@
     "jest-mock-extended": "^4.0.0",
     "lint-staged": "^16.2.4",
     "msw": "^2.11.5",
-    "node-fetch": "^2.7.0",
+    "node-fetch": "^3.3.2",
     "postcss": "8.4.31",
     "prisma": "6.7.0",
     "release-it": "^19.0.5",
