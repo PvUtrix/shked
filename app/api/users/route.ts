@@ -281,14 +281,15 @@ export async function POST(request: NextRequest) {
 
 // PUT /api/users - обновление пользователя
 export async function PUT(request: NextRequest) {
+  let body: any = null
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
-    const body = await request.json()
+    body = await request.json()
     
     if (!body.id) {
       return NextResponse.json(
