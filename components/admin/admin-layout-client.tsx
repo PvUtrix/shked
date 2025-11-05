@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 
 import { AdminNav } from './admin-nav'
 import { Footer } from '@/components/footer'
