@@ -13,21 +13,29 @@ export default async function HomePage() {
 
   if (session) {
     // Редиректы для всех 8 ролей
+    // eslint-disable-next-line no-fallthrough
     switch (session.user.role) {
       case 'admin':
         redirect('/admin')
+        break
       case 'lector':
         redirect('/lector')
+        break
       case 'assistant':
         redirect('/assistant')
+        break
       case 'co_lecturer':
         redirect('/lector') // Со-преподаватели используют тот же интерфейс
+        break
       case 'mentor':
         redirect('/mentor')
+        break
       case 'education_office_head':
         redirect('/education-office')
+        break
       case 'department_admin':
         redirect('/department')
+        break
       case 'student':
       default:
         redirect('/student')

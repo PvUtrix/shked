@@ -38,7 +38,7 @@ const rateLimitStore = new Map<string, RequestEntry>()
 /**
  * Cleanup interval to remove expired entries
  */
-let cleanupInterval: NodeJS.Timeout | null = null
+let cleanupInterval: ReturnType<typeof setInterval> | null = null
 
 /**
  * Start cleanup interval to prevent memory leaks

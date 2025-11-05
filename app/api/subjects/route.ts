@@ -229,15 +229,16 @@ export async function POST(request: NextRequest) {
 
 // PUT /api/subjects - обновление предмета
 export async function PUT(request: NextRequest) {
+  let body: any = null
   try {
     const session = await getServerSession(authOptions)
-    
+
     // Только admin и lector могут редактировать предметы
     if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
-    const body = await request.json()
+    body = await request.json()
     
     if (!body.id) {
       return NextResponse.json(
