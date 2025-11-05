@@ -7,11 +7,11 @@ const nextConfig = {
   output: 'standalone',
   // Включаем детальные ошибки в development режиме
   reactStrictMode: true,
-  // Отключаем строгую проверку типов в production build (ускоряет сборку)
+  // Включаем проверку типов TypeScript в production build
   typescript: {
-    // Предупреждение: Это отключает проверку типов во время production build
-    // TypeScript должен проверяться в CI/CD pipeline отдельно
-    ignoreBuildErrors: true,
+    // TypeScript errors will now fail the build
+    // This ensures type safety in production
+    ignoreBuildErrors: false,
   },
   // Отключаем минификацию в development для лучшей отладки
   webpack: (config, { dev, isServer }) => {
