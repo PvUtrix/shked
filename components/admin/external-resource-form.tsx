@@ -30,9 +30,7 @@ import { useToast } from '@/components/ui/use-toast'
 const resourceFormSchema = z.object({
   type: z.enum(['EOR', 'ZOOM', 'CHAT', 'MIRO', 'GOOGLE_DOCS', 'OTHER'], {
     required_error: 'Выберите тип ресурса',
-  }),
-  title: z.string().min(1, 'Введите название ресурса'),
-  url: z.string().url('Введите корректный URL'),
+    type: z.enum(['EOR', 'ZOOM', 'CHAT', 'MIRO', 'GOOGLE_DOCS', 'OTHER']),
   description: z.string().optional(),
 })
 

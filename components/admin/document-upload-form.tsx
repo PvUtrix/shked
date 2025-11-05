@@ -29,9 +29,7 @@ import { FileUploader } from '@/components/ui/file-uploader'
 import { useToast } from '@/components/ui/use-toast'
 
 const documentFormSchema = z.object({
-  type: z.enum(['RPD', 'ANNOTATION', 'SYLLABUS', 'MATERIALS', 'OTHER'], {
-    required_error: 'Выберите тип документа',
-  }),
+  type: z.enum(['RPD', 'ANNOTATION', 'SYLLABUS', 'MATERIALS', 'OTHER']),
   description: z.string().optional(),
 })
 

@@ -52,16 +52,6 @@ export async function GET(request: NextRequest) {
     const subjects = await prisma.subject.findMany({
       where,
       include: {
-        // Старое поле lector (deprecated, для обратной совместимости)
-        lector: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        },
         // Новая система множественных преподавателей
         lectors: {
           include: {
@@ -143,20 +133,9 @@ export async function POST(request: NextRequest) {
       data: {
         name: body.name,
         description: body.description,
-        instructor: body.instructor,
-        // Старое поле для обратной совместимости
-        lectorId: body.lectorId
+        instructor: body.instructor
       },
       include: {
-        lector: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        },
         lectors: {
           include: {
             lector: {
@@ -290,19 +269,9 @@ export async function PUT(request: NextRequest) {
       data: {
         name: body.name,
         description: body.description,
-        instructor: body.instructor,
-        lectorId: session.user.role === 'admin' ? body.lectorId : undefined
+        instructor: body.instructor
       },
       include: {
-        lector: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        },
         lectors: {
           include: {
             lector: {

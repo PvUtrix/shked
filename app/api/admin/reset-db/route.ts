@@ -173,9 +173,12 @@ export async function POST(request: NextRequest) {
     // Назначаем демо преподавателя к нескольким предметам
     const lectorSubjects = createdSubjects.slice(0, 3) // Первые 3 предмета
     for (const subject of lectorSubjects) {
-      await prisma.subject.update({
-        where: { id: subject.id },
-        data: { lectorId: demoLector.id }
+      await prisma.subjectLector.create({
+        data: {
+          subjectId: subject.id,
+          userId: demoLector.id,
+          role: 'LECTOR'
+        }
       })
     }
 

@@ -244,7 +244,8 @@ export async function POST(request: NextRequest) {
         after: {
           id: user.id,
           email: user.email,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           role: user.role,
           groupId: user.groupId
         }
