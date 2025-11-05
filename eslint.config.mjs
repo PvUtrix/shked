@@ -40,11 +40,12 @@ export default [
       'react-hooks': reactHooks,
     },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn', // Changed from 'off' to 'warn'
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'react-hooks/exhaustive-deps': 'warn',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
+      'no-console': ['warn', { allow: ['warn', 'error'] }], // Warn on console.log
     },
     settings: {
       react: {

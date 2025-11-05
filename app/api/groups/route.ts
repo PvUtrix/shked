@@ -23,14 +23,12 @@ export async function GET(request: NextRequest) {
       const user = await prisma.user.findUnique({
         where: { id: session.user.id }
       })
-      
-      // Временно отключаем фильтрацию по mentorGroupIds до применения миграции
-      // if (user?.mentorGroupIds) {
-      //   const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
-      //   where.id = {
-      //     in: groupIds
-      //   }
-      // }
+
+      if (user?.mentorGroupIds && Array.isArray(user.mentorGroupIds)) {
+        where.id = {
+          in: user.mentorGroupIds as string[]
+        }
+      }
     }
 
     const groups = await prisma.group.findMany({

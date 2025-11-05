@@ -54,14 +54,12 @@ export async function GET(request: NextRequest) {
       const user = await prisma.user.findUnique({
         where: { id: session.user.id }
       })
-      
-      // Временно отключаем фильтрацию по mentorGroupIds до применения миграции
-      // if (user?.mentorGroupIds) {
-      //   const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
-      //   where.groupId = {
-      //     in: groupIds
-      //   }
-      // }
+
+      if (user?.mentorGroupIds && Array.isArray(user.mentorGroupIds)) {
+        where.groupId = {
+          in: user.mentorGroupIds as string[]
+        }
+      }
     }
 
     const homework = await prisma.homework.findMany({
@@ -141,14 +139,18 @@ export async function POST(request: NextRequest) {
     
     // Для преподавателей проверяем, что предмет принадлежит им
     if (session.user.role === 'lector') {
-      const subject = await prisma.subject.findUnique({
-        where: { id: body.subjectId }
+      const subjectLector = await prisma.subjectLector.findUnique({
+        where: {
+          subjectId_userId: {
+            subjectId: body.subjectId,
+            userId: session.user.id
+          }
+        }
       })
 
-      // Временно отключаем проверку lectorId до применения миграции
-      // if (!subject || subject.lectorId !== session.user.id) {
-      //   return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
-      // }
+      if (!subjectLector) {
+        return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
+      }
     }
     
     // Валидация обязательных полей
