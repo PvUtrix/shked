@@ -30,11 +30,11 @@ import { useToast } from '@/components/ui/use-toast'
 const forumTopicFormSchema = z.object({
   title: z.string().min(5, 'Заголовок должен содержать минимум 5 символов'),
   content: z.string().min(10, 'Содержание должно содержать минимум 10 символов'),
-  topicType: z.enum(['ANNOUNCEMENT', 'DISCUSSION', 'QUESTION', 'HOMEWORK_HELP'], {
-  type: z.enum(['ANNOUNCEMENT', 'DISCUSSION', 'QUESTION', 'HOMEWORK_HELP']),
-    required_error: 'Выберите видимость',
-  }),
-    visibility: z.enum(['PUBLIC', 'GROUP', 'SUBJECT']),
+  topicType: z.enum(['ANNOUNCEMENT', 'DISCUSSION', 'QUESTION', 'HOMEWORK_HELP']),
+  visibility: z.enum(['PUBLIC', 'GROUP', 'SUBJECT']),
+  groupId: z.string().optional(),
+  subjectId: z.string().optional(),
+})
 
 type ForumTopicFormValues = z.infer<typeof forumTopicFormSchema>
 
