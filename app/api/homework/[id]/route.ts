@@ -92,8 +92,12 @@ export async function PUT(
       where: { id },
       include: {
         subject: {
-          select: {
-            lectorId: true
+          include: {
+            lectors: {
+              select: {
+                userId: true
+              }
+            }
           }
         }
       }
@@ -111,7 +115,8 @@ export async function PUT(
       // Админы имеют полный доступ
     } else if (session.user.role === 'lector') {
       // Лекторы могут редактировать только свои задания
-      if (existingHomework.subject?.lectorId !== session.user.id) {
+      const isLector = existingHomework.subject?.lectors.some(l => l.userId === session.user.id)
+      if (!isLector) {
         return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
       }
     } else {

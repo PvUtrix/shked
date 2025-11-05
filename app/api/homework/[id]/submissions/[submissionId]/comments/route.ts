@@ -25,7 +25,7 @@ export async function GET(
           include: {
             subject: {
               select: {
-                lectorId: true
+                lectors: { select: { userId: true } }
               }
             }
           }
@@ -41,9 +41,10 @@ export async function GET(
     }
 
     // Проверка прав доступа
-    const canView = 
+    const isLector = submission.homework.subject?.lectors.some(l => l.userId === session.user.id)
+    const canView =
       session.user.role === 'admin' ||
-      (session.user.role === 'lector' && submission.homework.subject?.lectorId === session.user.id) ||
+      (session.user.role === 'lector' && isLector) ||
       (session.user.role === 'mentor' && submission.homework.groupId === session.user.groupId) ||
       (session.user.role === 'student' && submission.userId === session.user.id)
 
@@ -111,7 +112,7 @@ export async function POST(
           include: {
             subject: {
               select: {
-                lectorId: true
+                lectors: { select: { userId: true } }
               }
             }
           }
@@ -127,9 +128,10 @@ export async function POST(
     }
 
     // Только лекторы и админы могут создавать комментарии
-    const canComment = 
+    const isLectorForComment = submission.homework.subject?.lectors.some(l => l.userId === session.user.id)
+    const canComment =
       session.user.role === 'admin' ||
-      (session.user.role === 'lector' && submission.homework.subject?.lectorId === session.user.id)
+      (session.user.role === 'lector' && isLectorForComment)
 
     if (!canComment) {
       return NextResponse.json(

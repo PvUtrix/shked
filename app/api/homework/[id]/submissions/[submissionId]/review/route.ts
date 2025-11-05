@@ -28,7 +28,7 @@ export async function POST(
           include: {
             subject: {
               select: {
-                lectorId: true
+                lectors: { select: { userId: true } }
               }
             }
           }
@@ -56,7 +56,8 @@ export async function POST(
       // Админы имеют полный доступ
     } else if (session.user.role === 'lector') {
       // Лекторы могут проверять работы только по своим предметам
-      if (submission.homework.subject?.lectorId !== session.user.id) {
+      const isLector = submission.homework.subject?.lectors.some(l => l.userId === session.user.id)
+      if (!isLector) {
         return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
       }
     } else {

@@ -31,14 +31,10 @@ const forumTopicFormSchema = z.object({
   title: z.string().min(5, 'Заголовок должен содержать минимум 5 символов'),
   content: z.string().min(10, 'Содержание должно содержать минимум 10 символов'),
   topicType: z.enum(['ANNOUNCEMENT', 'DISCUSSION', 'QUESTION', 'HOMEWORK_HELP'], {
-    required_error: 'Выберите тип темы',
-  }),
-  visibility: z.enum(['PUBLIC', 'GROUP', 'SUBJECT'], {
+  type: z.enum(['ANNOUNCEMENT', 'DISCUSSION', 'QUESTION', 'HOMEWORK_HELP']),
     required_error: 'Выберите видимость',
   }),
-  groupId: z.string().optional(),
-  subjectId: z.string().optional(),
-})
+    visibility: z.enum(['PUBLIC', 'GROUP', 'SUBJECT']),
 
 type ForumTopicFormValues = z.infer<typeof forumTopicFormSchema>
 
