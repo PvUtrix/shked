@@ -81,11 +81,6 @@ function getClientId(request: NextRequest): string {
     return realIp
   }
 
-  const ip = request.ip
-  if (ip) {
-    return ip
-  }
-
   // Fallback to a generic identifier
   return 'unknown'
 }

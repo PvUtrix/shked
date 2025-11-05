@@ -7,6 +7,7 @@ declare module 'next-auth' {
     groupId?: string
     firstName?: string
     lastName?: string
+    mustChangePassword?: boolean
   }
 
   interface Session {
@@ -16,11 +17,15 @@ declare module 'next-auth' {
       name: string
       role: 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_lecturer' | 'education_office_head' | 'department_admin'
       groupId?: string | undefined
+      firstName?: string
+      lastName?: string
+      mustChangePassword?: boolean
     }
   }
 
   interface JWT {
     role: 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_lecturer' | 'education_office_head' | 'department_admin'
     groupId?: string
+    mustChangePassword?: boolean
   }
 }

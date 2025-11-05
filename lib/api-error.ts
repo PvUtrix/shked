@@ -77,7 +77,7 @@ function sanitizeError(data: unknown): unknown {
  * Formats Zod validation errors into a more user-friendly format
  */
 function formatZodError(error: ZodError): { field: string; message: string }[] {
-  return error.errors.map((err) => ({
+  return error.issues.map((err: { path: (string | number)[]; message: string }) => ({
     field: err.path.join('.'),
     message: err.message,
   }))
