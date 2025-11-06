@@ -181,7 +181,7 @@ export function getEventTypeEmoji(eventType?: string): string {
  */
 export function escapeMarkdown(text: string): string {
   // Экранируем все специальные символы MarkdownV2
-  return text.replace(/[_*\[\]()~`>#+=|{}.!-]/g, '\\$&')
+  return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&')
 }
 
 /**

@@ -65,7 +65,7 @@ export function MentorMeetingForm({
       scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Завтра
       duration: 60,
       agenda: '',
-      meetingType: 'VKR',
+      purpose: 'VKR',
       location: '',
     },
   })
@@ -143,7 +143,7 @@ export function MentorMeetingForm({
 
         <FormField
           control={form.control}
-          name="meetingType"
+          name="purpose"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Тип встречи</FormLabel>
