@@ -38,13 +38,11 @@
     "types/**/*.d.ts",
     "__tests__/**/*.d.ts",
     "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".build/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    "**/*.tsx"
   ],
   "exclude": [
     "node_modules",
+    ".next",
     "**/__tests__/**/*",
     "**/*.test.ts",
     "**/*.test.tsx",
