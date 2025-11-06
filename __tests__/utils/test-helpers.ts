@@ -14,7 +14,7 @@ let dbAvailable = false
 export function getPrismaClient(): PrismaClient {
   if (!prisma) {
     // Используем стандартный Prisma клиент из lib/db
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+     
     const { prisma: dbPrisma } = require('@/lib/db')
     prisma = dbPrisma
   }

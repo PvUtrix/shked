@@ -7,10 +7,10 @@ const nextConfig = {
   output: 'standalone',
   // Включаем детальные ошибки в development режиме
   reactStrictMode: true,
-  // Отключаем строгую проверку типов в production build (ускоряет сборку)
+  // Временно отключаем строгую проверку типов для постепенной миграции
+  // TODO: Включить после исправления всех ошибок в TYPESCRIPT_FIXES_NEEDED.md
   typescript: {
-    // Предупреждение: Это отключает проверку типов во время production build
-    // TypeScript должен проверяться в CI/CD pipeline отдельно
+    // See TYPESCRIPT_FIXES_NEEDED.md for list of errors to fix
     ignoreBuildErrors: true,
   },
   // Отключаем минификацию в development для лучшей отладки

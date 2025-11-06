@@ -52,16 +52,6 @@ export async function GET(request: NextRequest) {
     const subjects = await prisma.subject.findMany({
       where,
       include: {
-        // Старое поле lector (deprecated, для обратной совместимости)
-        lector: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        },
         // Новая система множественных преподавателей
         lectors: {
           include: {
@@ -143,20 +133,9 @@ export async function POST(request: NextRequest) {
       data: {
         name: body.name,
         description: body.description,
-        instructor: body.instructor,
-        // Старое поле для обратной совместимости
-        lectorId: body.lectorId
+        instructor: body.instructor
       },
       include: {
-        lector: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        },
         lectors: {
           include: {
             lector: {
@@ -229,15 +208,16 @@ export async function POST(request: NextRequest) {
 
 // PUT /api/subjects - обновление предмета
 export async function PUT(request: NextRequest) {
+  let body: any = null
   try {
     const session = await getServerSession(authOptions)
-    
+
     // Только admin и lector могут редактировать предметы
     if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
-    const body = await request.json()
+    body = await request.json()
     
     if (!body.id) {
       return NextResponse.json(
@@ -289,19 +269,9 @@ export async function PUT(request: NextRequest) {
       data: {
         name: body.name,
         description: body.description,
-        instructor: body.instructor,
-        lectorId: session.user.role === 'admin' ? body.lectorId : undefined
+        instructor: body.instructor
       },
       include: {
-        lector: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        },
         lectors: {
           include: {
             lector: {
