@@ -176,12 +176,12 @@ export function getEventTypeEmoji(eventType?: string): string {
 
 /**
  * Экранировать специальные символы для Telegram MarkdownV2
- * Для MarkdownV2 необходимо экранировать: _*[]()~`>#+-=|{}.!
+ * Для MarkdownV2 необходимо экранировать: _*[]()~`>#+-=|{}.!\
  * https://core.telegram.org/bots/api#markdownv2-style
  */
 export function escapeMarkdown(text: string): string {
-  // Экранируем все специальные символы MarkdownV2
-  return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&')
+  // Экранируем все специальные символы MarkdownV2, включая обратный слеш
+  return text.replace(/[_*[\]()~`>#+=|{}.!-\\]/g, '\\$&')
 }
 
 /**
