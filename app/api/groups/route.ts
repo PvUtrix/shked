@@ -23,14 +23,12 @@ export async function GET(request: NextRequest) {
       const user = await prisma.user.findUnique({
         where: { id: session.user.id }
       })
-      
-      // Временно отключаем фильтрацию по mentorGroupIds до применения миграции
-      // if (user?.mentorGroupIds) {
-      //   const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
-      //   where.id = {
-      //     in: groupIds
-      //   }
-      // }
+
+      if (user?.mentorGroupIds && Array.isArray(user.mentorGroupIds)) {
+        where.id = {
+          in: user.mentorGroupIds as string[]
+        }
+      }
     }
 
     const groups = await prisma.group.findMany({
@@ -244,23 +242,7 @@ export async function PUT(request: NextRequest) {
 
   } catch (error) {
     console.error('Ошибка при обновлении группы:', error)
-    
-    // Логируем ошибку
-    const session = await getServerSession(authOptions)
-    if (session?.user && body?.id) {
-      await logActivity({
-        userId: session.user.id,
-        action: 'UPDATE',
-        entityType: 'Group',
-        entityId: body.id,
-        request,
-        details: {
-          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
-        },
-        result: 'FAILURE'
-      })
-    }
-    
+
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

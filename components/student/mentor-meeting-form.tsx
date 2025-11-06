@@ -30,14 +30,10 @@ import { useToast } from '@/components/ui/use-toast'
 
 const meetingFormSchema = z.object({
   mentorId: z.string().min(1, 'Выберите ментора'),
-  scheduledAt: z.date({
-    required_error: 'Укажите дату и время',
-  }),
+  scheduledAt: z.date(),
   duration: z.coerce.number().min(15).max(180).default(60),
   agenda: z.string().min(5, 'Опишите повестку встречи'),
-  meetingType: z.enum(['VKR', 'ACADEMIC', 'PERSONAL', 'OTHER'], {
-    required_error: 'Выберите тип встречи',
-  }),
+  purpose: z.enum(['VKR', 'ACADEMIC', 'PERSONAL', 'OTHER']),
   location: z.string().optional(),
 })
 
@@ -69,7 +65,7 @@ export function MentorMeetingForm({
       scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Завтра
       duration: 60,
       agenda: '',
-      meetingType: 'VKR',
+      purpose: 'VKR',
       location: '',
     },
   })
@@ -147,7 +143,7 @@ export function MentorMeetingForm({
 
         <FormField
           control={form.control}
-          name="meetingType"
+          name="purpose"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Тип встречи</FormLabel>

@@ -11,12 +11,16 @@ export type ActivityAction =
   | 'SETTINGS_CHANGE'
 
 // Типы сущностей
-export type EntityType = 
-  | 'User' 
-  | 'Group' 
-  | 'Subject' 
-  | 'Schedule' 
-  | 'Homework' 
+export type EntityType =
+  | 'User'
+  | 'Group'
+  | 'Subject'
+  | 'Schedule'
+  | 'Homework'
+  | 'HomeworkSubmission'
+  | 'HomeworkComment'
+  | 'ForumTopic'
+  | 'ForumPost'
   | 'Settings'
   | 'BotSettings'
 
@@ -62,12 +66,7 @@ function getIpAddress(request: NextRequest): string | undefined {
     return realIp
   }
 
-  // Используем IP из запроса (может быть не всегда доступен)
-  const ip = request.ip
-  if (ip) {
-    return ip
-  }
-
+  // Fallback to undefined if no IP headers are present
   return undefined
 }
 

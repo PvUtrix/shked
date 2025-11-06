@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Users, BookOpen, Clock } from 'lucide-react'
-import { Schedule, Subject, Group } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import Link from 'next/link'
 
 export const dynamic = "force-dynamic"
@@ -52,10 +52,7 @@ async function getRecentSchedules() {
   }
 }
 
-interface ExtendedSchedule extends Schedule {
-  subject: Subject | null;
-  group: Group | null;
-}
+type ExtendedSchedule = Awaited<ReturnType<typeof getRecentSchedules>>[number]
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)

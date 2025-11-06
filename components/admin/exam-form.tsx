@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -31,15 +31,9 @@ import { useToast } from '@/components/ui/use-toast'
 const examFormSchema = z.object({
   subjectId: z.string().min(1, 'Выберите предмет'),
   groupId: z.string().min(1, 'Выберите группу'),
-  type: z.enum(['EXAM', 'CREDIT', 'DIFF_CREDIT'], {
-    required_error: 'Выберите тип аттестации',
-  }),
-  format: z.enum(['ORAL', 'WRITTEN', 'MIXED'], {
-    required_error: 'Выберите формат',
-  }),
-  date: z.date({
-    required_error: 'Укажите дату и время',
-  }),
+  type: z.enum(['EXAM', 'CREDIT', 'DIFF_CREDIT']),
+  format: z.enum(['ORAL', 'WRITTEN', 'MIXED']),
+  date: z.date(),
   location: z.string().optional(),
   description: z.string().optional(),
 })

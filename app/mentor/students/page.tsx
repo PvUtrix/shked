@@ -179,7 +179,7 @@ export default function MentorStudentsPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">
-                        {getFullName(student) || 'Без имени'}
+                        {student.name || (student.firstName && student.lastName ? `${student.firstName} ${student.lastName}` : 'Без имени')}
                       </h3>
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <div className="flex items-center space-x-1">

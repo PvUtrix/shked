@@ -63,7 +63,6 @@ model User {
   group               Group?               @relation(fields: [groupId], references: [id])
   telegramUser        TelegramUser?
   homeworkSubmissions HomeworkSubmission[]
-  assignedSubjects    Subject[] // Предметы для преподавателя (deprecated, use lectorSubjects)
   homeworkComments    HomeworkComment[]    @relation("HomeworkCommentAuthor") // Комментарии к работам
   lectorSubjects      SubjectLector[]
   uploadedDocuments   SubjectDocument[]
@@ -78,6 +77,11 @@ model User {
   subgroupMemberships SubgroupStudent[]
   activityLogs        ActivityLog[]
 
+  @@index([email])
+  @@index([role])
+  @@index([groupId])
+  @@index([isActive])
+  @@index([status])
   @@map("users")
 }
 
@@ -106,6 +110,9 @@ model Group {
   exams       Exam[]
   forumTopics ForumTopic[]
 
+  @@index([isActive])
+  @@index([year])
+  @@index([semester])
   @@map("groups")
 }
 
@@ -114,13 +121,11 @@ model Subject {
   name        String             @unique
   description String?
   instructor  String?
-  lectorId    String? // ID преподавателя (deprecated, use lectors)
   isActive    Boolean            @default(true)
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   schedules   Schedule[]
   homework    Homework[]
-  lector      User?              @relation(fields: [lectorId], references: [id])
   lectors     SubjectLector[]
   documents   SubjectDocument[]
   resources   ExternalResource[]
@@ -128,6 +133,7 @@ model Subject {
   exams       Exam[]
   forumTopics ForumTopic[]
 
+  @@index([isActive])
   @@map("subjects")
 }
 
@@ -155,6 +161,12 @@ model Schedule {
   attendance      Attendance[]
   resources       ExternalResource[]
 
+  @@index([subjectId])
+  @@index([groupId])
+  @@index([subgroupId])
+  @@index([date])
+  @@index([dayOfWeek])
+  @@index([isActive])
   @@map("schedules")
 }
 
@@ -223,6 +235,10 @@ model Homework {
   group       Group?               @relation(fields: [groupId], references: [id], onDelete: Cascade)
   submissions HomeworkSubmission[]
 
+  @@index([subjectId])
+  @@index([groupId])
+  @@index([deadline])
+  @@index([isActive])
   @@map("homework")
 }
 
@@ -246,6 +262,11 @@ model HomeworkSubmission {
   comments HomeworkComment[] // Inline комментарии к работе
 
   @@unique([homeworkId, userId])
+  @@index([userId])
+  @@index([homeworkId])
+  @@index([status])
+  @@index([submittedAt])
+  @@index([reviewedAt])
   @@map("homework_submissions")
 }
 
@@ -281,6 +302,9 @@ model SubjectLector {
   lector  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([subjectId, userId])
+  @@index([subjectId])
+  @@index([userId])
+  @@index([role])
   @@map("subject_lectors")
 }
 
@@ -298,6 +322,9 @@ model SubjectDocument {
   subject  Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   uploader User    @relation(fields: [uploadedBy], references: [id])
 
+  @@index([subjectId])
+  @@index([type])
+  @@index([isActive])
   @@map("subject_documents")
 }
 
@@ -315,6 +342,10 @@ model ExternalResource {
   subject  Subject?  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   schedule Schedule? @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
 
+  @@index([subjectId])
+  @@index([scheduleId])
+  @@index([type])
+  @@index([isActive])
   @@map("external_resources")
 }
 
@@ -334,6 +365,9 @@ model Subgroup {
   schedules Schedule[]
 
   @@unique([groupId, subjectId, number])
+  @@index([groupId])
+  @@index([subjectId])
+  @@index([isActive])
   @@map("subgroups")
 }
 
@@ -347,6 +381,8 @@ model SubgroupStudent {
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([subgroupId, userId])
+  @@index([subgroupId])
+  @@index([userId])
   @@map("subgroup_students")
 }
 
@@ -365,6 +401,10 @@ model Attendance {
   marker   User     @relation("AttendanceMarker", fields: [markedBy], references: [id], onDelete: Cascade)
 
   @@unique([scheduleId, userId])
+  @@index([scheduleId])
+  @@index([userId])
+  @@index([status])
+  @@index([markedAt])
   @@map("attendance")
 }
 
@@ -384,6 +424,11 @@ model Exam {
   group   Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
   results ExamResult[]
 
+  @@index([subjectId])
+  @@index([groupId])
+  @@index([date])
+  @@index([type])
+  @@index([isActive])
   @@map("exams")
 }
 
@@ -403,6 +448,10 @@ model ExamResult {
   recorder User @relation("ExamRecorder", fields: [recordedBy], references: [id], onDelete: Cascade)
 
   @@unique([examId, userId])
+  @@index([examId])
+  @@index([userId])
+  @@index([status])
+  @@index([takenAt])
   @@map("exam_results")
 }
 
@@ -423,6 +472,10 @@ model MentorMeeting {
   mentor  User @relation("MentorMeetings", fields: [mentorId], references: [id], onDelete: Cascade)
   student User @relation("StudentMeetings", fields: [studentId], references: [id], onDelete: Cascade)
 
+  @@index([mentorId])
+  @@index([studentId])
+  @@index([scheduledAt])
+  @@index([status])
   @@map("mentor_meetings")
 }
 
@@ -443,6 +496,12 @@ model ForumTopic {
   author  User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   posts   ForumPost[]
 
+  @@index([subjectId])
+  @@index([groupId])
+  @@index([authorId])
+  @@index([isPinned])
+  @@index([isClosed])
+  @@index([createdAt])
   @@map("forum_topics")
 }
 
@@ -457,6 +516,9 @@ model ForumPost {
   topic  ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
   author User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
+  @@index([topicId])
+  @@index([authorId])
+  @@index([createdAt])
   @@map("forum_posts")
 }
 

@@ -237,7 +237,7 @@ export default function StudentHomeworkDetailPage({ params }: { params: Promise<
           </CardHeader>
           <CardContent>
             <HomeworkSubmissionForm
-              homeworkId={params.id}
+              homeworkId={id}
               existingSubmission={submission}
               onSuccess={() => {
                 fetchHomework()
@@ -299,7 +299,7 @@ export default function StudentHomeworkDetailPage({ params }: { params: Promise<
           <InlineCommentViewer
             content={submission.content}
             submissionId={submission.id}
-            homeworkId={params.id}
+            homeworkId={id}
             canComment={false}
           />
         </div>
