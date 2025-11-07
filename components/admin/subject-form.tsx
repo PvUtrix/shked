@@ -30,7 +30,6 @@ import { toast } from 'sonner'
 const subjectSchema = z.object({
   name: z.string().min(1, 'Название предмета обязательно'),
   description: z.string().optional(),
-  instructor: z.string().optional(),
   lectorId: z.string().optional(),
 })
 
@@ -53,7 +52,6 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
     defaultValues: {
       name: '',
       description: '',
-      instructor: '',
       lectorId: 'none',
     },
   })
@@ -94,7 +92,6 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
         form.reset({
           name: subject.name || '',
           description: subject.description || '',
-          instructor: subject.instructor || '',
           lectorId: subject.lectorId || 'none',
         }, {
           keepErrors: false,
@@ -105,7 +102,6 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
         form.reset({
           name: '',
           description: '',
-          instructor: '',
           lectorId: 'none',
         }, {
           keepErrors: false,
@@ -233,7 +229,7 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
                 <FormItem>
                   <FormLabel>Описание</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Описание предмета (необязательно)"
                       {...field}
                     />
@@ -242,21 +238,7 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
                 </FormItem>
               )}
             />
-            
-            <FormField
-              control={form.control}
-              name="instructor"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Преподаватель</FormLabel>
-                  <FormControl>
-                    <Input placeholder="ФИО преподавателя" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
+
             <FormField
               control={form.control}
               name="lectorId"
