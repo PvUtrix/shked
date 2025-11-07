@@ -127,7 +127,6 @@ export type GroupFormData = {
 export type SubjectFormData = {
   name: string
   description?: string
-  instructor?: string
   lectorId?: string
 }
 
