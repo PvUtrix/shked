@@ -62,6 +62,7 @@ model User {
   userGroups          UserGroup[]
   group               Group?               @relation(fields: [groupId], references: [id])
   telegramUser        TelegramUser?
+  maxUser             MaxUser?
   homeworkSubmissions HomeworkSubmission[]
   homeworkComments    HomeworkComment[]    @relation("HomeworkCommentAuthor") // Комментарии к работам
   lectorSubjects      SubjectLector[]
@@ -202,12 +203,32 @@ model TelegramUser {
   @@map("telegram_users")
 }
 
+model MaxUser {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  maxId         String   @unique
+  chatId        String
+  username      String?
+  firstName     String?
+  lastName      String?
+  isActive      Boolean  @default(true)
+  notifications Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("max_users")
+}
+
 model BotSettings {
   id                   String   @id @default(cuid())
   telegramBotToken     String?
+  telegramWebhookUrl   String?
+  maxBotToken          String?
+  maxWebhookUrl        String?
   openaiApiKey         String?
-  webhookUrl           String?
+  webhookUrl           String? // Deprecated - use telegramWebhookUrl or maxWebhookUrl
   isActive             Boolean  @default(false)
+  maxIsActive          Boolean  @default(false)
   notificationsEnabled Boolean  @default(true)
   reminderMinutes      Int      @default(30)
   dailySummaryTime     String   @default("07:00")
