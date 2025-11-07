@@ -35,6 +35,17 @@ interface TelegramUser {
   createdAt: string
 }
 
+interface MaxUser {
+  id: string
+  maxId: string
+  username?: string
+  firstName?: string
+  lastName?: string
+  isActive: boolean
+  notifications: boolean
+  createdAt: string
+}
+
 export default function StudentProfilePage() {
   const { data: session } = useSession() || {}
   const [loading, setLoading] = useState(true)
@@ -56,6 +67,11 @@ export default function StudentProfilePage() {
   const [linkToken, setLinkToken] = useState<string | null>(null)
   const [tokenCopied, setTokenCopied] = useState(false)
   const [telegramLoading, setTelegramLoading] = useState(false)
+
+  const [maxUser, setMaxUser] = useState<MaxUser | null>(null)
+  const [maxLinkToken, setMaxLinkToken] = useState<string | null>(null)
+  const [maxTokenCopied, setMaxTokenCopied] = useState(false)
+  const [maxLoading, setMaxLoading] = useState(false)
 
   useEffect(() => {
     if (session?.user) {
@@ -111,6 +127,8 @@ export default function StudentProfilePage() {
       
       // Проверяем статус Telegram подключения
       await checkTelegramStatus()
+      // Проверяем статус Max подключения
+      await checkMaxStatus()
     } catch (error) {
       console.error('Ошибка при получении данных пользователя:', error)
     } finally {
@@ -132,13 +150,27 @@ export default function StudentProfilePage() {
     }
   }
 
+  const checkMaxStatus = async () => {
+    try {
+      const response = await fetch('/api/max/link')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.maxUser) {
+          setMaxUser(data.maxUser)
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка при проверке статуса Max:', error)
+    }
+  }
+
   const generateLinkToken = async () => {
     setTelegramLoading(true)
     try {
       const response = await fetch('/api/telegram/link', {
         method: 'GET'
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setLinkToken(data.token)
@@ -152,11 +184,39 @@ export default function StudentProfilePage() {
     }
   }
 
+  const generateMaxLinkToken = async () => {
+    setMaxLoading(true)
+    try {
+      const response = await fetch('/api/max/link', {
+        method: 'GET'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setMaxLinkToken(data.token)
+      } else {
+        console.error('Ошибка при генерации Max токена')
+      }
+    } catch (error) {
+      console.error('Ошибка при генерации Max токена:', error)
+    } finally {
+      setMaxLoading(false)
+    }
+  }
+
   const copyToken = async () => {
     if (linkToken) {
       await navigator.clipboard.writeText(linkToken)
       setTokenCopied(true)
       setTimeout(() => setTokenCopied(false), 2000)
+    }
+  }
+
+  const copyMaxToken = async () => {
+    if (maxLinkToken) {
+      await navigator.clipboard.writeText(maxLinkToken)
+      setMaxTokenCopied(true)
+      setTimeout(() => setMaxTokenCopied(false), 2000)
     }
   }
 
@@ -611,6 +671,109 @@ export default function StudentProfilePage() {
                     className="w-full"
                   >
                     {telegramLoading ? 'Генерация токена...' : 'Получить токен привязки'}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Max Messenger Integration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <MessageSquare className="h-5 w-5 mr-2 text-purple-600" />
+            Max Messenger уведомления
+          </CardTitle>
+          <CardDescription>
+            Подключите Max Messenger для получения уведомлений о расписании
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {maxUser ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                <div className="flex items-center">
+                  <MessageSquare className="h-5 w-5 text-green-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-green-900">Max подключен</p>
+                    <p className="text-sm text-green-700">
+                      @{maxUser.username || 'пользователь'} • Подключен {new Date(maxUser.createdAt).toLocaleDateString('ru-RU')}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={maxUser.notifications}
+                    onCheckedChange={(checked) => {
+                      console.log('Изменение настроек Max уведомлений:', checked)
+                    }}
+                  />
+                  <span className="text-sm text-gray-600">
+                    {maxUser.notifications ? 'Включены' : 'Отключены'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Открыть бота
+                </Button>
+                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                  Отключить Max
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-4 bg-purple-50 rounded-lg">
+                <h4 className="font-medium text-purple-900 mb-2">Подключение Max Messenger</h4>
+                <p className="text-sm text-purple-700 mb-4">
+                  Получайте уведомления о расписании, изменениях и напоминания прямо в Max Messenger
+                </p>
+
+                {maxLinkToken ? (
+                  <div className="space-y-3">
+                    <div className="p-3 bg-white rounded border">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-mono text-gray-600">Токен привязки:</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={copyMaxToken}
+                          className="h-8"
+                        >
+                          {maxTokenCopied ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-2 break-all">
+                        {maxLinkToken}
+                      </p>
+                    </div>
+
+                    <div className="text-sm text-gray-600">
+                      <p className="font-medium mb-2">Инструкция:</p>
+                      <ol className="list-decimal list-inside space-y-1">
+                        <li>Откройте Max Messenger бота</li>
+                        <li>Отправьте команду <code className="bg-gray-100 px-1 rounded">/link</code></li>
+                        <li>Введите токен выше</li>
+                        <li>Ваш аккаунт будет привязан</li>
+                      </ol>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={generateMaxLinkToken}
+                    disabled={maxLoading}
+                    className="w-full"
+                  >
+                    {maxLoading ? 'Генерация токена...' : 'Получить токен привязки'}
                   </Button>
                 )}
               </div>

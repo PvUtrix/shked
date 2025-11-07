@@ -42,6 +42,9 @@ const envSchema = z.object({
   // Optional: Telegram Bot
   TELEGRAM_BOT_TOKEN: z.string().optional(),
 
+  // Optional: Max Bot
+  MAX_BOT_TOKEN: z.string().optional(),
+
   // Optional: OpenAI
   OPENAI_API_KEY: z.string().optional(),
 })
