@@ -31,7 +31,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Инициализация cron задач при старте приложения
 if (typeof window === 'undefined') {
-  initializeCronJobs()
+  initializeCronJobs().catch((error) => {
+    console.error('Ошибка при инициализации cron задач:', error)
+  })
 }
 
 export default function RootLayout({
