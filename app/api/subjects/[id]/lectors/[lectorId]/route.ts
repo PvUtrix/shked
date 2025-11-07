@@ -64,11 +64,14 @@ export async function DELETE(
       entityId: assignmentId,
       request,
       details: {
-        subjectId,
-        userId: assignment.userId,
-        role: assignment.role,
-        isPrimary: assignment.isPrimary,
-        lector: assignment.lector
+        before: {
+          id: assignment.id,
+          subjectId,
+          userId: assignment.userId,
+          role: assignment.role,
+          isPrimary: assignment.isPrimary,
+          lector: assignment.lector
+        }
       },
       result: 'SUCCESS'
     })

@@ -141,7 +141,7 @@ export default async function LectorDocumentsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <DocumentUploadForm subjectId={subjects[0].id} subjects={subjects} />
+            <DocumentUploadForm subjectId={subjects[0].id} />
           </CardContent>
         </Card>
       ) : (

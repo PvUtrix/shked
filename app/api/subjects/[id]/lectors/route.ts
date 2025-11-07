@@ -104,10 +104,13 @@ export async function POST(
       entityId: assignment.id,
       request,
       details: {
-        subjectId,
-        userId: body.userId,
-        role: assignment.role,
-        isPrimary: assignment.isPrimary
+        after: {
+          id: assignment.id,
+          subjectId,
+          userId: body.userId,
+          role: assignment.role,
+          isPrimary: assignment.isPrimary
+        }
       },
       result: 'SUCCESS'
     })
