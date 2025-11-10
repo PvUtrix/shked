@@ -10,10 +10,25 @@ import { prisma } from '@/lib/db'
 /**
  * Инициализация всех cron задач
  */
-export function initializeCronJobs() {
-  // Не инициализируем cron задачи если нет DATABASE_URL (например, в тестах)
+export async function initializeCronJobs() {
+  // Не инициализируем cron задачи в тестовых окружениях
   if (!process.env.DATABASE_URL) {
     console.log('⏭️  Пропуск инициализации cron задач (DATABASE_URL не найден)')
+    return
+  }
+
+  // Не инициализируем cron задачи в CI/тестах
+  if (process.env.NODE_ENV === 'test' || process.env.CI === 'true') {
+    console.log('⏭️  Пропуск инициализации cron задач (тестовое окружение)')
+    return
+  }
+
+  // Проверяем подключение к базе данных перед инициализацией
+  try {
+    await prisma.$queryRaw`SELECT 1`
+  } catch (error) {
+    console.log('⏭️  Пропуск инициализации cron задач (база данных недоступна)')
+    console.error('Ошибка подключения к БД:', error instanceof Error ? error.message : error)
     return
   }
 
