@@ -53,7 +53,7 @@ ${schedule.description ? `📝 ${schedule.description}` : ''}
 Удачного занятия! 🎓`
 
     const success = await sendMessage({
-      chat_id: parseInt(maxUser.chatId),
+      chat_id: maxUser.chatId,
       text: message,
       parse_mode: 'Markdown'
     })
@@ -102,7 +102,7 @@ ${schedule.description ? `📝 ${schedule.description}` : ''}
     let successCount = 0
     for (const maxUser of maxUsers) {
       const success = await sendMessage({
-        chat_id: parseInt(maxUser.chatId),
+        chat_id: maxUser.chatId,
         text: message,
         parse_mode: 'Markdown'
       })
@@ -166,7 +166,7 @@ export async function sendDailySummary(userId: string): Promise<boolean> {
 Хорошего дня! 😊`
 
       return await sendMessage({
-        chat_id: parseInt(maxUser.chatId),
+        chat_id: maxUser.chatId,
         text: message,
         parse_mode: 'Markdown'
       })
@@ -193,7 +193,7 @@ export async function sendDailySummary(userId: string): Promise<boolean> {
     message += `Удачного дня! 🎓`
 
     return await sendMessage({
-      chat_id: parseInt(maxUser.chatId),
+      chat_id: maxUser.chatId,
       text: message,
       parse_mode: 'Markdown'
     })
@@ -225,7 +225,7 @@ export async function broadcastToGroup(groupId: string, message: string): Promis
     let sentCount = 0
     for (const maxUser of maxUsers) {
       const success = await sendMessage({
-        chat_id: parseInt(maxUser.chatId),
+        chat_id: maxUser.chatId,
         text: message,
         parse_mode: 'Markdown'
       })
@@ -269,7 +269,7 @@ export async function broadcastToAll(message: string, role?: string): Promise<{ 
     let sentCount = 0
     for (const maxUser of maxUsers) {
       const success = await sendMessage({
-        chat_id: parseInt(maxUser.chatId),
+        chat_id: maxUser.chatId,
         text: message,
         parse_mode: 'Markdown'
       })
@@ -304,7 +304,7 @@ export async function sendTestMessage(userId: string): Promise<boolean> {
 Время: ${new Date().toLocaleString('ru-RU')}`
 
     return await sendMessage({
-      chat_id: parseInt(maxUser.chatId),
+      chat_id: maxUser.chatId,
       text: message,
       parse_mode: 'Markdown'
     })
@@ -370,7 +370,7 @@ ${homework.taskUrl ? `🔗 [Открыть задание](${homework.taskUrl})`
 ${status.includes('Не сдано') ? '⚠️ Не забудьте сдать задание вовремя!' : '✅ Задание уже сдано!'}`
 
     const success = await sendMessage({
-      chat_id: parseInt(maxUser.chatId),
+      chat_id: maxUser.chatId,
       text: message,
       parse_mode: 'Markdown'
     })
@@ -427,7 +427,7 @@ ${homework.taskUrl ? `🔗 [Открыть задание](${homework.taskUrl})`
     let successCount = 0
     for (const maxUser of maxUsers) {
       const success = await sendMessage({
-        chat_id: parseInt(maxUser.chatId),
+        chat_id: maxUser.chatId,
         text: message,
         parse_mode: 'Markdown'
       })
@@ -471,7 +471,7 @@ ${submission.comment}` : ''}
 Отличная работа! 🎉`
 
     const success = await sendMessage({
-      chat_id: parseInt(maxUser.chatId),
+      chat_id: maxUser.chatId,
       text: message,
       parse_mode: 'Markdown'
     })
@@ -538,7 +538,7 @@ export async function sendWeeklyHomeworkSummary(userId: string): Promise<boolean
 Хорошей недели! 😊`
 
       return await sendMessage({
-        chat_id: parseInt(maxUser.chatId),
+        chat_id: maxUser.chatId,
         text: message,
         parse_mode: 'Markdown'
       })
@@ -575,7 +575,7 @@ export async function sendWeeklyHomeworkSummary(userId: string): Promise<boolean
     message += `Удачной недели! 🎓`
 
     return await sendMessage({
-      chat_id: parseInt(maxUser.chatId),
+      chat_id: maxUser.chatId,
       text: message,
       parse_mode: 'Markdown'
     })
