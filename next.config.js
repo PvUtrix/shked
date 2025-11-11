@@ -7,11 +7,10 @@ const nextConfig = {
   output: 'standalone',
   // Включаем детальные ошибки в development режиме
   reactStrictMode: true,
-  // Временно отключаем строгую проверку типов для постепенной миграции
-  // TODO: Включить после исправления всех ошибок в TYPESCRIPT_FIXES_NEEDED.md
+  // TypeScript strict checking enabled - all technical debt resolved!
   typescript: {
-    // See TYPESCRIPT_FIXES_NEEDED.md for list of errors to fix
-    ignoreBuildErrors: true,
+    // Strict type checking enabled after resolving technical debt
+    ignoreBuildErrors: false,
   },
   // Отключаем минификацию в development для лучшей отладки
   webpack: (config, { dev, isServer }) => {
