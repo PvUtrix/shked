@@ -24,8 +24,18 @@ export default function SettingsPage() {
     dailySummaryTime: '07:00'
   })
   const [telegramStats, setTelegramStats] = useState<any>(null)
+  const [maxConfig, setMaxConfig] = useState({
+    maxBotToken: '',
+    openaiApiKey: '',
+    maxIsActive: false,
+    notificationsEnabled: true,
+    reminderMinutes: 30,
+    dailySummaryTime: '07:00'
+  })
+  const [maxStats, setMaxStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [maxSaving, setMaxSaving] = useState(false)
   const [testMessage, setTestMessage] = useState('')
   const [broadcastMessage, setBroadcastMessage] = useState('')
   const [resetEnabled, setResetEnabled] = useState(false)
@@ -58,6 +68,8 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchTelegramConfig()
     fetchTelegramStats()
+    fetchMaxConfig()
+    fetchMaxStats()
     checkResetStatus()
   }, [])
 
@@ -84,6 +96,30 @@ export default function SettingsPage() {
       }
     } catch (error) {
       console.error('Ошибка при получении статистики Telegram:', error)
+    }
+  }
+
+  const fetchMaxConfig = async () => {
+    try {
+      const response = await fetch('/api/max/config')
+      if (response.ok) {
+        const data = await response.json()
+        setMaxConfig(data)
+      }
+    } catch (error) {
+      console.error('Ошибка при получении конфигурации Max:', error)
+    }
+  }
+
+  const fetchMaxStats = async () => {
+    try {
+      const response = await fetch('/api/max/stats')
+      if (response.ok) {
+        const data = await response.json()
+        setMaxStats(data)
+      }
+    } catch (error) {
+      console.error('Ошибка при получении статистики Max:', error)
     }
   }
 
@@ -146,19 +182,45 @@ export default function SettingsPage() {
         },
         body: JSON.stringify(telegramConfig)
       })
-      
+
       if (response.ok) {
-        alert('Настройки Telegram сохранены!')
+        toast.success('Настройки Telegram сохранены!')
         await fetchTelegramConfig()
       } else {
         const error = await response.json()
-        alert(`Ошибка: ${error.error}`)
+        toast.error(`Ошибка: ${error.error}`)
       }
     } catch (error) {
       console.error('Ошибка при сохранении настроек:', error)
-      alert('Ошибка при сохранении настроек')
+      toast.error('Ошибка при сохранении настроек')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const saveMaxConfig = async () => {
+    setMaxSaving(true)
+    try {
+      const response = await fetch('/api/max/config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(maxConfig)
+      })
+
+      if (response.ok) {
+        toast.success('Настройки Max сохранены!')
+        await fetchMaxConfig()
+      } else {
+        const error = await response.json()
+        toast.error(`Ошибка: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Ошибка при сохранении настроек Max:', error)
+      toast.error('Ошибка при сохранении настроек Max')
+    } finally {
+      setMaxSaving(false)
     }
   }
 
@@ -349,6 +411,117 @@ export default function SettingsPage() {
           <div className="flex justify-end">
             <Button onClick={saveTelegramConfig} disabled={saving}>
               {saving ? 'Сохранение...' : 'Сохранить настройки'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Max Bot Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <MessageSquare className="h-5 w-5 mr-2 text-purple-600" />
+            Max Messenger Bot
+          </CardTitle>
+          <CardDescription>
+            Настройка Max Messenger бота для уведомлений и взаимодействия с пользователями
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="maxBotToken">Bot Token</Label>
+                <Input
+                  id="maxBotToken"
+                  type="password"
+                  placeholder="Ваш Max bot token..."
+                  value={maxConfig.maxBotToken}
+                  onChange={(e) => setMaxConfig(prev => ({ ...prev, maxBotToken: e.target.value }))}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Получите токен на <a href="https://max.ru/masterbot" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">max.ru/masterbot</a>
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="maxGigachatKey">GigaChat API Key</Label>
+                <Input
+                  id="maxGigachatKey"
+                  type="password"
+                  placeholder="Ваш ключ GigaChat..."
+                  value={maxConfig.openaiApiKey}
+                  onChange={(e) => setMaxConfig(prev => ({ ...prev, openaiApiKey: e.target.value }))}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Получите ключ на <a href="https://developers.sber.ru/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">developers.sber.ru</a>
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="maxIsActive">Бот активен</Label>
+                <Switch
+                  id="maxIsActive"
+                  checked={maxConfig.maxIsActive}
+                  onCheckedChange={(checked) => setMaxConfig(prev => ({ ...prev, maxIsActive: checked }))}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="maxNotifications">Уведомления включены</Label>
+                <Switch
+                  id="maxNotifications"
+                  checked={maxConfig.notificationsEnabled}
+                  onCheckedChange={(checked) => setMaxConfig(prev => ({ ...prev, notificationsEnabled: checked }))}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="maxReminderMinutes">Напоминание за (минут)</Label>
+                <Input
+                  id="maxReminderMinutes"
+                  type="number"
+                  min="5"
+                  max="120"
+                  value={maxConfig.reminderMinutes}
+                  onChange={(e) => setMaxConfig(prev => ({ ...prev, reminderMinutes: parseInt(e.target.value) }))}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="maxDailySummaryTime">Время дневной сводки</Label>
+                <Input
+                  id="maxDailySummaryTime"
+                  type="time"
+                  value={maxConfig.dailySummaryTime}
+                  onChange={(e) => setMaxConfig(prev => ({ ...prev, dailySummaryTime: e.target.value }))}
+                />
+              </div>
+
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm font-medium text-gray-700 mb-1">Webhook URL:</p>
+                <p className="text-xs font-mono text-gray-600 break-all">
+                  {typeof window !== 'undefined' ? `${window.location.origin}/api/max/webhook` : 'Загрузка...'}
+                </p>
+              </div>
+
+              {maxStats && (
+                <div className="p-3 bg-purple-50 rounded-lg">
+                  <p className="text-sm font-medium text-purple-700 mb-2">Статистика:</p>
+                  <div className="space-y-1 text-xs text-purple-600">
+                    <p>Подключено: {maxStats.notificationStats?.connectedUsers || 0}</p>
+                    <p>Активны: {maxStats.notificationStats?.activeUsers || 0}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Button onClick={saveMaxConfig} disabled={maxSaving}>
+              {maxSaving ? 'Сохранение...' : 'Сохранить настройки'}
             </Button>
           </div>
         </CardContent>
