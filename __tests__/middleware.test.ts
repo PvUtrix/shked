@@ -49,8 +49,8 @@ jest.mock('next-auth/middleware', () => {
   }
 })
 
-// Импортируем proxy (бывший middleware) ПОСЛЕ установки мока
-import proxy from '@/proxy'
+// Импортируем middleware ПОСЛЕ установки мока
+import middleware from '@/middleware'
 
 describe('Proxy (Middleware)', () => {
   // Хелпер для создания mock request
@@ -92,7 +92,7 @@ describe('Proxy (Middleware)', () => {
   describe('Доступ к /admin/*', () => {
     it.skip('должен разрешить доступ для admin роли', async () => {
       const request = createRequest('/admin/users', { role: 'admin' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       // Middleware не должен вернуть 403
       expect(response).toBeUndefined() // undefined означает что запрос пропущен
@@ -100,7 +100,7 @@ describe('Proxy (Middleware)', () => {
 
     it.skip('должен вернуть 403 для student роли', async () => {
       const request = createRequest('/admin/users', { role: 'student' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -111,7 +111,7 @@ describe('Proxy (Middleware)', () => {
 
     it.skip('должен вернуть 403 для lector роли', async () => {
       const request = createRequest('/admin/schedule', { role: 'lector' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -121,7 +121,7 @@ describe('Proxy (Middleware)', () => {
 
     it.skip('должен вернуть 403 для mentor роли', async () => {
       const request = createRequest('/admin/subjects', { role: 'mentor' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -133,14 +133,14 @@ describe('Proxy (Middleware)', () => {
   describe('Доступ к /student/*', () => {
     it.skip('должен разрешить доступ для student роли', async () => {
       const request = createRequest('/student/homework', { role: 'student' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })
 
     it.skip('должен вернуть 403 для admin роли', async () => {
       const request = createRequest('/student/homework', { role: 'admin' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -150,7 +150,7 @@ describe('Proxy (Middleware)', () => {
 
     it.skip('должен вернуть 403 для lector роли', async () => {
       const request = createRequest('/student/profile', { role: 'lector' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -162,14 +162,14 @@ describe('Proxy (Middleware)', () => {
   describe('Доступ к /lector/*', () => {
     it.skip('должен разрешить доступ для lector роли', async () => {
       const request = createRequest('/lector/homework', { role: 'lector' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })
 
     it.skip('должен вернуть 403 для student роли', async () => {
       const request = createRequest('/lector/homework', { role: 'student' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -179,7 +179,7 @@ describe('Proxy (Middleware)', () => {
 
     it.skip('должен вернуть 403 для mentor роли', async () => {
       const request = createRequest('/lector/profile', { role: 'mentor' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -191,14 +191,14 @@ describe('Proxy (Middleware)', () => {
   describe('Доступ к /mentor/*', () => {
     it.skip('должен разрешить доступ для mentor роли', async () => {
       const request = createRequest('/mentor/students', { role: 'mentor' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })
 
     it.skip('должен вернуть 403 для student роли', async () => {
       const request = createRequest('/mentor/students', { role: 'student' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -208,7 +208,7 @@ describe('Proxy (Middleware)', () => {
 
     it.skip('должен вернуть 403 для lector роли', async () => {
       const request = createRequest('/mentor/homework', { role: 'lector' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -220,7 +220,7 @@ describe('Proxy (Middleware)', () => {
   describe('Неавторизованный доступ', () => {
     it.skip('должен редиректить на /login при отсутствии токена', async () => {
       const request = createRequest('/admin/users')
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeDefined()
       if (response) {
@@ -231,10 +231,10 @@ describe('Proxy (Middleware)', () => {
   })
 
   describe('Matcher конфигурация', () => {
-    // Тест на то, что proxy применяется ко всем путям кроме статических файлов
+    // Тест на то, что middleware применяется ко всем путям кроме статических файлов
     it('должен применяться ко всем маршрутам кроме статических ресурсов', () => {
-      // Импортируем config из proxy
-      const { config } = require('@/proxy')
+      // Импортируем config из middleware
+      const { config } = require('@/middleware')
 
       expect(config.matcher).toBeDefined()
       expect(config.matcher).toBeInstanceOf(Array)
@@ -251,21 +251,21 @@ describe('Proxy (Middleware)', () => {
   describe('Edge cases', () => {
     it.skip('должен обрабатывать путь с несколькими сегментами', async () => {
       const request = createRequest('/admin/users/123/edit', { role: 'admin' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })
 
     it.skip('должен обрабатывать query параметры', async () => {
       const request = createRequest('/admin/users?page=1&limit=10', { role: 'admin' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })
 
     it.skip('должен обрабатывать hash в URL', async () => {
       const request = createRequest('/admin/users#section', { role: 'admin' })
-      const response = await proxy(request as any, {} as any)
+      const response = await middleware(request as any, {} as any)
       
       expect(response).toBeUndefined()
     })

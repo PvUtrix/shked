@@ -3,10 +3,10 @@ import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
 /**
- * Proxy (formerly middleware) to handle authentication and password change enforcement
+ * Middleware to handle authentication and password change enforcement
  * Runs on every request to protected routes
  */
-export default async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Get the token from the request
@@ -17,6 +17,7 @@ export default async function proxy(request: NextRequest) {
 
   // Public routes that don't require authentication
   const publicRoutes = [
+    '/',
     '/login',
     '/signup',
     '/api/auth',
@@ -100,7 +101,7 @@ export default async function proxy(request: NextRequest) {
 }
 
 /**
- * Configure which routes the proxy should run on
+ * Configure which routes the middleware should run on
  */
 export const config = {
   matcher: [
