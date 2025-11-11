@@ -1,10 +1,16 @@
 import cron from 'node-cron'
-import { 
-  sendScheduleReminder, 
-  sendDailySummary,
-  sendHomeworkDeadlineReminder,
-  sendWeeklyHomeworkSummary
+import {
+  sendScheduleReminder as sendTelegramScheduleReminder,
+  sendDailySummary as sendTelegramDailySummary,
+  sendHomeworkDeadlineReminder as sendTelegramHomeworkDeadlineReminder,
+  sendWeeklyHomeworkSummary as sendTelegramWeeklyHomeworkSummary
 } from '@/lib/telegram/notifications'
+import {
+  sendScheduleReminder as sendMaxScheduleReminder,
+  sendDailySummary as sendMaxDailySummary,
+  sendHomeworkDeadlineReminder as sendMaxHomeworkDeadlineReminder,
+  sendWeeklyHomeworkSummary as sendMaxWeeklyHomeworkSummary
+} from '@/lib/max/notifications'
 import { prisma } from '@/lib/db'
 
 /**
@@ -98,6 +104,12 @@ async function checkScheduleReminders() {
                     isActive: true,
                     notifications: true
                   }
+                },
+                maxUser: {
+                  where: {
+                    isActive: true,
+                    notifications: true
+                  }
                 }
               }
             }
@@ -112,9 +124,15 @@ async function checkScheduleReminders() {
     for (const schedule of upcomingSchedules) {
       if (schedule.group?.users) {
         for (const user of schedule.group.users) {
+          // Telegram notifications
           if (user.telegramUser && user.telegramUser.isActive) {
-            await sendScheduleReminder(user.id, schedule.id)
-            console.log(`Напоминание отправлено пользователю ${user.firstName} ${user.lastName}`)
+            await sendTelegramScheduleReminder(user.id, schedule.id)
+            console.log(`[Telegram] Напоминание отправлено пользователю ${user.firstName} ${user.lastName}`)
+          }
+          // Max notifications
+          if (user.maxUser && user.maxUser.isActive) {
+            await sendMaxScheduleReminder(user.id, schedule.id)
+            console.log(`[Max] Напоминание отправлено пользователю ${user.firstName} ${user.lastName}`)
           }
         }
       }
@@ -149,12 +167,29 @@ async function sendDailySummaries() {
       }
     })
 
-    console.log(`Отправка дневных сводок ${telegramUsers.length} пользователям`)
+    // Получаем всех активных пользователей с Max
+    const maxUsers = await prisma.maxUser.findMany({
+      where: {
+        isActive: true,
+        notifications: true
+      },
+      include: {
+        user: true
+      }
+    })
 
-    // Отправляем сводки
+    console.log(`Отправка дневных сводок ${telegramUsers.length} Telegram пользователям и ${maxUsers.length} Max пользователям`)
+
+    // Отправляем сводки через Telegram
     for (const telegramUser of telegramUsers) {
-      await sendDailySummary(telegramUser.userId)
-      console.log(`Дневная сводка отправлена пользователю ${telegramUser.user.firstName} ${telegramUser.user.lastName}`)
+      await sendTelegramDailySummary(telegramUser.userId)
+      console.log(`[Telegram] Дневная сводка отправлена пользователю ${telegramUser.user.firstName} ${telegramUser.user.lastName}`)
+    }
+
+    // Отправляем сводки через Max
+    for (const maxUser of maxUsers) {
+      await sendMaxDailySummary(maxUser.userId)
+      console.log(`[Max] Дневная сводка отправлена пользователю ${maxUser.user.firstName} ${maxUser.user.lastName}`)
     }
   } catch (error) {
     console.error('Ошибка при отправке дневных сводок:', error)
@@ -198,6 +233,12 @@ async function checkHomeworkDeadlines() {
                     isActive: true,
                     notifications: true
                   }
+                },
+                maxUser: {
+                  where: {
+                    isActive: true,
+                    notifications: true
+                  }
                 }
               }
             }
@@ -212,16 +253,30 @@ async function checkHomeworkDeadlines() {
     for (const homework of homeworkWithDeadlines) {
       if (homework.group?.users) {
         for (const user of homework.group.users) {
-          if (user.telegramUser && user.telegramUser.isActive) {
-            const hoursLeft = Math.ceil((homework.deadline.getTime() - now.getTime()) / (1000 * 60 * 60))
-            
-            // Отправляем напоминания за 24 часа и за 2 часа
-            if (hoursLeft <= 24 && hoursLeft > 22) {
-              await sendHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
-              console.log(`Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (24 часа)`)
-            } else if (hoursLeft <= 2 && hoursLeft > 0) {
-              await sendHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
-              console.log(`Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (2 часа)`)
+          const hoursLeft = Math.ceil((homework.deadline.getTime() - now.getTime()) / (1000 * 60 * 60))
+
+          // Отправляем напоминания за 24 часа и за 2 часа
+          if (hoursLeft <= 24 && hoursLeft > 22) {
+            // Telegram
+            if (user.telegramUser && user.telegramUser.isActive) {
+              await sendTelegramHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
+              console.log(`[Telegram] Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (24 часа)`)
+            }
+            // Max
+            if (user.maxUser && user.maxUser.isActive) {
+              await sendMaxHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
+              console.log(`[Max] Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (24 часа)`)
+            }
+          } else if (hoursLeft <= 2 && hoursLeft > 0) {
+            // Telegram
+            if (user.telegramUser && user.telegramUser.isActive) {
+              await sendTelegramHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
+              console.log(`[Telegram] Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (2 часа)`)
+            }
+            // Max
+            if (user.maxUser && user.maxUser.isActive) {
+              await sendMaxHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
+              console.log(`[Max] Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (2 часа)`)
             }
           }
         }
@@ -257,12 +312,29 @@ async function sendWeeklyHomeworkSummaries() {
       }
     })
 
-    console.log(`Отправка еженедельных сводок по ДЗ ${telegramUsers.length} пользователям`)
+    // Получаем всех активных пользователей с Max
+    const maxUsers = await prisma.maxUser.findMany({
+      where: {
+        isActive: true,
+        notifications: true
+      },
+      include: {
+        user: true
+      }
+    })
 
-    // Отправляем сводки
+    console.log(`Отправка еженедельных сводок по ДЗ ${telegramUsers.length} Telegram пользователям и ${maxUsers.length} Max пользователям`)
+
+    // Отправляем сводки через Telegram
     for (const telegramUser of telegramUsers) {
-      await sendWeeklyHomeworkSummary(telegramUser.userId)
-      console.log(`Еженедельная сводка по ДЗ отправлена пользователю ${telegramUser.user.firstName} ${telegramUser.user.lastName}`)
+      await sendTelegramWeeklyHomeworkSummary(telegramUser.userId)
+      console.log(`[Telegram] Еженедельная сводка по ДЗ отправлена пользователю ${telegramUser.user.firstName} ${telegramUser.user.lastName}`)
+    }
+
+    // Отправляем сводки через Max
+    for (const maxUser of maxUsers) {
+      await sendMaxWeeklyHomeworkSummary(maxUser.userId)
+      console.log(`[Max] Еженедельная сводка по ДЗ отправлена пользователю ${maxUser.user.firstName} ${maxUser.user.lastName}`)
     }
   } catch (error) {
     console.error('Ошибка при отправке еженедельных сводок по ДЗ:', error)
