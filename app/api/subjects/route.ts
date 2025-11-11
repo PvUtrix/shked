@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
     const assistantId = searchParams.get('assistantId')
     const includeRelations = searchParams.get('includeRelations') === 'true'
 
-    const where: any = {}
+    const where: any = {
+      // Всегда фильтруем только активные предметы
+      isActive: true
+    }
 
     // Для преподавателей, ассистентов и со-преподавателей показываем только их предметы
     if (['lector', 'assistant', 'co_lecturer'].includes(session.user.role)) {
@@ -285,6 +288,84 @@ export async function PUT(request: NextRequest) {
         }
       }
     })
+
+    // Обработка назначения/изменения преподавателя (обратная совместимость)
+    if (body.lectorId !== undefined) {
+      // Получаем текущих преподавателей с ролью LECTOR
+      const currentLectors = await prisma.subjectLector.findMany({
+        where: {
+          subjectId: body.id,
+          role: 'LECTOR'
+        }
+      })
+
+      // Если lectorId = null, удаляем всех основных преподавателей
+      if (body.lectorId === null) {
+        await prisma.subjectLector.deleteMany({
+          where: {
+            subjectId: body.id,
+            role: 'LECTOR',
+            isPrimary: true
+          }
+        })
+      } else {
+        // Проверяем, есть ли уже такой преподаватель
+        const existingLector = currentLectors.find(l => l.userId === body.lectorId)
+
+        if (!existingLector) {
+          // Убираем флаг isPrimary у всех текущих
+          await prisma.subjectLector.updateMany({
+            where: {
+              subjectId: body.id,
+              isPrimary: true
+            },
+            data: {
+              isPrimary: false
+            }
+          })
+
+          // Добавляем нового основного преподавателя
+          await prisma.subjectLector.upsert({
+            where: {
+              subjectId_userId: {
+                subjectId: body.id,
+                userId: body.lectorId
+              }
+            },
+            create: {
+              subjectId: body.id,
+              userId: body.lectorId,
+              role: 'LECTOR',
+              isPrimary: true
+            },
+            update: {
+              role: 'LECTOR',
+              isPrimary: true
+            }
+          })
+        } else if (!existingLector.isPrimary) {
+          // Если преподаватель уже есть, но не основной - делаем его основным
+          await prisma.subjectLector.updateMany({
+            where: {
+              subjectId: body.id,
+              isPrimary: true
+            },
+            data: {
+              isPrimary: false
+            }
+          })
+
+          await prisma.subjectLector.update({
+            where: {
+              id: existingLector.id
+            },
+            data: {
+              isPrimary: true
+            }
+          })
+        }
+      }
+    }
 
     // Логируем обновление предмета
     await logActivity({

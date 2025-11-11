@@ -15,6 +15,7 @@ export type EntityType =
   | 'User'
   | 'Group'
   | 'Subject'
+  | 'SubjectLector'
   | 'Schedule'
   | 'Homework'
   | 'HomeworkSubmission'
