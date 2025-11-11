@@ -11,22 +11,7 @@ global.TextDecoder = TextDecoder
 global.ReadableStream = ReadableStream
 global.TransformStream = TransformStream
 
-// Полифиллы для fetch API (если не установлены)
-if (typeof global.fetch === 'undefined') {
-  global.fetch = require('node-fetch')
-}
-
-if (typeof global.Headers === 'undefined') {
-  global.Headers = require('node-fetch').Headers
-}
-
-if (typeof global.Request === 'undefined') {
-  global.Request = require('node-fetch').Request
-}
-
-if (typeof global.Response === 'undefined') {
-  global.Response = require('node-fetch').Response
-}
+// Node 22+ has fetch API built-in, no polyfills needed
 
 // Расширяем типы Jest для использования с testing-library
 /// <reference types="@testing-library/jest-dom" />
