@@ -11,7 +11,23 @@ global.TextDecoder = TextDecoder
 global.ReadableStream = ReadableStream
 global.TransformStream = TransformStream
 
-// Node 22+ has fetch API built-in, no polyfills needed
+// Import Node's native fetch API (available in Node 18+)
+// We need to import from undici which is what Node uses internally
+const { fetch: nodeFetch, Request: NodeRequest, Response: NodeResponse, Headers: NodeHeaders } = require('undici')
+
+// Ensure fetch API globals are available in Jest environment
+if (typeof global.fetch === 'undefined') {
+  global.fetch = nodeFetch
+}
+if (typeof global.Request === 'undefined') {
+  global.Request = NodeRequest
+}
+if (typeof global.Response === 'undefined') {
+  global.Response = NodeResponse
+}
+if (typeof global.Headers === 'undefined') {
+  global.Headers = NodeHeaders
+}
 
 // Расширяем типы Jest для использования с testing-library
 /// <reference types="@testing-library/jest-dom" />
