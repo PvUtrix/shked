@@ -44,7 +44,7 @@ const homeworkSchema = z.object({
   deadline: z.string().min(1, 'Дедлайн обязателен'),
   materials: z.array(materialSchema).optional(),
   subjectId: z.string().min(1, 'Предмет обязателен'),
-  groupId: z.string().optional(),
+  groupId: z.string().min(1).optional().or(z.literal('')), // Allow empty string or valid groupId
 })
 
 interface HomeworkFormProps {
@@ -169,7 +169,17 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
     try {
       const url = '/api/homework'
       const method = isEditing ? 'PUT' : 'POST'
-      const body = isEditing ? { ...data, id: homework.id } : data
+
+      // Convert empty strings to undefined for optional fields
+      const cleanedData = {
+        ...data,
+        groupId: data.groupId || undefined,
+        taskUrl: data.taskUrl || undefined,
+        description: data.description || undefined,
+        content: data.content || undefined,
+      }
+
+      const body = isEditing ? { ...cleanedData, id: homework.id } : cleanedData
 
       const response = await fetch(url, {
         method,
