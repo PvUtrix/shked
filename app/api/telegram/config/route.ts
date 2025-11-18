@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     if (!settings) {
       return NextResponse.json({
         telegramBotToken: '',
+        telegramBotUsername: '',
         openaiApiKey: '',
         webhookUrl: '',
         isActive: false,
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       telegramBotToken: settings.telegramBotToken || '',
+      telegramBotUsername: settings.telegramBotUsername || '',
       openaiApiKey: settings.openaiApiKey || '',
       webhookUrl: settings.webhookUrl || '',
       isActive: settings.isActive,
@@ -66,6 +68,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       telegramBotToken,
+      telegramBotUsername,
       openaiApiKey,
       isActive,
       notificationsEnabled,
@@ -77,6 +80,14 @@ export async function POST(request: NextRequest) {
     if (telegramBotToken && !/^\d+:[A-Za-z0-9_-]+$/.test(telegramBotToken)) {
       return NextResponse.json(
         { error: 'Неверный формат токена бота. Ожидается формат: 1234567890:ABCdefGHIjklMNOpqrsTUVwxyz' },
+        { status: 400 }
+      )
+    }
+
+    // Валидация username бота (должен быть без @)
+    if (telegramBotUsername && !/^[a-zA-Z0-9_]{5,32}$/.test(telegramBotUsername)) {
+      return NextResponse.json(
+        { error: 'Неверный формат username бота. Используйте только буквы, цифры и подчеркивание (без @)' },
         { status: 400 }
       )
     }
@@ -104,6 +115,7 @@ export async function POST(request: NextRequest) {
       where: { id: 'default' },
       update: {
         telegramBotToken: telegramBotToken || undefined,
+        telegramBotUsername: telegramBotUsername || undefined,
         openaiApiKey: openaiApiKey || undefined,
         webhookUrl,
         isActive: isActive ?? false,
@@ -114,6 +126,7 @@ export async function POST(request: NextRequest) {
       create: {
         id: 'default',
         telegramBotToken: telegramBotToken || undefined,
+        telegramBotUsername: telegramBotUsername || undefined,
         openaiApiKey: openaiApiKey || undefined,
         webhookUrl,
         isActive: isActive ?? false,

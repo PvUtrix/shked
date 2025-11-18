@@ -7,26 +7,46 @@ import { prisma } from '@/lib/db'
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
 
     const userId = session.user.id
     const token = generateLinkToken()
-    
+
     // Сохраняем токен в БД
     await saveLinkToken(userId, token)
 
+    // Получаем настройки бота из БД
+    const botSettings = await prisma.botSettings.findFirst({
+      orderBy: { createdAt: 'desc' }
+    })
+
+    // Генерируем deep link URL для Telegram, если указан username бота
+    const encodedToken = Buffer.from(token).toString('base64')
+    let deepLinkUrl: string | undefined
+
+    if (botSettings?.telegramBotUsername) {
+      deepLinkUrl = `https://t.me/${botSettings.telegramBotUsername}?start=${encodedToken}`
+    }
+
     return NextResponse.json({
       token,
+      deepLinkUrl,
       expiresIn: 15, // минут
-      instructions: [
-        '1. Откройте Telegram бота',
-        '2. Отправьте команду /link',
-        '3. Введите полученный токен',
-        '4. Ваш аккаунт будет привязан'
-      ]
+      instructions: deepLinkUrl
+        ? [
+            '1. Нажмите на ссылку ниже для автоматической привязки',
+            '2. Нажмите кнопку "Start" в Telegram боте',
+            '3. Ваш аккаунт будет автоматически привязан'
+          ]
+        : [
+            '1. Откройте Telegram бота',
+            '2. Отправьте команду /link',
+            '3. Введите полученный токен',
+            '4. Ваш аккаунт будет привязан'
+          ]
     })
   } catch (error) {
     console.error('Ошибка при генерации токена привязки:', error)
