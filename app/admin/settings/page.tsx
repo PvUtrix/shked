@@ -17,6 +17,7 @@ import packageJson from '@/package.json'
 export default function SettingsPage() {
   const [telegramConfig, setTelegramConfig] = useState({
     telegramBotToken: '',
+    telegramBotUsername: '',
     openaiApiKey: '',
     isActive: false,
     notificationsEnabled: true,
@@ -342,7 +343,21 @@ export default function SettingsPage() {
                   Получите токен у @BotFather в Telegram
                 </p>
               </div>
-              
+
+              <div>
+                <Label htmlFor="botUsername">Bot Username</Label>
+                <Input
+                  id="botUsername"
+                  type="text"
+                  placeholder="shked_bot"
+                  value={telegramConfig.telegramBotUsername}
+                  onChange={(e) => setTelegramConfig(prev => ({ ...prev, telegramBotUsername: e.target.value }))}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Username бота без символа @ (для deep linking)
+                </p>
+              </div>
+
               <div>
                 <Label htmlFor="gigachatKey">GigaChat API Key</Label>
                 <Input
