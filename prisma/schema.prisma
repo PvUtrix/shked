@@ -222,6 +222,7 @@ model MaxUser {
 model BotSettings {
   id                   String   @id @default(cuid())
   telegramBotToken     String?
+  telegramBotUsername  String? // Bot username for deep linking (without @)
   telegramWebhookUrl   String?
   maxBotToken          String?
   maxWebhookUrl        String?

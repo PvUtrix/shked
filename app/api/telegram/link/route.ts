@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { generateLinkToken, saveLinkToken } from '@/lib/telegram/commands'
 import { prisma } from '@/lib/db'
-import { env } from '@/lib/env'
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,12 +18,17 @@ export async function GET(request: NextRequest) {
     // Сохраняем токен в БД
     await saveLinkToken(userId, token)
 
-    // Генерируем deep link URL для Telegram
+    // Получаем настройки бота из БД
+    const botSettings = await prisma.botSettings.findFirst({
+      orderBy: { createdAt: 'desc' }
+    })
+
+    // Генерируем deep link URL для Telegram, если указан username бота
     const encodedToken = Buffer.from(token).toString('base64')
     let deepLinkUrl: string | undefined
 
-    if (env.TELEGRAM_BOT_USERNAME) {
-      deepLinkUrl = `https://t.me/${env.TELEGRAM_BOT_USERNAME}?start=${encodedToken}`
+    if (botSettings?.telegramBotUsername) {
+      deepLinkUrl = `https://t.me/${botSettings.telegramBotUsername}?start=${encodedToken}`
     }
 
     return NextResponse.json({
