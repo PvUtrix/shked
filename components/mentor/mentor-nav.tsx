@@ -4,19 +4,22 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { LogoutButton } from '@/components/auth/logout-button'
 import { useSidebar } from '@/hooks/use-sidebar'
-import { 
-  Users, 
-  Calendar, 
-  User, 
+import {
+  Users,
+  Calendar,
+  User,
   ClipboardList,
   UserCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MessageCircle
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { getFullName } from '@/lib/utils'
+import { useState, useEffect } from 'react'
 
 interface MentorNavProps {
   user?: {
@@ -32,6 +35,28 @@ export function MentorNav({ user }: MentorNavProps) {
   const pathname = usePathname()
   const { isCollapsed, toggle, mounted } = useSidebar()
   const t = useTranslations()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread message count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch('/api/messages/unread')
+        if (response.ok) {
+          const data = await response.json()
+          setUnreadCount(data.count || 0)
+        }
+      } catch (error) {
+        console.error('Error fetching unread count:', error)
+      }
+    }
+
+    fetchUnreadCount()
+
+    // Poll every 30 seconds for new messages
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const navItems = [
     {
@@ -53,6 +78,12 @@ export function MentorNav({ user }: MentorNavProps) {
       label: t('mentor.nav.homework'),
       href: '/mentor/homework',
       icon: ClipboardList
+    },
+    {
+      label: 'Сообщения',
+      href: '/messages',
+      icon: MessageCircle,
+      badge: unreadCount > 0 ? unreadCount : undefined
     },
     {
       label: t('mentor.nav.profile'),
@@ -114,7 +145,7 @@ export function MentorNav({ user }: MentorNavProps) {
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
-            
+
             return (
               <Link
                 key={item.href}
@@ -128,8 +159,27 @@ export function MentorNav({ user }: MentorNavProps) {
                 }`}
                 title={mounted && isCollapsed ? item.label : undefined}
               >
-                <Icon className="h-5 w-5 flex-shrink-0" />
-                {(!mounted || !isCollapsed) && <span className="font-medium">{item.label}</span>}
+                <div className="relative flex-shrink-0">
+                  <Icon className="h-5 w-5" />
+                  {item.badge && (mounted && isCollapsed) && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </Badge>
+                  )}
+                </div>
+                {(!mounted || !isCollapsed) && (
+                  <span className="font-medium flex items-center justify-between flex-1">
+                    {item.label}
+                    {item.badge && (
+                      <Badge variant="destructive" className="ml-auto">
+                        {item.badge > 9 ? '9+' : item.badge}
+                      </Badge>
+                    )}
+                  </span>
+                )}
               </Link>
             )
           })}
