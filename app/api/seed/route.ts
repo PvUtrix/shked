@@ -19,11 +19,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    console.log('🌱 Начинаем создание тестовых пользователей...')
+    console.error('🌱 Начинаем создание тестовых пользователей...')
 
     // Создаем тестовых пользователей для всех 8 ролей
     const adminPassword = await bcryptjs.hash('admin123', 12)
-    const admin = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'admin@shked.com' },
       update: {
         firstName: 'Иван',
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     })
 
     const studentPassword = await bcryptjs.hash('student123', 12)
-    const student = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'student@demo.com' },
       update: {
         firstName: 'Мария',
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     })
 
     const lectorPassword = await bcryptjs.hash('lector123', 12)
-    const lector = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'lector@demo.com' },
       update: {
         firstName: 'Александр',
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     })
 
     const mentorPassword = await bcryptjs.hash('mentor123', 12)
-    const mentor = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'mentor@demo.com' },
       update: {
         firstName: 'Анна',
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     })
 
     const assistantPassword = await bcryptjs.hash('assistant123', 12)
-    const assistant = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'assistant@demo.com' },
       update: {
         firstName: 'Дмитрий',
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     })
 
     const coLectorPassword = await bcryptjs.hash('co_lecturer123', 12)
-    const coLector = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'co-lecturer@demo.com' },
       update: {
         firstName: 'Елена',
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
     })
 
     const eduOfficePassword = await bcryptjs.hash('eduoffice123', 12)
-    const eduOffice = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'eduoffice@demo.com' },
       update: {
         firstName: 'Михаил',
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
     })
 
     const deptAdminPassword = await bcryptjs.hash('deptadmin123', 12)
-    const deptAdmin = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'deptadmin@demo.com' },
       update: {
         firstName: 'Ольга',
@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    console.log('✅ Тестовые пользователи созданы успешно!')
+    console.error('✅ Тестовые пользователи созданы успешно!')
 
     return NextResponse.json({
       message: 'Тестовые пользователи созданы успешно! (8 ролей)',

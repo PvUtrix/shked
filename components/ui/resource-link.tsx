@@ -47,7 +47,7 @@ export function ResourceLink({
   type,
   title,
   url,
-  description,
+  _description,
   className,
   variant = 'button'
 }: ResourceLinkProps) {

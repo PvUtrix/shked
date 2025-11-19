@@ -7,17 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { MarkdownViewer } from '@/components/ui/markdown-viewer'
-import { 
-  ArrowLeft, 
-  Edit, 
-  Calendar, 
-  Clock, 
-  BookOpen, 
-  Users, 
+import {
+  ArrowLeft,
+  Edit,
+  Users,
   FileText,
   ExternalLink,
-  CheckCircle,
-  XCircle,
   AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
@@ -30,25 +25,25 @@ export default function LectorHomeworkDetailPage({ params }: { params: Promise<{
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchHomework()
-  }, [id])
-
-  const fetchHomework = async () => {
-    try {
-      const response = await fetch(`/api/homework/${id}`)
-      if (response.ok) {
-        const data = await response.json()
-        setHomework(data)
-      } else {
+    const fetchHomework = async () => {
+      try {
+        const response = await fetch(`/api/homework/${id}`)
+        if (response.ok) {
+          const data = await response.json()
+          setHomework(data)
+        } else {
+          router.push('/lector/homework')
+        }
+      } catch (error) {
+        console.error('Ошибка при получении домашнего задания:', error)
         router.push('/lector/homework')
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Ошибка при получении домашнего задания:', error)
-      router.push('/lector/homework')
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchHomework()
+  }, [id, router])
 
   const formatDate = (date: string | Date) => {
     try {

@@ -19,20 +19,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
       (window as any).__CONTRIBUTE_MESSAGE_SHOWN = true
       
       const githubUrl = 'https://github.com/PvUtrix/shked'
-      
-      console.log(
+
+      console.error(
         '%c🧐 Любопытно, как это работает?',
         'color: #9333ea; font-size: 16px; font-weight: bold; padding: 4px 0;'
       )
-      console.log(
+      console.error(
         '%cПрисоединяйся к разработке! Мы всегда рады новым контрибьюторам 🚀',
         'color: #3b82f6; font-size: 14px; padding: 2px 0;'
       )
-      console.log(
+      console.error(
         `%c👉 ${githubUrl}`,
         'color: #2563eb; font-size: 12px; text-decoration: underline; padding: 2px 0;'
       )
-      console.log(
+      console.error(
         '%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
         'color: #9ca3af; font-size: 10px;'
       )

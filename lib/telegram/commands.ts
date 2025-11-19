@@ -1,6 +1,5 @@
 import { processUserQuery } from './llm'
-import { getSchedule, getNextClass } from './llm'
-import { sendMessage } from './bot'
+import { getSchedule } from './llm'
 import { prisma } from '@/lib/db'
 import crypto from 'crypto'
 
@@ -262,7 +261,7 @@ export async function handleLink(userId: string, chatId: number, args?: string[]
 /**
  * Команда /schedule
  */
-export async function handleSchedule(userId: string, chatId: number): Promise<string> {
+export async function handleSchedule(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -299,7 +298,7 @@ export async function handleSchedule(userId: string, chatId: number): Promise<st
 /**
  * Команда /tomorrow
  */
-export async function handleTomorrow(userId: string, chatId: number): Promise<string> {
+export async function handleTomorrow(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -339,7 +338,7 @@ export async function handleTomorrow(userId: string, chatId: number): Promise<st
 /**
  * Команда /week
  */
-export async function handleWeek(userId: string, chatId: number): Promise<string> {
+export async function handleWeek(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -409,7 +408,7 @@ export async function handleWeek(userId: string, chatId: number): Promise<string
 /**
  * Команда /settings
  */
-export async function handleSettings(userId: string, chatId: number): Promise<string> {
+export async function handleSettings(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -430,7 +429,7 @@ export async function handleSettings(userId: string, chatId: number): Promise<st
 /**
  * Команда /homework
  */
-export async function handleHomework(userId: string, chatId: number): Promise<string> {
+export async function handleHomework(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -498,7 +497,7 @@ export async function handleHomework(userId: string, chatId: number): Promise<st
 /**
  * Команда /homework_due
  */
-export async function handleHomeworkDue(userId: string, chatId: number): Promise<string> {
+export async function handleHomeworkDue(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -565,7 +564,7 @@ export async function handleHomeworkDue(userId: string, chatId: number): Promise
 /**
  * Команда /help
  */
-export async function handleHelp(userId: string, chatId: number): Promise<string> {
+export async function handleHelp(_userId: string, _chatId: number): Promise<string> {
   return `📚 *Доступные команды:*
 
 /start - Приветствие и инструкции
@@ -593,7 +592,7 @@ export async function handleHelp(userId: string, chatId: number): Promise<string
 /**
  * Обработка естественного языка
  */
-export async function handleNaturalLanguage(userId: string, chatId: number, text: string): Promise<string> {
+export async function handleNaturalLanguage(userId: string, _chatId: number, text: string): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {

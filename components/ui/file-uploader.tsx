@@ -39,19 +39,19 @@ export function FileUploader({
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
   }
 
-  // Валидация файла
-  const validateFile = (file: File): string | null => {
-    if (file.size > maxSize) {
-      return t('ui.fileUploader.fileTooLarge', { maxSize: formatFileSize(maxSize) })
-    }
-    return null
-  }
-
   // Обработка выбора файла
   const handleFileChange = useCallback((selectedFile: File | null) => {
+    // Валидация файла
+    const validateFile = (file: File): string | null => {
+      if (file.size > maxSize) {
+        return t('ui.fileUploader.fileTooLarge', { maxSize: formatFileSize(maxSize) })
+      }
+      return null
+    }
+
     setError(null)
     setSuccess(false)
-    
+
     if (!selectedFile) {
       setFile(null)
       return
@@ -65,7 +65,7 @@ export function FileUploader({
     }
 
     setFile(selectedFile)
-  }, [maxSize])
+  }, [maxSize, t])
 
   // Загрузка файла
   const handleUpload = async () => {

@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -13,12 +12,10 @@ import { Badge } from '@/components/ui/badge'
 import { MarkdownViewer } from '@/components/ui/markdown-viewer'
 import { MarkdownEditor } from '@/components/ui/markdown-editor'
 import { InlineCommentViewer } from '@/components/ui/inline-comment-viewer'
-import { 
-  ArrowLeft, 
-  Save, 
+import {
+  ArrowLeft,
+  Save,
   CheckCircle,
-  XCircle,
-  Clock,
   User,
   Calendar,
   FileText
@@ -63,31 +60,31 @@ export default function LectorReviewSubmissionPage({
   })
 
   useEffect(() => {
-    fetchSubmission()
-  }, [params.id, params.submissionId])
-
-  const fetchSubmission = async () => {
-    try {
-      const response = await fetch(`/api/homework/${params.id}/submissions/${params.submissionId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setSubmission(data)
-        setFormData({
-          grade: data.grade?.toString() || '',
-          comment: data.comment || '',
-          feedback: data.feedback || '',
-          status: data.status || 'SUBMITTED'
-        })
-      } else {
+    const fetchSubmission = async () => {
+      try {
+        const response = await fetch(`/api/homework/${params.id}/submissions/${params.submissionId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setSubmission(data)
+          setFormData({
+            grade: data.grade?.toString() || '',
+            comment: data.comment || '',
+            feedback: data.feedback || '',
+            status: data.status || 'SUBMITTED'
+          })
+        } else {
+          router.push(`/lector/homework/${params.id}`)
+        }
+      } catch (error) {
+        console.error('Ошибка при получении работы:', error)
         router.push(`/lector/homework/${params.id}`)
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Ошибка при получении работы:', error)
-      router.push(`/lector/homework/${params.id}`)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchSubmission()
+  }, [params.id, params.submissionId, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

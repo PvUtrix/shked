@@ -171,6 +171,7 @@ export function handleApiError(
         )
       default:
         logger.error('Prisma error', error, { code: prismaError.code })
+        break
     }
   }
 

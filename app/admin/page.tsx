@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Users, BookOpen, Clock } from 'lucide-react'
-import { Prisma } from '@prisma/client'
 import Link from 'next/link'
 
 export const dynamic = "force-dynamic"

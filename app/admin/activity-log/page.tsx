@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Label } from '@/components/ui/label'
-import { Search, Filter, Calendar, RefreshCw, Eye, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
+import { Filter, RefreshCw, Eye, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ActivityLog {
@@ -90,15 +90,11 @@ export default function ActivityLogPage() {
     return baseUrl
   }
 
-  useEffect(() => {
-    fetchLogs()
-  }, [filters, pagination.page])
-
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
-      
+
       if (filters.userId) params.append('userId', filters.userId)
       if (filters.action) params.append('action', filters.action)
       if (filters.entityType) params.append('entityType', filters.entityType)
@@ -121,7 +117,11 @@ export default function ActivityLogPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters, pagination.page, pagination.limit, t])
+
+  useEffect(() => {
+    fetchLogs()
+  }, [fetchLogs])
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))

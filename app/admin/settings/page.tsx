@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Slider } from '@/components/ui/slider'
 // import { useAnimationSettings } from '@/lib/stores/animation-store' // Временно отключен
 import { Settings, Database, Users, Bell, Shield, MessageSquare, Send, BarChart3, TestTube, Palette, Zap, AlertTriangle, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
@@ -59,9 +58,9 @@ export default function SettingsPage() {
   const animationEnabled = true
   const animationType = 'fade'
   const animationSpeed = 'fast'
-  const setAnimationEnabled = (value: boolean) => {}
-  const setAnimationType = (value: 'fade' | 'slide') => {}
-  const setAnimationSpeed = (value: 'fast' | 'medium' | 'slow') => {}
+  const setAnimationEnabled = (_value: boolean) => {}
+  const setAnimationType = (_value: 'fade' | 'slide') => {}
+  const setAnimationSpeed = (_value: 'fast' | 'medium' | 'slow') => {}
   const resetAnimationSettings = () => {}
   const isSupported = false
   const cssDuration = '150ms'
@@ -151,7 +150,7 @@ export default function SettingsPage() {
       })
 
       if (response.ok) {
-        const result = await response.json()
+        await response.json()
         toast.success('База данных успешно сброшена!')
         toast.info('Рекомендуется обновить страницу для применения изменений')
         

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -8,20 +8,20 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    console.log('🔍 Начинаем диагностику базы данных...')
+    console.error('🔍 Начинаем диагностику базы данных...')
 
     // 1. Проверяем подключение к базе данных
     const connectionTest = await prisma.$queryRaw`SELECT 1 as test`
-    console.log('✅ Подключение к базе данных работает')
+    console.error('✅ Подключение к базе данных работает')
 
     // 2. Проверяем все таблицы в базе данных
     const tables = await prisma.$queryRaw`
-      SELECT table_name 
-      FROM information_schema.tables 
+      SELECT table_name
+      FROM information_schema.tables
       WHERE table_schema = 'public'
       ORDER BY table_name
     `
-    console.log('📋 Найденные таблицы:', tables)
+    console.error('📋 Найденные таблицы:', tables)
 
     // 3. Проверяем таблицу User (разные варианты названий)
     const userTableVariants = ['User', 'user', 'users', 'Users']
@@ -31,16 +31,16 @@ export async function GET() {
       try {
         const columns = await prisma.$queryRaw`
           SELECT column_name, data_type, is_nullable
-          FROM information_schema.columns 
+          FROM information_schema.columns
           WHERE table_name = ${tableName}
           ORDER BY ordinal_position
         `
         if (columns && Array.isArray(columns) && columns.length > 0) {
           userTableInfo[tableName] = columns
-          console.log(`✅ Найдена таблица ${tableName}:`, columns.length, 'колонок')
+          console.error(`✅ Найдена таблица ${tableName}:`, columns.length, 'колонок')
         }
       } catch (error) {
-        console.log(`❌ Таблица ${tableName} не найдена или ошибка:`, error instanceof Error ? error.message : 'Unknown error')
+        console.error(`❌ Таблица ${tableName} не найдена или ошибка:`, error instanceof Error ? error.message : 'Unknown error')
       }
     }
 
@@ -60,9 +60,9 @@ export async function GET() {
       })
       userCount = userQuery.length
       users = userQuery
-      console.log(`✅ Найдено пользователей: ${userCount}`)
+      console.error(`✅ Найдено пользователей: ${userCount}`)
     } catch (error) {
-      console.log('❌ Ошибка при запросе пользователей:', error instanceof Error ? error.message : 'Unknown error')
+      console.error('❌ Ошибка при запросе пользователей:', error instanceof Error ? error.message : 'Unknown error')
     }
 
     // 5. Проверяем схему Prisma

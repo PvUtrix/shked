@@ -69,7 +69,7 @@ export async function POST(
     }
 
     // Логирование операции для аудита
-    console.log(`[GDPR DELETE] Администратор ${session.user.email} удаляет пользователя ${userToDelete.email} (${userToDelete.id})`)
+    console.error(`[GDPR DELETE] Администратор ${session.user.email} удаляет пользователя ${userToDelete.email} (${userToDelete.id})`)
 
     // Анонимизация персональных данных пользователя
     const anonymizedEmail = `deleted-${userToDelete.id}@deleted.local`
@@ -212,7 +212,7 @@ export async function POST(
     // Документы остаются, но переназначаем uploader на null или системного пользователя
     // Можно оставить как есть, так как email уже анонимизирован
 
-    console.log(`[GDPR DELETE] Пользователь ${userToDelete.email} успешно анонимизирован`)
+    console.error(`[GDPR DELETE] Пользователь ${userToDelete.email} успешно анонимизирован`)
 
     return NextResponse.json({ 
       message: 'Персональные данные пользователя успешно удалены. Учебные данные сохранены в анонимизированном виде.' 

@@ -45,25 +45,25 @@ export default function MentorReviewSubmissionPage({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchSubmission()
-  }, [params.id, params.submissionId])
-
-  const fetchSubmission = async () => {
-    try {
-      const response = await fetch(`/api/homework/${params.id}/submissions/${params.submissionId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setSubmission(data)
-      } else {
+    const fetchSubmission = async () => {
+      try {
+        const response = await fetch(`/api/homework/${params.id}/submissions/${params.submissionId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setSubmission(data)
+        } else {
+          router.push(`/mentor/homework/${params.id}`)
+        }
+      } catch (error) {
+        console.error('Ошибка при получении работы:', error)
         router.push(`/mentor/homework/${params.id}`)
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Ошибка при получении работы:', error)
-      router.push(`/mentor/homework/${params.id}`)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchSubmission()
+  }, [params.id, params.submissionId, router])
 
   const formatDate = (date: string | Date) => {
     try {

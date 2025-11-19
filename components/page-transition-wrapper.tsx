@@ -63,28 +63,28 @@ export function PageTransitionWrapper({
 
   // Применяем CSS класс для transition name
   const { transitionName } = usePageTransition()
-  
+
   useEffect(() => {
     if (typeof document === 'undefined') return
 
     const root = document.documentElement
-    
+
     if (transitionName) {
       root.style.setProperty('view-transition-name', transitionName)
     }
-    
+
     // Отладочная информация
-    console.log('View Transitions Support Check:', {
+    console.error('View Transitions Support Check:', {
       hasStartViewTransition: typeof document.startViewTransition === 'function',
       documentStartViewTransition: document.startViewTransition,
       isSupported,
       isEnabled
     })
-    
+
     return () => {
       root.style.removeProperty('view-transition-name')
     }
-  }, [isSupported, isEnabled])
+  }, [isSupported, isEnabled, transitionName])
 
   return (
     <div 

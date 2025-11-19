@@ -6,10 +6,10 @@ const prisma = new PrismaClient()
 
 async function main() {
   try {
-    console.log('🌱 Начинаем заполнение базы данных...')
-    
+    console.error('🌱 Начинаем заполнение базы данных...')
+
     // 1. Создание группы (создаем раньше, чтобы можно было назначить студента)
-    console.log('👥 Создание групп...')
+    console.error('👥 Создание групп...')
     const techPredGroup = await prisma.group.upsert({
       where: { name: 'ТехПред МФТИ 2025-27' },
       update: {},
@@ -22,11 +22,11 @@ async function main() {
     })
 
     // 2. Создание демо аккаунтов (8 ролей)
-    console.log('👤 Создание демо аккаунтов...')
+    console.error('👤 Создание демо аккаунтов...')
     
     // Админ
     const adminPassword = await bcryptjs.hash('admin123', 12)
-    const _admin = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'admin@shked.com' },
       update: {
         firstName: 'Иван',
@@ -112,7 +112,7 @@ async function main() {
 
     // Ассистент
     const assistantPassword = await bcryptjs.hash('assistant123', 12)
-    const _demoAssistant = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'assistant@demo.com' },
       update: {
         firstName: 'Дмитрий',
@@ -133,7 +133,7 @@ async function main() {
 
     // Со-преподаватель
     const coLecturerPassword = await bcryptjs.hash('co_lecturer123', 12)
-    const _demoCoLecturer = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'co-lecturer@demo.com' },
       update: {
         firstName: 'Елена',
@@ -154,7 +154,7 @@ async function main() {
 
     // Учебный отдел
     const eduOfficePassword = await bcryptjs.hash('eduoffice123', 12)
-    const _demoEduOffice = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'eduoffice@demo.com' },
       update: {
         firstName: 'Михаил',
@@ -175,7 +175,7 @@ async function main() {
 
     // Админ кафедры
     const deptAdminPassword = await bcryptjs.hash('deptadmin123', 12)
-    const _demoDeptAdmin = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'deptadmin@demo.com' },
       update: {
         firstName: 'Ольга',
@@ -195,7 +195,7 @@ async function main() {
     })
 
     // 4. Создание предметов на основе Excel данных
-    console.log('📚 Создание предметов...')
+    console.error('📚 Создание предметов...')
     const subjects = [
       {
         name: 'Проектирование венчурного предприятия (Тьюториал)',
@@ -263,7 +263,7 @@ async function main() {
     })
 
     // 5. Добавление дополнительных тестовых расписаний
-    console.log('📋 Добавление дополнительных занятий...')
+    console.error('📋 Добавление дополнительных занятий...')
     const additionalSchedules = [
       {
         subject: createdSubjects.find(s => s.name.includes('Системное мышление')),
@@ -310,7 +310,7 @@ async function main() {
     }
 
     // 6. Создание тестовых домашних заданий
-    console.log('📝 Создание домашних заданий...')
+    console.error('📝 Создание домашних заданий...')
     const homeworkData = [
       {
         title: 'Анализ рынка для стартапа',
@@ -365,7 +365,7 @@ async function main() {
     }
 
     // 7. Создание тестовых сдач домашних заданий
-    console.log('📤 Создание сдач домашних заданий...')
+    console.error('📤 Создание сдач домашних заданий...')
     
     // Используем только демо-студента для сдач
     const students = [demoStudent]
@@ -407,8 +407,8 @@ async function main() {
       }
     }
 
-    console.log('✅ Заполнение базы данных завершено!')
-    console.log(`📊 Создано:
+    console.error('✅ Заполнение базы данных завершено!')
+    console.error(`📊 Создано:
     - Пользователей: 8 (по одному на каждую роль)
     - Групп: 1
     - Предметов: ${createdSubjects.length}

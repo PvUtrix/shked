@@ -87,55 +87,56 @@ export default function StudentProfilePage() {
         canHelp: '',
         lookingFor: ''
       })
+
+      const fetchUserData = async () => {
+        try {
+          // Загружаем данные профиля
+          const profileResponse = await fetch('/api/profile')
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json()
+            setFormData(prev => ({
+              ...prev,
+              firstName: profileData.user.firstName || '',
+              lastName: profileData.user.lastName || '',
+              middleName: profileData.user.middleName || '',
+              birthday: profileData.user.birthday ? new Date(profileData.user.birthday).toISOString().split('T')[0] : '',
+              snils: profileData.user.snils || '',
+              sex: profileData.user.sex || '',
+              canHelp: profileData.user.canHelp || '',
+              lookingFor: profileData.user.lookingFor || ''
+            }))
+          }
+
+          // Здесь можно получить дополнительные данные пользователя
+          // Пока используем заглушку
+          setUserGroup({
+            subgroupCommerce: 1,
+            subgroupTutorial: 1,
+            subgroupFinance: 1,
+            subgroupSystemThinking: 1,
+            group: {
+              name: 'ТехПред МФТИ 2025-27',
+              description: 'Магистратура Технологическое предпринимательство',
+              semester: '1 семестр',
+              year: '2025-27'
+            }
+          })
+          setScheduleCount(15)
+
+          // Проверяем статус Telegram подключения
+          await checkTelegramStatus()
+          // Проверяем статус Max подключения
+          await checkMaxStatus()
+        } catch (error) {
+          console.error('Ошибка при получении данных пользователя:', error)
+        } finally {
+          setLoading(false)
+        }
+      }
+
       fetchUserData()
     }
   }, [session])
-
-  const fetchUserData = async () => {
-    try {
-      // Загружаем данные профиля
-      const profileResponse = await fetch('/api/profile')
-      if (profileResponse.ok) {
-        const profileData = await profileResponse.json()
-        setFormData(prev => ({
-          ...prev,
-          firstName: profileData.user.firstName || '',
-          lastName: profileData.user.lastName || '',
-          middleName: profileData.user.middleName || '',
-          birthday: profileData.user.birthday ? new Date(profileData.user.birthday).toISOString().split('T')[0] : '',
-          snils: profileData.user.snils || '',
-          sex: profileData.user.sex || '',
-          canHelp: profileData.user.canHelp || '',
-          lookingFor: profileData.user.lookingFor || ''
-        }))
-      }
-
-      // Здесь можно получить дополнительные данные пользователя
-      // Пока используем заглушку
-      setUserGroup({
-        subgroupCommerce: 1,
-        subgroupTutorial: 1,
-        subgroupFinance: 1,
-        subgroupSystemThinking: 1,
-        group: {
-          name: 'ТехПред МФТИ 2025-27',
-          description: 'Магистратура Технологическое предпринимательство',
-          semester: '1 семестр',
-          year: '2025-27'
-        }
-      })
-      setScheduleCount(15)
-      
-      // Проверяем статус Telegram подключения
-      await checkTelegramStatus()
-      // Проверяем статус Max подключения
-      await checkMaxStatus()
-    } catch (error) {
-      console.error('Ошибка при получении данных пользователя:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const checkTelegramStatus = async () => {
     try {
@@ -243,7 +244,7 @@ export default function StudentProfilePage() {
 
       if (response.ok) {
         const result = await response.json()
-        console.log('Профиль успешно обновлен:', result)
+        console.error('Профиль успешно обновлен:', result)
         setIsEditing(false)
         // Можно добавить уведомление об успешном сохранении
       } else {
@@ -606,7 +607,7 @@ export default function StudentProfilePage() {
                     checked={telegramUser.notifications}
                     onCheckedChange={(checked) => {
                       // Здесь можно добавить API для изменения настроек
-                      console.log('Изменение настроек уведомлений:', checked)
+                      console.error('Изменение настроек уведомлений:', checked)
                     }}
                   />
                   <span className="text-sm text-gray-600">
@@ -739,7 +740,7 @@ export default function StudentProfilePage() {
                   <Switch
                     checked={maxUser.notifications}
                     onCheckedChange={(checked) => {
-                      console.log('Изменение настроек Max уведомлений:', checked)
+                      console.error('Изменение настроек Max уведомлений:', checked)
                     }}
                   />
                   <span className="text-sm text-gray-600">

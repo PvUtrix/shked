@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -32,7 +32,7 @@ interface Group {
 
 export default function GroupStudentsPage() {
   const params = useParams()
-  const router = useRouter()
+  const _router = useRouter()
   const groupId = params.id as string
 
   const [group, setGroup] = useState<Group | null>(null)
@@ -41,11 +41,7 @@ export default function GroupStudentsPage() {
   const [saving, setSaving] = useState(false)
   const [changes, setChanges] = useState<Map<string, any>>(new Map())
 
-  useEffect(() => {
-    fetchData()
-  }, [groupId])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       // Получаем информацию о группе
       const groupResponse = await fetch('/api/groups')
@@ -67,7 +63,11 @@ export default function GroupStudentsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [groupId])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const handleSubgroupChange = (studentId: string, subgroupType: string, value: string) => {
     const numericValue = value === '' || value === 'none' ? null : parseInt(value)

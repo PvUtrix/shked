@@ -9,12 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
-  ArrowLeft, 
-  Save, 
-  Plus, 
-  Trash2,
-  Calendar
+import {
+  ArrowLeft,
+  Save,
+  Plus,
+  Trash2
 } from 'lucide-react'
 import Link from 'next/link'
 import { Homework, Subject, Group } from '@/lib/types'
@@ -47,47 +46,47 @@ export default function EditHomeworkPage({ params }: { params: Promise<{ id: str
   })
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Загружаем домашнее задание
+        const homeworkResponse = await fetch(`/api/homework/${id}`)
+        if (homeworkResponse.ok) {
+          const homeworkData = await homeworkResponse.json()
+          setHomework(homeworkData)
+          setFormData({
+            title: homeworkData.title || '',
+            description: homeworkData.description || '',
+            taskUrl: homeworkData.taskUrl || '',
+            deadline: homeworkData.deadline ? new Date(homeworkData.deadline).toISOString().slice(0, 16) : '',
+            subjectId: homeworkData.subjectId || '',
+            groupId: homeworkData.groupId || '',
+            materials: homeworkData.materials || []
+          })
+        }
+
+        // Загружаем предметы
+        const subjectsResponse = await fetch('/api/subjects')
+        if (subjectsResponse.ok) {
+          const subjectsData = await subjectsResponse.json()
+          setSubjects(subjectsData.subjects || [])
+        }
+
+        // Загружаем группы
+        const groupsResponse = await fetch('/api/groups')
+        if (groupsResponse.ok) {
+          const groupsData = await groupsResponse.json()
+          setGroups(groupsData.groups || [])
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке данных:', error)
+        toast.error('Ошибка при загрузке данных')
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchData()
   }, [id])
-
-  const fetchData = async () => {
-    try {
-      // Загружаем домашнее задание
-      const homeworkResponse = await fetch(`/api/homework/${id}`)
-      if (homeworkResponse.ok) {
-        const homeworkData = await homeworkResponse.json()
-        setHomework(homeworkData)
-        setFormData({
-          title: homeworkData.title || '',
-          description: homeworkData.description || '',
-          taskUrl: homeworkData.taskUrl || '',
-          deadline: homeworkData.deadline ? new Date(homeworkData.deadline).toISOString().slice(0, 16) : '',
-          subjectId: homeworkData.subjectId || '',
-          groupId: homeworkData.groupId || '',
-          materials: homeworkData.materials || []
-        })
-      }
-
-      // Загружаем предметы
-      const subjectsResponse = await fetch('/api/subjects')
-      if (subjectsResponse.ok) {
-        const subjectsData = await subjectsResponse.json()
-        setSubjects(subjectsData.subjects || [])
-      }
-
-      // Загружаем группы
-      const groupsResponse = await fetch('/api/groups')
-      if (groupsResponse.ok) {
-        const groupsData = await groupsResponse.json()
-        setGroups(groupsData.groups || [])
-      }
-    } catch (error) {
-      console.error('Ошибка при загрузке данных:', error)
-      toast.error('Ошибка при загрузке данных')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
