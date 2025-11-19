@@ -1,6 +1,5 @@
 import { sendMessage } from './bot'
 import { prisma } from '@/lib/db'
-import { formatSchedule } from './helpers'
 
 export interface NotificationData {
   userId: string
@@ -109,7 +108,7 @@ ${schedule.description ? `📝 ${schedule.description}` : ''}
       if (success) successCount++
     }
 
-    console.log(`Отправлено уведомлений об изменении: ${successCount}/${telegramUsers.length}`)
+    console.error(`Отправлено уведомлений об изменении: ${successCount}/${telegramUsers.length}`)
     return successCount > 0
   } catch (error) {
     console.error('Ошибка при отправке уведомления об изменении:', error)
@@ -434,7 +433,7 @@ ${homework.taskUrl ? `🔗 [Открыть задание](${homework.taskUrl})`
       if (success) successCount++
     }
 
-    console.log(`Отправлено уведомлений о новом ДЗ: ${successCount}/${telegramUsers.length}`)
+    console.error(`Отправлено уведомлений о новом ДЗ: ${successCount}/${telegramUsers.length}`)
     return successCount > 0
   } catch (error) {
     console.error('Ошибка при отправке уведомления о новом ДЗ:', error)

@@ -255,8 +255,8 @@ export async function POST(request: NextRequest) {
 
     if (action === 'save') {
       // Сохранение текущего состояния БД
-      console.log(`💾 Сохранение шаблона "${name}"...`)
-      
+      console.error(`💾 Сохранение шаблона "${name}"...`)
+
       const data = await getAllData()
       const snapshot = {
         name,
@@ -266,7 +266,7 @@ export async function POST(request: NextRequest) {
 
       await fs.writeFile(templatePath, JSON.stringify(snapshot, null, 2), 'utf-8')
 
-      console.log(`✅ Шаблон "${name}" сохранен`)
+      console.error(`✅ Шаблон "${name}" сохранен`)
 
       return NextResponse.json({
         success: true,
@@ -285,7 +285,7 @@ export async function POST(request: NextRequest) {
       })
     } else if (action === 'restore') {
       // Восстановление из шаблона
-      console.log(`📥 Восстановление шаблона "${name}"...`)
+      console.error(`📥 Восстановление шаблона "${name}"...`)
 
       try {
         await fs.access(templatePath)
@@ -297,14 +297,14 @@ export async function POST(request: NextRequest) {
       const snapshot = JSON.parse(fileContent)
 
       // Очищаем базу
-      console.log('🗑️ Очистка базы данных...')
+      console.error('🗑️ Очистка базы данных...')
       await clearDatabase()
 
       // Восстанавливаем данные
-      console.log('📦 Восстановление данных...')
+      console.error('📦 Восстановление данных...')
       await restoreData(snapshot.data)
 
-      console.log(`✅ Шаблон "${name}" восстановлен`)
+      console.error(`✅ Шаблон "${name}" восстановлен`)
 
       return NextResponse.json({
         success: true,

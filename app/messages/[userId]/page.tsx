@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, FormEvent } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -50,11 +50,36 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch(`/api/messages?userId=${userId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setMessages(data.messages || [])
+
+          // Определить другого пользователя
+          if (data.messages && data.messages.length > 0) {
+            const firstMessage = data.messages[0]
+            const other = firstMessage.senderId === session?.user?.id
+              ? firstMessage.receiver
+              : firstMessage.sender
+            setOtherUser(other)
+          }
+        } else {
+          toast.error('Не удалось загрузить сообщения')
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке сообщений:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchMessages()
     // Обновлять сообщения каждые 5 секунд
     const interval = setInterval(fetchMessages, 5000)
     return () => clearInterval(interval)
-  }, [userId])
+  }, [userId, session?.user?.id])
 
   useEffect(() => {
     scrollToBottom()
@@ -64,32 +89,7 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const fetchMessages = async () => {
-    try {
-      const response = await fetch(`/api/messages?userId=${userId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setMessages(data.messages || [])
-
-        // Определить другого пользователя
-        if (data.messages && data.messages.length > 0) {
-          const firstMessage = data.messages[0]
-          const other = firstMessage.senderId === session?.user?.id
-            ? firstMessage.receiver
-            : firstMessage.sender
-          setOtherUser(other)
-        }
-      } else {
-        toast.error('Не удалось загрузить сообщения')
-      }
-    } catch (error) {
-      console.error('Ошибка при загрузке сообщений:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const sendMessage = async (e: React.FormEvent) => {
+  const sendMessage = async (e: FormEvent) => {
     e.preventDefault()
     if (!newMessage.trim() || sending) return
 

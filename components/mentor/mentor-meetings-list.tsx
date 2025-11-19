@@ -72,7 +72,7 @@ const typeConfig = {
   OTHER: 'Другое',
 }
 
-export function MentorMeetingsList({ meetings, mentorId, onUpdate }: MentorMeetingsListProps) {
+export function MentorMeetingsList({ meetings, _mentorId, onUpdate }: MentorMeetingsListProps) {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
   const [notes, setNotes] = useState('')
   const [updating, setUpdating] = useState(false)

@@ -90,7 +90,7 @@ function getClientId(request: NextRequest): string {
  * Checks if the client has exceeded the rate limit
  */
 export function rateLimit(config: RateLimiterConfig) {
-  const { maxRequests, windowMs, message } = config
+  const { maxRequests, windowMs, _message } = config
 
   // Start cleanup on first use
   startCleanup()

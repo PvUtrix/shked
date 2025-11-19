@@ -3,9 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AttendanceForm } from '@/components/admin/attendance-form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Users, TrendingUp, AlertCircle, Calendar } from 'lucide-react'
+import { TrendingUp, AlertCircle, Calendar } from 'lucide-react'
 import { ExportButton } from '@/components/export/export-button'
 
 export default async function AdminAttendancePage() {

@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { ExternalResourceForm } from '@/components/admin/external-resource-form'
 import { ResourceList } from '@/components/ui/resource-link'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Link as LinkIcon } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function AdminResourcesPage() {

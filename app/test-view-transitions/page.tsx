@@ -10,17 +10,17 @@ export default function TestViewTransitionsPage() {
   const { isSupported, enabled, type, speed, setEnabled, setType, setSpeed } = useAnimationSettings()
 
   const testTransition = () => {
-    console.log('Testing View Transitions API...')
-    console.log('document.startViewTransition:', typeof document.startViewTransition)
-    console.log('document.startViewTransition function:', document.startViewTransition)
-    
+    console.error('Testing View Transitions API...')
+    console.error('document.startViewTransition:', typeof document.startViewTransition)
+    console.error('document.startViewTransition function:', document.startViewTransition)
+
     if (typeof document !== 'undefined' && document.startViewTransition) {
-      console.log('Using View Transitions API')
+      console.error('Using View Transitions API')
       document.startViewTransition(() => {
         setCurrentPage(prev => prev === 1 ? 2 : 1)
       })
     } else {
-      console.log('View Transitions API not available, using regular state update')
+      console.error('View Transitions API not available, using regular state update')
       setCurrentPage(prev => prev === 1 ? 2 : 1)
     }
   }

@@ -132,7 +132,7 @@ function getNextWeekday(fromDate: Date, targetDay: number): Date {
 export function formatTime(timeStr: string): string {
   const [hours, minutes] = timeStr.split(':')
   const hour = parseInt(hours)
-  const minute = parseInt(minutes)
+  const _minute = parseInt(minutes)
 
   if (hour < 12) {
     return `${hour}:${minutes} (утро)`

@@ -101,7 +101,7 @@ class CacheManager {
     }
 
     if (expiredKeys.length > 0) {
-      console.log(`[Cache] Cleared ${expiredKeys.length} expired entries`)
+      console.error(`[Cache] Cleared ${expiredKeys.length} expired entries`)
     }
   }
 

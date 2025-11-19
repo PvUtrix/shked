@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    console.log(`🔍 Testing authentication for: ${email}`)
+    console.error(`🔍 Testing authentication for: ${email}`)
 
     // 1. Проверяем существование пользователя
     const user = await prisma.user.findUnique({
@@ -26,36 +26,36 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
-      console.log(`❌ User not found: ${email}`)
-      return NextResponse.json({ 
+      console.error(`❌ User not found: ${email}`)
+      return NextResponse.json({
         error: 'Пользователь не найден',
         step: 'user_lookup',
         success: false
       }, { status: 404 })
     }
 
-    console.log(`✅ User found: ${user.email} (${user.role})`)
+    console.error(`✅ User found: ${user.email} (${user.role})`)
 
     // 2. Проверяем пароль
     const isPasswordValid = await bcryptjs.compare(password, user.password)
 
     if (!isPasswordValid) {
-      console.log(`❌ Invalid password for: ${email}`)
-      return NextResponse.json({ 
+      console.error(`❌ Invalid password for: ${email}`)
+      return NextResponse.json({
         error: 'Неверный пароль',
         step: 'password_check',
         success: false
       }, { status: 401 })
     }
 
-    console.log(`✅ Password valid for: ${email}`)
+    console.error(`✅ Password valid for: ${email}`)
 
     // 3. Проверяем NextAuth сессию
     const session = await getServerSession(authOptions)
-    console.log(`🔍 Current session:`, session ? 'EXISTS' : 'NULL')
+    console.error(`🔍 Current session:`, session ? 'EXISTS' : 'NULL')
 
     // 4. Тестируем создание JWT токена (симуляция NextAuth)
-    const jwtPayload = {
+    const _jwtPayload = {
       sub: user.id,
       email: user.email,
       name: user.name,
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
     }
 
-    console.log(`✅ JWT payload created for: ${email}`)
+    console.error(`✅ JWT payload created for: ${email}`)
 
     return NextResponse.json({
       message: 'Аутентификация успешна на всех уровнях',

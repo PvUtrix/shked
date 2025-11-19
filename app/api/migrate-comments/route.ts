@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // Проверяем авторизацию (только для админов)
     const session = await getServerSession(authOptions)
@@ -18,18 +18,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('🔄 Начинаем миграцию для таблицы homework_comments...')
+    console.error('🔄 Начинаем миграцию для таблицы homework_comments...')
 
     // Проверяем, существует ли таблица
     const tableExists = await prisma.$queryRaw`
       SELECT EXISTS (
-        SELECT FROM information_schema.tables 
+        SELECT FROM information_schema.tables
         WHERE table_schema = 'public'
         AND table_name = 'homework_comments'
       );
     `
 
-    console.log('📋 Проверка существования таблицы:', tableExists)
+    console.error('📋 Проверка существования таблицы:', tableExists)
 
     // Создаем таблицу если её нет
     await prisma.$executeRaw`
@@ -49,44 +49,44 @@ export async function POST(request: NextRequest) {
       );
     `
 
-    console.log('✅ Таблица homework_comments создана')
+    console.error('✅ Таблица homework_comments создана')
 
     // Добавляем внешние ключи
     await prisma.$executeRaw`
-      DO $$ 
+      DO $$
       BEGIN
         IF NOT EXISTS (
-          SELECT 1 FROM pg_constraint 
+          SELECT 1 FROM pg_constraint
           WHERE conname = 'homework_comments_submissionId_fkey'
         ) THEN
-          ALTER TABLE "homework_comments" 
-          ADD CONSTRAINT "homework_comments_submissionId_fkey" 
-          FOREIGN KEY ("submissionId") REFERENCES "homework_submissions"("id") 
+          ALTER TABLE "homework_comments"
+          ADD CONSTRAINT "homework_comments_submissionId_fkey"
+          FOREIGN KEY ("submissionId") REFERENCES "homework_submissions"("id")
           ON DELETE CASCADE ON UPDATE CASCADE;
         END IF;
       END $$;
     `
 
-    console.log('✅ Внешний ключ для submissionId создан')
+    console.error('✅ Внешний ключ для submissionId создан')
 
     await prisma.$executeRaw`
-      DO $$ 
+      DO $$
       BEGIN
         IF NOT EXISTS (
-          SELECT 1 FROM pg_constraint 
+          SELECT 1 FROM pg_constraint
           WHERE conname = 'homework_comments_authorId_fkey'
         ) THEN
-          ALTER TABLE "homework_comments" 
-          ADD CONSTRAINT "homework_comments_authorId_fkey" 
-          FOREIGN KEY ("authorId") REFERENCES "users"("id") 
+          ALTER TABLE "homework_comments"
+          ADD CONSTRAINT "homework_comments_authorId_fkey"
+          FOREIGN KEY ("authorId") REFERENCES "users"("id")
           ON DELETE CASCADE ON UPDATE CASCADE;
         END IF;
       END $$;
     `
 
-    console.log('✅ Внешний ключ для authorId создан')
+    console.error('✅ Внешний ключ для authorId создан')
 
-    console.log('✅ Миграция завершена успешно!')
+    console.error('✅ Миграция завершена успешно!')
 
     return NextResponse.json({
       success: true,

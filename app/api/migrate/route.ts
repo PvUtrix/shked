@@ -17,30 +17,30 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    console.log('🔄 Начинаем миграцию базы данных...')
+    console.error('🔄 Начинаем миграцию базы данных...')
 
     // Проверяем текущую схему
     const result = await prisma.$queryRaw`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'users' 
+      SELECT column_name, data_type
+      FROM information_schema.columns
+      WHERE table_name = 'users'
       AND column_name IN ('canHelp', 'lookingFor')
     `
 
-    console.log('📋 Текущие колонки:', result)
+    console.error('📋 Текущие колонки:', result)
 
     // Добавляем недостающие колонки если их нет
-    const addCanHelp = await prisma.$executeRaw`
-      ALTER TABLE "users" 
+    const _addCanHelp = await prisma.$executeRaw`
+      ALTER TABLE "users"
       ADD COLUMN IF NOT EXISTS "canHelp" TEXT
     `
 
-    const addLookingFor = await prisma.$executeRaw`
-      ALTER TABLE "users" 
+    const _addLookingFor = await prisma.$executeRaw`
+      ALTER TABLE "users"
       ADD COLUMN IF NOT EXISTS "lookingFor" TEXT
     `
 
-    console.log('✅ Миграция завершена успешно!')
+    console.error('✅ Миграция завершена успешно!')
 
     return NextResponse.json({
       message: 'Миграция базы данных завершена успешно!',
