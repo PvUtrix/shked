@@ -4,14 +4,13 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  BookOpen, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Users, 
-  Clock, 
-  Calendar,
+import {
+  BookOpen,
+  Plus,
+  Edit,
+  Trash2,
+  Users,
+  Clock,
   ExternalLink,
   Filter,
   Search,

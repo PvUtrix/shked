@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare, AlertCircle, Lock, Eye } from 'lucide-react'
+import { MessageSquare, Lock, Eye } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
 
@@ -43,7 +43,6 @@ export default async function AdminForumPage() {
 
   // Статистика
   const totalTopics = topics.length
-  const openTopics = topics.filter(t => !t.isPinned && !t.isClosed).length
   const closedTopics = topics.filter(t => t.isClosed).length
   const pinnedTopics = topics.filter(t => t.isPinned).length
 

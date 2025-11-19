@@ -50,10 +50,7 @@ export default async function MentorMeetingsPage() {
 
       <MentorMeetingsList
         meetings={meetingsData as any}
-        mentorId={mentorId}
       />
     </div>
   )
 }
-
-

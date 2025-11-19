@@ -6,10 +6,10 @@ const prisma = new PrismaClient()
 
 async function main() {
   try {
-    console.log('🌱 Начинаем заполнение базы данных...')
-    
+    console.error('🌱 Начинаем заполнение базы данных...')
+
     // 1. Создание группы (создаем раньше, чтобы можно было назначить студента)
-    console.log('👥 Создание групп...')
+    console.error('👥 Создание групп...')
     const techPredGroup = await prisma.group.upsert({
       where: { name: 'ТехПред МФТИ 2025-27' },
       update: {},
@@ -22,11 +22,11 @@ async function main() {
     })
 
     // 2. Создание демо аккаунтов (8 ролей)
-    console.log('👤 Создание демо аккаунтов...')
+    console.error('👤 Создание демо аккаунтов...')
     
     // Админ
     const adminPassword = await bcryptjs.hash('admin123', 12)
-    const admin = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'admin@shked.com' },
       update: {
         firstName: 'Иван',
@@ -112,7 +112,7 @@ async function main() {
 
     // Ассистент
     const assistantPassword = await bcryptjs.hash('assistant123', 12)
-    const demoAssistant = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'assistant@demo.com' },
       update: {
         firstName: 'Дмитрий',
@@ -133,7 +133,7 @@ async function main() {
 
     // Со-преподаватель
     const coLecturerPassword = await bcryptjs.hash('co_lecturer123', 12)
-    const demoCoLecturer = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'co-lecturer@demo.com' },
       update: {
         firstName: 'Елена',
@@ -154,7 +154,7 @@ async function main() {
 
     // Учебный отдел
     const eduOfficePassword = await bcryptjs.hash('eduoffice123', 12)
-    const demoEduOffice = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { email: 'eduoffice@demo.com' },
       update: {
         firstName: 'Михаил',
@@ -175,7 +175,7 @@ async function main() {
 
     // Админ кафедры
     const deptAdminPassword = await bcryptjs.hash('deptadmin123', 12)
-    const demoDeptAdmin = await prisma.user.upsert({
+    const deptAdmin = await prisma.user.upsert({
       where: { email: 'deptadmin@demo.com' },
       update: {
         firstName: 'Ольга',
@@ -194,8 +194,48 @@ async function main() {
       },
     })
 
+    // Глава учебного отдела
+    const eduHeadPassword = await bcryptjs.hash('eduhead123', 12)
+    await prisma.user.upsert({
+      where: { email: 'eduhead@demo.com' },
+      update: {
+        firstName: 'Виктор',
+        lastName: 'Учебный',
+        name: 'Виктор Учебный',
+        sex: 'male',
+      },
+      create: {
+        email: 'eduhead@demo.com',
+        password: eduHeadPassword,
+        firstName: 'Виктор',
+        lastName: 'Учебный',
+        name: 'Виктор Учебный',
+        sex: 'male',
+        role: 'education_office_head',
+      },
+    })
+
+    // Создание кафедры
+    console.error('🏛️ Создание кафедры...')
+    const department = await prisma.department.upsert({
+      where: { name: 'Кафедра Технологического Предпринимательства' },
+      update: {},
+      create: {
+        name: 'Кафедра Технологического Предпринимательства',
+        code: 'TECHPRED',
+        description: 'Кафедра, отвечающая за подготовку технологических предпринимателей',
+        headId: deptAdmin.id,
+      }
+    })
+
+    // Привязка админа к кафедре
+    await prisma.user.update({
+      where: { id: deptAdmin.id },
+      data: { departmentId: department.id }
+    })
+
     // 4. Создание предметов на основе Excel данных
-    console.log('📚 Создание предметов...')
+    console.error('📚 Создание предметов...')
     const subjects = [
       {
         name: 'Проектирование венчурного предприятия (Тьюториал)',
@@ -262,32 +302,135 @@ async function main() {
       data: { mentorGroupIds: [techPredGroup.id] }
     })
 
+    // Store assistant for later use
+    const demoAssistant = await prisma.user.findUnique({
+      where: { email: 'assistant@demo.com' }
+    })
+
+    // Назначаем ассистента к предметам
+    console.error('🤝 Назначение ассистента к предметам...')
+    if (demoAssistant) {
+      const assistantSubjects = createdSubjects.slice(0, 4) // Первые 4 предмета
+      for (const subject of assistantSubjects) {
+        await prisma.subjectAssistant.upsert({
+          where: {
+            subjectId_userId: {
+              subjectId: subject.id,
+              userId: demoAssistant.id,
+            }
+          },
+          update: {},
+          create: {
+            subjectId: subject.id,
+            userId: demoAssistant.id,
+            assignedBy: demoLector.id, // Assigned by lector
+            isActive: true,
+          }
+        })
+      }
+      console.error(`   ✓ Назначен ассистент к ${assistantSubjects.length} предметам`)
+    }
+
+    // Создание дополнительных студентов для реалистичного тестирования
+    console.error('👥 Создание дополнительных студентов...')
+    const additionalStudents = [
+      { firstName: 'Петр', lastName: 'Петров', email: 'petr.petrov@demo.com', sex: 'male' },
+      { firstName: 'Елена', lastName: 'Иванова', email: 'elena.ivanova@demo.com', sex: 'female' },
+      { firstName: 'Алексей', lastName: 'Сидоров', email: 'alexey.sidorov@demo.com', sex: 'male' },
+      { firstName: 'Анастасия', lastName: 'Смирнова', email: 'anastasia.smirnova@demo.com', sex: 'female' },
+    ]
+
+    const defaultPassword = await bcryptjs.hash('student123', 12)
+    for (const studentData of additionalStudents) {
+      await prisma.user.upsert({
+        where: { email: studentData.email },
+        update: {
+          firstName: studentData.firstName,
+          lastName: studentData.lastName,
+          name: `${studentData.firstName} ${studentData.lastName}`,
+          sex: studentData.sex,
+          groupId: techPredGroup.id,
+        },
+        create: {
+          email: studentData.email,
+          password: defaultPassword,
+          firstName: studentData.firstName,
+          lastName: studentData.lastName,
+          name: `${studentData.firstName} ${studentData.lastName}`,
+          sex: studentData.sex,
+          role: 'student',
+          groupId: techPredGroup.id,
+        },
+      })
+    }
+    console.error(`   ✓ Создано ${additionalStudents.length} дополнительных студентов`)
+
+
     // 5. Добавление дополнительных тестовых расписаний
-    console.log('📋 Добавление дополнительных занятий...')
+    console.error('📋 Добавление дополнительных занятий...')
+    
+    const now = new Date()
+    const tomorrow = new Date(now)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const dayAfterTomorrow = new Date(now)
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2)
+    const nextWeek = new Date(now)
+    nextWeek.setDate(nextWeek.getDate() + 7)
+    const yesterday = new Date(now)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const twoDaysAgo = new Date(now)
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
+
     const additionalSchedules = [
+      // Past schedules (for attendance marking)
       {
         subject: createdSubjects.find(s => s.name.includes('Системное мышление')),
-        date: new Date('2025-09-15'),
+        date: twoDaysAgo,
         startTime: '10:00',
         endTime: '12:00',
         location: 'Аудитория 301',
-        description: 'Лекция по системному мышлению'
+        description: 'Лекция по системному мышлению (требует отметки посещаемости)'
       },
       {
         subject: createdSubjects.find(s => s.name.includes('Коммерциализация')),
-        date: new Date('2025-09-16'),
+        date: yesterday,
         startTime: '14:00',
         endTime: '16:00',
         location: 'Аудитория 205',
-        description: 'Практикум по коммерциализации'
+        description: 'Практикум по коммерциализации (требует отметки посещаемости)'
       },
+      // Future schedules (for schedule view)
       {
         subject: createdSubjects.find(s => s.name.includes('финансового моделирования')),
-        date: new Date('2025-09-17'),
+        date: tomorrow,
         startTime: '11:00',
         endTime: '13:00',
         location: 'Компьютерный класс',
         description: 'Практикум по финансовому моделированию'
+      },
+      {
+        subject: createdSubjects.find(s => s.name.includes('Проектирование венчурного')),
+        date: tomorrow,
+        startTime: '15:00',
+        endTime: '17:00',
+        location: 'Аудитория 412',
+        description: 'Тьюториал по венчурному предпринимательству'
+      },
+      {
+        subject: createdSubjects.find(s => s.name.includes('Научный семинар')),
+        date: dayAfterTomorrow,
+        startTime: '09:00',
+        endTime: '11:00',
+        location: 'Конференц-зал',
+        description: 'Научный семинар - презентации проектов'
+      },
+      {
+        subject: createdSubjects.find(s => s.name.includes('Разработка продукта')),
+        date: nextWeek,
+        startTime: '13:00',
+        endTime: '15:00',
+        location: 'Аудитория 203',
+        description: 'Методология разработки продукта - практикум'
       }
     ]
 
@@ -308,9 +451,11 @@ async function main() {
         })
       }
     }
+    console.error(`   ✓ Создано ${additionalSchedules.length} расписаний (прошлые и будущие для тестирования)`)
+
 
     // 6. Создание тестовых домашних заданий
-    console.log('📝 Создание домашних заданий...')
+    console.error('📝 Создание домашних заданий...')
     const homeworkData = [
       {
         title: 'Анализ рынка для стартапа',
@@ -365,7 +510,7 @@ async function main() {
     }
 
     // 7. Создание тестовых сдач домашних заданий
-    console.log('📤 Создание сдач домашних заданий...')
+    console.error('📤 Создание сдач домашних заданий...')
     
     // Используем только демо-студента для сдач
     const students = [demoStudent]
@@ -407,12 +552,13 @@ async function main() {
       }
     }
 
-    console.log('✅ Заполнение базы данных завершено!')
-    console.log(`📊 Создано:
-    - Пользователей: 8 (по одному на каждую роль)
+    console.error('✅ Заполнение базы данных завершено!')
+    console.error(`📊 Создано:
+    - Пользователей: 13 (8 ролей + 5 студентов)
     - Групп: 1
     - Предметов: ${createdSubjects.length}
-    - Расписаний: дополнительные тестовые
+    - Назначений ассистента: 4 предмета
+    - Расписаний: ${additionalSchedules.length} (прошлые и будущие)
     - Домашних заданий: ${createdHomework.length}
     - Сдач: созданы для демо-студента
     
@@ -421,10 +567,22 @@ async function main() {
     - student@demo.com / student123 (🎓 Студент)
     - lector@demo.com / lector123 (👨‍🏫 Преподаватель)
     - mentor@demo.com / mentor123 (👤 Ментор)
-    - assistant@demo.com / assistant123 (🤝 Ассистент)
-    - co_lecturer@demo.com / co_lecturer123 (👥 Со-преподаватель)
+    - assistant@demo.com / assistant123 (🤝 Ассистент - назначен к 4 предметам)
+    - co-lecturer@demo.com / co_lecturer123 (👥 Со-преподаватель)
     - eduoffice@demo.com / eduoffice123 (📊 Учебный отдел)
-    - deptadmin@demo.com / deptadmin123 (🏛️ Админ кафедры)`)
+    - deptadmin@demo.com / deptadmin123 (🏛️ Админ кафедры)
+    
+    📚 Дополнительные студенты (все пароли: student123):
+    - petr.petrov@demo.com
+    - elena.ivanova@demo.com
+    - alexey.sidorov@demo.com
+    - anastasia.smirnova@demo.com
+    
+    ✨ Функции для тестирования:
+    - Ассистент может видеть расписание назначенных предметов
+    - Прошлые занятия требуют отметки посещаемости
+    - Будущие занятия доступны для просмотра
+    - Материалы доступны ассистенту`)
     
   } catch (error) {
     console.error('❌ Ошибка при заполнении базы данных:', error)

@@ -65,6 +65,7 @@ export default function StudentProfilePage() {
   })
   const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null)
   const [linkToken, setLinkToken] = useState<string | null>(null)
+  const [deepLinkUrl, setDeepLinkUrl] = useState<string | null>(null)
   const [tokenCopied, setTokenCopied] = useState(false)
   const [telegramLoading, setTelegramLoading] = useState(false)
 
@@ -86,55 +87,56 @@ export default function StudentProfilePage() {
         canHelp: '',
         lookingFor: ''
       })
+
+      const fetchUserData = async () => {
+        try {
+          // Загружаем данные профиля
+          const profileResponse = await fetch('/api/profile')
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json()
+            setFormData(prev => ({
+              ...prev,
+              firstName: profileData.user.firstName || '',
+              lastName: profileData.user.lastName || '',
+              middleName: profileData.user.middleName || '',
+              birthday: profileData.user.birthday ? new Date(profileData.user.birthday).toISOString().split('T')[0] : '',
+              snils: profileData.user.snils || '',
+              sex: profileData.user.sex || '',
+              canHelp: profileData.user.canHelp || '',
+              lookingFor: profileData.user.lookingFor || ''
+            }))
+          }
+
+          // Здесь можно получить дополнительные данные пользователя
+          // Пока используем заглушку
+          setUserGroup({
+            subgroupCommerce: 1,
+            subgroupTutorial: 1,
+            subgroupFinance: 1,
+            subgroupSystemThinking: 1,
+            group: {
+              name: 'ТехПред МФТИ 2025-27',
+              description: 'Магистратура Технологическое предпринимательство',
+              semester: '1 семестр',
+              year: '2025-27'
+            }
+          })
+          setScheduleCount(15)
+
+          // Проверяем статус Telegram подключения
+          await checkTelegramStatus()
+          // Проверяем статус Max подключения
+          await checkMaxStatus()
+        } catch (error) {
+          console.error('Ошибка при получении данных пользователя:', error)
+        } finally {
+          setLoading(false)
+        }
+      }
+
       fetchUserData()
     }
   }, [session])
-
-  const fetchUserData = async () => {
-    try {
-      // Загружаем данные профиля
-      const profileResponse = await fetch('/api/profile')
-      if (profileResponse.ok) {
-        const profileData = await profileResponse.json()
-        setFormData(prev => ({
-          ...prev,
-          firstName: profileData.user.firstName || '',
-          lastName: profileData.user.lastName || '',
-          middleName: profileData.user.middleName || '',
-          birthday: profileData.user.birthday ? new Date(profileData.user.birthday).toISOString().split('T')[0] : '',
-          snils: profileData.user.snils || '',
-          sex: profileData.user.sex || '',
-          canHelp: profileData.user.canHelp || '',
-          lookingFor: profileData.user.lookingFor || ''
-        }))
-      }
-
-      // Здесь можно получить дополнительные данные пользователя
-      // Пока используем заглушку
-      setUserGroup({
-        subgroupCommerce: 1,
-        subgroupTutorial: 1,
-        subgroupFinance: 1,
-        subgroupSystemThinking: 1,
-        group: {
-          name: 'ТехПред МФТИ 2025-27',
-          description: 'Магистратура Технологическое предпринимательство',
-          semester: '1 семестр',
-          year: '2025-27'
-        }
-      })
-      setScheduleCount(15)
-      
-      // Проверяем статус Telegram подключения
-      await checkTelegramStatus()
-      // Проверяем статус Max подключения
-      await checkMaxStatus()
-    } catch (error) {
-      console.error('Ошибка при получении данных пользователя:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const checkTelegramStatus = async () => {
     try {
@@ -174,6 +176,7 @@ export default function StudentProfilePage() {
       if (response.ok) {
         const data = await response.json()
         setLinkToken(data.token)
+        setDeepLinkUrl(data.deepLinkUrl || null)
       } else {
         console.error('Ошибка при генерации токена')
       }
@@ -241,7 +244,7 @@ export default function StudentProfilePage() {
 
       if (response.ok) {
         const result = await response.json()
-        console.log('Профиль успешно обновлен:', result)
+        console.error('Профиль успешно обновлен:', result)
         setIsEditing(false)
         // Можно добавить уведомление об успешном сохранении
       } else {
@@ -604,7 +607,7 @@ export default function StudentProfilePage() {
                     checked={telegramUser.notifications}
                     onCheckedChange={(checked) => {
                       // Здесь можно добавить API для изменения настроек
-                      console.log('Изменение настроек уведомлений:', checked)
+                      console.error('Изменение настроек уведомлений:', checked)
                     }}
                   />
                   <span className="text-sm text-gray-600">
@@ -633,6 +636,36 @@ export default function StudentProfilePage() {
                 
                 {linkToken ? (
                   <div className="space-y-3">
+                    {deepLinkUrl ? (
+                      <div className="space-y-3">
+                        <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                          <div className="flex items-center mb-2">
+                            <MessageSquare className="h-5 w-5 text-blue-600 mr-2" />
+                            <p className="font-medium text-blue-900">Автоматическая привязка</p>
+                          </div>
+                          <p className="text-sm text-blue-700 mb-3">
+                            Нажмите кнопку ниже для подключения в один клик
+                          </p>
+                          <Button
+                            onClick={() => window.open(deepLinkUrl, '_blank')}
+                            className="w-full bg-blue-600 hover:bg-blue-700"
+                          >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Подключить через Telegram
+                          </Button>
+                        </div>
+
+                        <div className="relative">
+                          <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300"></div>
+                          </div>
+                          <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-blue-50 text-gray-500">или</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+
                     <div className="p-3 bg-white rounded border">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-mono text-gray-600">Токен привязки:</span>
@@ -653,9 +686,9 @@ export default function StudentProfilePage() {
                         {linkToken}
                       </p>
                     </div>
-                    
+
                     <div className="text-sm text-gray-600">
-                      <p className="font-medium mb-2">Инструкция:</p>
+                      <p className="font-medium mb-2">Ручная привязка:</p>
                       <ol className="list-decimal list-inside space-y-1">
                         <li>Откройте Telegram бота</li>
                         <li>Отправьте команду <code className="bg-gray-100 px-1 rounded">/link</code></li>
@@ -707,7 +740,7 @@ export default function StudentProfilePage() {
                   <Switch
                     checked={maxUser.notifications}
                     onCheckedChange={(checked) => {
-                      console.log('Изменение настроек Max уведомлений:', checked)
+                      console.error('Изменение настроек Max уведомлений:', checked)
                     }}
                   />
                   <span className="text-sm text-gray-600">

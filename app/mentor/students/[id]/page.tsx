@@ -108,10 +108,7 @@ export default async function StudentProfilePage({
     <div className="space-y-6">
       <StudentProfileView
         student={studentData as any}
-        mentorId={session.user.id}
       />
     </div>
   )
 }
-
-

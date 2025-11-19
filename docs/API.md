@@ -562,6 +562,35 @@ Cookie: next-auth.session-token=<token>
 
 **Права:** admin, lector (создатель)
 
+### Учебный офис
+
+#### GET /api/education-office/reports
+Получить отчеты учебного офиса
+
+**Права:** education_office_head
+
+#### GET /api/education-office/schedule
+Получить общее расписание
+
+**Права:** education_office_head
+
+### Кафедра
+
+#### GET /api/department/reports
+Получить отчеты кафедры
+
+**Права:** department_admin
+
+#### GET /api/department/faculty
+Получить список преподавателей кафедры
+
+**Права:** department_admin
+
+#### GET /api/department/subjects
+Получить список предметов кафедры
+
+**Права:** department_admin
+
 ## Коды ответов
 
 - `200 OK` - Успешный запрос
@@ -692,7 +721,7 @@ GET /api/activity-logs?action=UPDATE&entityType=User&startDate=2025-11-01&page=1
 
 ---
 
-*Документация обновлена: 3 ноября 2025*
-*Версия системы: 0.1.0-alpha*
+*Документация обновлена: 19 ноября 2025*
+*Версия системы: 0.4.0-alpha*
 
 

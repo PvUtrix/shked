@@ -54,7 +54,8 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 
 # Prisma
-prisma/migrations/
+# Note: Migrations should be tracked in git for team collaboration
+# prisma/migrations/  # Removed - migrations should be committed
 *.db
 *.db-journal
 

@@ -13,7 +13,7 @@ export default async function HomePage() {
 
   if (session) {
     // Редиректы для всех 8 ролей
-    // eslint-disable-next-line no-fallthrough
+     
     switch (session.user.role) {
       case 'admin':
         redirect('/admin')

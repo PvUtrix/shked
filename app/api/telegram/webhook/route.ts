@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.text()
     const update: TelegramUpdate = JSON.parse(body)
 
-    console.log('Received Telegram update:', JSON.stringify(update, null, 2))
+    console.error('Received Telegram update:', JSON.stringify(update, null, 2))
 
     // Обработка обычных сообщений
     if (update.message) {
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       // Здесь можно добавить обработку различных callback data
       if (data) {
         // Обработка callback data
-        console.log('Callback data:', data)
+        console.error('Callback data:', data)
       }
     }
 

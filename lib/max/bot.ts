@@ -90,8 +90,7 @@ export async function createBot(): Promise<Bot | null> {
   }
 
   try {
-    const bot = new Bot(settings.maxBotToken)
-    return bot
+    return new Bot(settings.maxBotToken)
   } catch (error) {
     console.error('Error creating Max bot instance:', error)
     return null
@@ -109,8 +108,6 @@ export async function sendMessage(message: MaxMessage): Promise<boolean> {
   }
 
   try {
-    const bot = new Bot(settings.maxBotToken)
-
     // Max bot API uses different approach - we need to use their API methods
     // For now, we'll implement a basic HTTP approach similar to Telegram
     // This may need to be updated based on actual Max API requirements
@@ -118,7 +115,7 @@ export async function sendMessage(message: MaxMessage): Promise<boolean> {
     // Note: The @maxhub/max-bot-api library is event-based
     // We may need to adjust this implementation
 
-    console.log('Sending message via Max bot:', message)
+    console.error('Sending message via Max bot:', message)
     // TODO: Implement actual Max API send message logic
     // The library uses ctx.reply() in event handlers, but we need a direct send method
 
@@ -186,21 +183,15 @@ export async function getBotInfo(): Promise<any> {
     return null
   }
 
-  try {
-    const bot = new Bot(settings.maxBotToken)
-    // Note: Need to implement based on actual Max API
-    // The library may have a method to get bot info
+  // Note: Need to implement based on actual Max API
+  // The library may have a method to get bot info
 
-    return {
-      ok: true,
-      result: {
-        id: 'max_bot',
-        first_name: 'Max Bot',
-        username: 'maxbot',
-      }
+  return {
+    ok: true,
+    result: {
+      id: 'max_bot',
+      first_name: 'Max Bot',
+      username: 'maxbot',
     }
-  } catch (error) {
-    console.error('Error getting Max bot info:', error)
-    return null
   }
 }

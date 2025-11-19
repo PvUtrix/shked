@@ -1,6 +1,5 @@
 import { processUserQuery } from './llm'
-import { getSchedule, getNextClass } from './llm'
-import { sendMessage } from './bot'
+import { getSchedule } from './llm'
 import { prisma } from '@/lib/db'
 import crypto from 'crypto'
 
@@ -135,10 +134,65 @@ export async function getUserByTelegramId(telegramId: string) {
 
 /**
  * Команда /start
+ * Поддерживает deep linking: /start <base64_encoded_token>
  */
-export async function handleStart(userId: string, chatId: number): Promise<string> {
+export async function handleStart(userId: string, chatId: number, args?: string[]): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
-  
+
+  // Проверяем, есть ли параметр deep link (токен привязки)
+  if (args && args.length > 0 && args[0]) {
+    const deepLinkParam = args[0]
+
+    // Если пользователь уже привязан, игнорируем параметр deep link
+    if (telegramUser) {
+      return `Привет, ${telegramUser.user.firstName}! 👋
+
+Вы уже подключены к системе ШКЕД.
+Используйте /help для просмотра доступных команд.`
+    }
+
+    try {
+      // Декодируем base64 токен
+      const token = Buffer.from(deepLinkParam, 'base64').toString('utf-8')
+
+      // Ищем пользователя по токену
+      const webUserId = await findUserByLinkToken(token)
+
+      if (webUserId) {
+        // Привязываем аккаунт автоматически
+        const success = await linkTelegramAccount(
+          webUserId,
+          userId,
+          chatId.toString()
+        )
+
+        if (success) {
+          // Получаем обновленную информацию о пользователе
+          const linkedUser = await getUserByTelegramId(userId)
+          const userName = linkedUser?.user.firstName || 'пользователь'
+
+          return `✅ Добро пожаловать в ШКЕД, ${userName}! 🎓
+
+Ваш аккаунт успешно привязан к системе!
+Теперь вы будете получать уведомления о расписании и домашних заданиях.
+
+Используйте /help для просмотра доступных команд.`
+        } else {
+          return `❌ Ошибка при привязке аккаунта. Попробуйте позже или используйте команду /link.`
+        }
+      } else {
+        // Токен недействителен или истек
+        return `❌ Ссылка для привязки недействительна или истекла.
+
+Пожалуйста, получите новую ссылку в веб-приложении ШКЕД.`
+      }
+    } catch (error) {
+      console.error('Ошибка при обработке deep link:', error)
+      // Если произошла ошибка декодирования, игнорируем параметр
+    }
+  }
+
+  // Стандартное поведение /start
   if (telegramUser) {
     return `Привет, ${telegramUser.user.firstName}! 👋
 
@@ -151,8 +205,10 @@ export async function handleStart(userId: string, chatId: number): Promise<strin
 Для подключения вашего Telegram аккаунта к системе:
 1. Войдите в веб-приложение ШКЕД
 2. Перейдите в профиль
-3. Получите токен привязки
-4. Отправьте команду /link [токен]
+3. Получите ссылку для привязки
+4. Нажмите на ссылку и кнопку "Start"
+
+Или используйте команду /link [токен] для ручной привязки.
 
 Используйте /help для просмотра всех команд.`
 }
@@ -205,7 +261,7 @@ export async function handleLink(userId: string, chatId: number, args?: string[]
 /**
  * Команда /schedule
  */
-export async function handleSchedule(userId: string, chatId: number): Promise<string> {
+export async function handleSchedule(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -242,7 +298,7 @@ export async function handleSchedule(userId: string, chatId: number): Promise<st
 /**
  * Команда /tomorrow
  */
-export async function handleTomorrow(userId: string, chatId: number): Promise<string> {
+export async function handleTomorrow(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -282,7 +338,7 @@ export async function handleTomorrow(userId: string, chatId: number): Promise<st
 /**
  * Команда /week
  */
-export async function handleWeek(userId: string, chatId: number): Promise<string> {
+export async function handleWeek(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -352,7 +408,7 @@ export async function handleWeek(userId: string, chatId: number): Promise<string
 /**
  * Команда /settings
  */
-export async function handleSettings(userId: string, chatId: number): Promise<string> {
+export async function handleSettings(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -373,7 +429,7 @@ export async function handleSettings(userId: string, chatId: number): Promise<st
 /**
  * Команда /homework
  */
-export async function handleHomework(userId: string, chatId: number): Promise<string> {
+export async function handleHomework(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -441,7 +497,7 @@ export async function handleHomework(userId: string, chatId: number): Promise<st
 /**
  * Команда /homework_due
  */
-export async function handleHomeworkDue(userId: string, chatId: number): Promise<string> {
+export async function handleHomeworkDue(userId: string, _chatId: number): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -508,7 +564,7 @@ export async function handleHomeworkDue(userId: string, chatId: number): Promise
 /**
  * Команда /help
  */
-export async function handleHelp(userId: string, chatId: number): Promise<string> {
+export async function handleHelp(_userId: string, _chatId: number): Promise<string> {
   return `📚 *Доступные команды:*
 
 /start - Приветствие и инструкции
@@ -536,7 +592,7 @@ export async function handleHelp(userId: string, chatId: number): Promise<string
 /**
  * Обработка естественного языка
  */
-export async function handleNaturalLanguage(userId: string, chatId: number, text: string): Promise<string> {
+export async function handleNaturalLanguage(userId: string, _chatId: number, text: string): Promise<string> {
   const telegramUser = await getUserByTelegramId(userId)
   
   if (!telegramUser) {
@@ -560,7 +616,7 @@ export async function routeCommand(
 
   switch (command) {
     case '/start':
-      return await handleStart(userId, chatId)
+      return await handleStart(userId, chatId, args)
     
     case '/link':
       return await handleLink(userId, chatId, args)

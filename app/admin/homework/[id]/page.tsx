@@ -5,17 +5,11 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  ArrowLeft, 
-  Edit, 
-  Calendar, 
-  Clock, 
-  BookOpen, 
-  Users, 
+import {
+  ArrowLeft,
+  Edit,
   FileText,
   ExternalLink,
-  CheckCircle,
-  XCircle,
   AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
@@ -28,25 +22,25 @@ export default function AdminHomeworkDetailPage({ params }: { params: Promise<{ 
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchHomework()
-  }, [id])
-
-  const fetchHomework = async () => {
-    try {
-      const response = await fetch(`/api/homework/${id}`)
-      if (response.ok) {
-        const data = await response.json()
-        setHomework(data)
-      } else {
+    const fetchHomework = async () => {
+      try {
+        const response = await fetch(`/api/homework/${id}`)
+        if (response.ok) {
+          const data = await response.json()
+          setHomework(data)
+        } else {
+          router.push('/admin/homework')
+        }
+      } catch (error) {
+        console.error('Ошибка при получении домашнего задания:', error)
         router.push('/admin/homework')
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Ошибка при получении домашнего задания:', error)
-      router.push('/admin/homework')
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchHomework()
+  }, [id, router])
 
   const formatDate = (date: string | Date) => {
     try {

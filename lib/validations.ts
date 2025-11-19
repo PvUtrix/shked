@@ -55,6 +55,7 @@ export const createUserSchema = z.object({
   canHelp: z.string().optional(),
   lookingFor: z.string().optional(),
   status: userStatusSchema.default('ACTIVE'),
+  mustChangePassword: z.boolean().default(false).optional(),
 })
 
 export const updateUserSchema = createUserSchema
@@ -339,3 +340,18 @@ export const filterSchema = z.object({
   subjectId: idSchema.optional(),
   isActive: z.coerce.boolean().optional(),
 })
+
+/**
+ * User query validation schema for API endpoints
+ */
+export const userQuerySchema = z.object({
+  role: userRoleSchema.optional(),
+  groupId: idSchema.optional(),
+  includeInactive: z.coerce.boolean().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(10),
+})
+
+// PascalCase exports for backward compatibility
+export const CreateUserSchema = createUserSchema
+export const UserQuerySchema = userQuerySchema

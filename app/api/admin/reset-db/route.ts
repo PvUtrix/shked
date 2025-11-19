@@ -17,7 +17,7 @@ interface ExcelAnalysis {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('🗑️ Начинаем сброс базы данных...')
+    console.error('🗑️ Начинаем сброс базы данных...')
 
     // Удаляем данные в правильном порядке (с учетом внешних ключей)
     await prisma.homeworkSubmission.deleteMany()
@@ -46,18 +46,18 @@ export async function POST(request: NextRequest) {
     await prisma.group.deleteMany()
     await prisma.user.deleteMany()
 
-    console.log('✅ Данные удалены, начинаем заполнение...')
+    console.error('✅ Данные удалены, начинаем заполнение...')
 
     // Читаем анализ Excel файла
     const analysisPath = path.join(process.cwd(), 'data', 'excel_analysis.json')
     const excelAnalysis: ExcelAnalysis = JSON.parse(fs.readFileSync(analysisPath, 'utf-8'))
     
     // 1. Создание тестовых пользователей
-    console.log('👤 Создание пользователей...')
+    console.error('👤 Создание пользователей...')
     
     // Админ пользователь
     const adminPassword = await bcryptjs.hash('admin123', 12)
-    const admin = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email: 'admin@shked.com',
         password: adminPassword,
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     // Демо студент для тестирования
     const demoStudentPassword = await bcryptjs.hash('student123', 12)
-    const demoStudent = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email: 'student123@demo.com',
         password: demoStudentPassword,
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     })
 
     // 2. Создание группы
-    console.log('👥 Создание групп...')
+    console.error('👥 Создание групп...')
     const techPredGroup = await prisma.group.create({
       data: {
         name: 'ТехПред МФТИ 2025-27',
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     })
 
     // 3. Создание предметов
-    console.log('📚 Создание предметов...')
+    console.error('📚 Создание предметов...')
     const subjects = [
       {
         name: 'Проектирование венчурного предприятия (Тьюториал)',
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
     })
 
     // 4. Создание студентов
-    console.log('🎓 Создание студентов...')
+    console.error('🎓 Создание студентов...')
     const studentsData = excelAnalysis.data['1 семестр. Распределение на под'].sample_data
     
     const students = []
@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Создание расписания
-    console.log('📅 Создание расписания...')
+    console.error('📅 Создание расписания...')
     const scheduleData = excelAnalysis.data['1 семестр. Расписание'].sample_data
     
     for (let i = 7; i < scheduleData.length; i++) {
@@ -303,14 +303,14 @@ export async function POST(request: NextRequest) {
               }
             }
           } catch (error) {
-            console.log(`Пропущена запись: ${error}`)
+            console.error(`Пропущена запись: ${error}`)
           }
         }
       }
     }
 
     // 6. Создание домашних заданий
-    console.log('📝 Создание домашних заданий...')
+    console.error('📝 Создание домашних заданий...')
     const homeworkData = [
       {
         title: 'Анализ рынка для стартапа',
@@ -365,7 +365,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 7. Создание сдач домашних заданий
-    console.log('📤 Создание сдач домашних заданий...')
+    console.error('📤 Создание сдач домашних заданий...')
     const sampleStudents = students.slice(0, 5) // Берем первых 5 студентов для демонстрации
     
     for (const student of sampleStudents) {
@@ -395,7 +395,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log('✅ База данных успешно сброшена и заполнена!')
+    console.error('✅ База данных успешно сброшена и заполнена!')
 
     return NextResponse.json({
       success: true,

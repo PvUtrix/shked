@@ -1,5 +1,4 @@
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-import NextAuth from 'next-auth'
+import 'next-auth'
 
 declare module 'next-auth' {
   interface User {

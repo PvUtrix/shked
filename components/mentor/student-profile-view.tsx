@@ -45,10 +45,9 @@ interface Student {
 
 interface StudentProfileViewProps {
   student: Student
-  mentorId: string
 }
 
-export function StudentProfileView({ student, mentorId }: StudentProfileViewProps) {
+export function StudentProfileView({ student }: StudentProfileViewProps) {
   const initials = student.name
     .split(' ')
     .map(n => n[0])

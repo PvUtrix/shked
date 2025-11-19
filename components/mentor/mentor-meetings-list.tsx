@@ -43,7 +43,6 @@ interface Meeting {
 
 interface MentorMeetingsListProps {
   meetings: Meeting[]
-  mentorId: string
   onUpdate?: () => void
 }
 
@@ -72,7 +71,7 @@ const typeConfig = {
   OTHER: 'Другое',
 }
 
-export function MentorMeetingsList({ meetings, mentorId, onUpdate }: MentorMeetingsListProps) {
+export function MentorMeetingsList({ meetings, onUpdate }: MentorMeetingsListProps) {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
   const [notes, setNotes] = useState('')
   const [updating, setUpdating] = useState(false)

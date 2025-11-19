@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -27,17 +27,13 @@ export default function StudentHomeworkDetailPage({ params }: { params: Promise<
   const [submission, setSubmission] = useState<HomeworkSubmission | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchHomework()
-  }, [id])
-
-  const fetchHomework = async () => {
+  const fetchHomework = useCallback(async () => {
     try {
       const response = await fetch(`/api/homework/${id}`)
       if (response.ok) {
         const data = await response.json()
         setHomework(data)
-        
+
         // Находим работу текущего пользователя
         if (Array.isArray(data.submissions) && data.submissions.length > 0) {
           setSubmission(data.submissions[0])
@@ -51,7 +47,11 @@ export default function StudentHomeworkDetailPage({ params }: { params: Promise<
     } finally {
       setLoading(false)
     }
-  }
+  }, [id, router])
+
+  useEffect(() => {
+    fetchHomework()
+  }, [fetchHomework])
 
 
   const formatDate = (date: string | Date) => {

@@ -51,22 +51,22 @@ export function InlineCommentViewer({
   const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    fetchComments()
-  }, [submissionId])
-
-  const fetchComments = async () => {
-    try {
-      const response = await fetch(`/api/homework/${homeworkId}/submissions/${submissionId}/comments`)
-      if (response.ok) {
-        const data = await response.json()
-        setComments(data.comments || [])
+    const fetchComments = async () => {
+      try {
+        const response = await fetch(`/api/homework/${homeworkId}/submissions/${submissionId}/comments`)
+        if (response.ok) {
+          const data = await response.json()
+          setComments(data.comments || [])
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке комментариев:', error)
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Ошибка при загрузке комментариев:', error)
-    } finally {
-      setLoading(false)
     }
-  }
+
+    fetchComments()
+  }, [submissionId, homeworkId])
 
   const handleTextSelection = () => {
     if (!canComment) return

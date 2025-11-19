@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -63,25 +63,7 @@ export default function UsersPage() {
   const [gdprDeleteDialogOpen, setGdprDeleteDialogOpen] = useState(false)
   const [userToGdprDelete, setUserToGdprDelete] = useState<User | null>(null)
 
-  useEffect(() => {
-    fetchGroups()
-  }, [])
-
-  useEffect(() => {
-    fetchUsers()
-  }, [showInactive, statusFilter])
-
-  // Синхронизируем showInactive с statusFilter
-  useEffect(() => {
-    if (statusFilter === 'inactive' && !showInactive) {
-      setShowInactive(true)
-    } else if (statusFilter === 'active' && showInactive) {
-      // Если выбраны только активные, можно не включать неактивных
-      // Но не сбрасываем showInactive автоматически, чтобы пользователь мог видеть неактивных
-    }
-  }, [statusFilter])
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       // Если фильтр показывает неактивных или "все", загружаем всех пользователей
       const shouldIncludeInactive = showInactive || statusFilter === 'inactive' || statusFilter === 'all'
@@ -99,7 +81,25 @@ export default function UsersPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showInactive, statusFilter, t])
+
+  useEffect(() => {
+    fetchGroups()
+  }, [])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [fetchUsers])
+
+  // Синхронизируем showInactive с statusFilter
+  useEffect(() => {
+    if (statusFilter === 'inactive' && !showInactive) {
+      setShowInactive(true)
+    } else if (statusFilter === 'active' && showInactive) {
+      // Если выбраны только активные, можно не включать неактивных
+      // Но не сбрасываем showInactive автоматически, чтобы пользователь мог видеть неактивных
+    }
+  }, [statusFilter, showInactive])
 
   const fetchGroups = async () => {
     try {

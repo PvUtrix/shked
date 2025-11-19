@@ -1,10 +1,16 @@
 import cron from 'node-cron'
-import { 
-  sendScheduleReminder, 
-  sendDailySummary,
-  sendHomeworkDeadlineReminder,
-  sendWeeklyHomeworkSummary
+import {
+  sendScheduleReminder as sendTelegramScheduleReminder,
+  sendDailySummary as sendTelegramDailySummary,
+  sendHomeworkDeadlineReminder as sendTelegramHomeworkDeadlineReminder,
+  sendWeeklyHomeworkSummary as sendTelegramWeeklyHomeworkSummary
 } from '@/lib/telegram/notifications'
+import {
+  sendScheduleReminder as sendMaxScheduleReminder,
+  sendDailySummary as sendMaxDailySummary,
+  sendHomeworkDeadlineReminder as sendMaxHomeworkDeadlineReminder,
+  sendWeeklyHomeworkSummary as sendMaxWeeklyHomeworkSummary
+} from '@/lib/max/notifications'
 import { prisma } from '@/lib/db'
 
 /**
@@ -13,13 +19,13 @@ import { prisma } from '@/lib/db'
 export async function initializeCronJobs() {
   // Не инициализируем cron задачи в тестовых окружениях
   if (!process.env.DATABASE_URL) {
-    console.log('⏭️  Пропуск инициализации cron задач (DATABASE_URL не найден)')
+    console.error('⏭️  Пропуск инициализации cron задач (DATABASE_URL не найден)')
     return
   }
 
   // Не инициализируем cron задачи в CI/тестах
   if (process.env.NODE_ENV === 'test' || process.env.CI === 'true') {
-    console.log('⏭️  Пропуск инициализации cron задач (тестовое окружение)')
+    console.error('⏭️  Пропуск инициализации cron задач (тестовое окружение)')
     return
   }
 
@@ -27,38 +33,38 @@ export async function initializeCronJobs() {
   try {
     await prisma.$queryRaw`SELECT 1`
   } catch (error) {
-    console.log('⏭️  Пропуск инициализации cron задач (база данных недоступна)')
+    console.error('⏭️  Пропуск инициализации cron задач (база данных недоступна)')
     console.error('Ошибка подключения к БД:', error instanceof Error ? error.message : error)
     return
   }
 
-  console.log('🕐 Инициализация cron задач...')
+  console.error('🕐 Инициализация cron задач...')
 
   // Напоминания о занятиях - каждые 5 минут
   cron.schedule('*/5 * * * *', async () => {
-    console.log('🔔 Проверка напоминаний о занятиях...')
+    console.error('🔔 Проверка напоминаний о занятиях...')
     await checkScheduleReminders()
   })
 
   // Дневные сводки - каждый день в 7:00
   cron.schedule('0 7 * * *', async () => {
-    console.log('📅 Отправка дневных сводок...')
+    console.error('📅 Отправка дневных сводок...')
     await sendDailySummaries()
   })
 
   // Проверка дедлайнов домашних заданий - каждые 2 часа
   cron.schedule('0 */2 * * *', async () => {
-    console.log('📝 Проверка дедлайнов домашних заданий...')
+    console.error('📝 Проверка дедлайнов домашних заданий...')
     await checkHomeworkDeadlines()
   })
 
   // Еженедельные сводки по ДЗ - каждый понедельник в 8:00
   cron.schedule('0 8 * * 1', async () => {
-    console.log('📝 Отправка еженедельных сводок по ДЗ...')
+    console.error('📝 Отправка еженедельных сводок по ДЗ...')
     await sendWeeklyHomeworkSummaries()
   })
 
-  console.log('✅ Cron задачи инициализированы')
+  console.error('✅ Cron задачи инициализированы')
 }
 
 /**
@@ -98,6 +104,12 @@ async function checkScheduleReminders() {
                     isActive: true,
                     notifications: true
                   }
+                },
+                maxUser: {
+                  where: {
+                    isActive: true,
+                    notifications: true
+                  }
                 }
               }
             }
@@ -106,15 +118,21 @@ async function checkScheduleReminders() {
       }
     })
 
-    console.log(`Найдено ${upcomingSchedules.length} занятий для напоминаний`)
+    console.error(`Найдено ${upcomingSchedules.length} занятий для напоминаний`)
 
     // Отправляем напоминания
     for (const schedule of upcomingSchedules) {
       if (schedule.group?.users) {
         for (const user of schedule.group.users) {
+          // Telegram notifications
           if (user.telegramUser && user.telegramUser.isActive) {
-            await sendScheduleReminder(user.id, schedule.id)
-            console.log(`Напоминание отправлено пользователю ${user.firstName} ${user.lastName}`)
+            await sendTelegramScheduleReminder(user.id, schedule.id)
+            console.error(`[Telegram] Напоминание отправлено пользователю ${user.firstName} ${user.lastName}`)
+          }
+          // Max notifications
+          if (user.maxUser && user.maxUser.isActive) {
+            await sendMaxScheduleReminder(user.id, schedule.id)
+            console.error(`[Max] Напоминание отправлено пользователю ${user.firstName} ${user.lastName}`)
           }
         }
       }
@@ -149,12 +167,29 @@ async function sendDailySummaries() {
       }
     })
 
-    console.log(`Отправка дневных сводок ${telegramUsers.length} пользователям`)
+    // Получаем всех активных пользователей с Max
+    const maxUsers = await prisma.maxUser.findMany({
+      where: {
+        isActive: true,
+        notifications: true
+      },
+      include: {
+        user: true
+      }
+    })
 
-    // Отправляем сводки
+    console.error(`Отправка дневных сводок ${telegramUsers.length} Telegram пользователям и ${maxUsers.length} Max пользователям`)
+
+    // Отправляем сводки через Telegram
     for (const telegramUser of telegramUsers) {
-      await sendDailySummary(telegramUser.userId)
-      console.log(`Дневная сводка отправлена пользователю ${telegramUser.user.firstName} ${telegramUser.user.lastName}`)
+      await sendTelegramDailySummary(telegramUser.userId)
+      console.error(`[Telegram] Дневная сводка отправлена пользователю ${telegramUser.user.firstName} ${telegramUser.user.lastName}`)
+    }
+
+    // Отправляем сводки через Max
+    for (const maxUser of maxUsers) {
+      await sendMaxDailySummary(maxUser.userId)
+      console.error(`[Max] Дневная сводка отправлена пользователю ${maxUser.user.firstName} ${maxUser.user.lastName}`)
     }
   } catch (error) {
     console.error('Ошибка при отправке дневных сводок:', error)
@@ -177,7 +212,6 @@ async function checkHomeworkDeadlines() {
 
     const now = new Date()
     const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
-    const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000)
 
     // Находим домашние задания с дедлайнами в ближайшие 24 часа
     const homeworkWithDeadlines = await prisma.homework.findMany({
@@ -198,6 +232,12 @@ async function checkHomeworkDeadlines() {
                     isActive: true,
                     notifications: true
                   }
+                },
+                maxUser: {
+                  where: {
+                    isActive: true,
+                    notifications: true
+                  }
                 }
               }
             }
@@ -206,22 +246,36 @@ async function checkHomeworkDeadlines() {
       }
     })
 
-    console.log(`Найдено ${homeworkWithDeadlines.length} домашних заданий с приближающимися дедлайнами`)
+    console.error(`Найдено ${homeworkWithDeadlines.length} домашних заданий с приближающимися дедлайнами`)
 
     // Отправляем напоминания
     for (const homework of homeworkWithDeadlines) {
       if (homework.group?.users) {
         for (const user of homework.group.users) {
-          if (user.telegramUser && user.telegramUser.isActive) {
-            const hoursLeft = Math.ceil((homework.deadline.getTime() - now.getTime()) / (1000 * 60 * 60))
-            
-            // Отправляем напоминания за 24 часа и за 2 часа
-            if (hoursLeft <= 24 && hoursLeft > 22) {
-              await sendHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
-              console.log(`Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (24 часа)`)
-            } else if (hoursLeft <= 2 && hoursLeft > 0) {
-              await sendHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
-              console.log(`Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (2 часа)`)
+          const hoursLeft = Math.ceil((homework.deadline.getTime() - now.getTime()) / (1000 * 60 * 60))
+
+          // Отправляем напоминания за 24 часа и за 2 часа
+          if (hoursLeft <= 24 && hoursLeft > 22) {
+            // Telegram
+            if (user.telegramUser && user.telegramUser.isActive) {
+              await sendTelegramHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
+              console.error(`[Telegram] Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (24 часа)`)
+            }
+            // Max
+            if (user.maxUser && user.maxUser.isActive) {
+              await sendMaxHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
+              console.error(`[Max] Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (24 часа)`)
+            }
+          } else if (hoursLeft <= 2 && hoursLeft > 0) {
+            // Telegram
+            if (user.telegramUser && user.telegramUser.isActive) {
+              await sendTelegramHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
+              console.error(`[Telegram] Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (2 часа)`)
+            }
+            // Max
+            if (user.maxUser && user.maxUser.isActive) {
+              await sendMaxHomeworkDeadlineReminder(user.id, homework.id, hoursLeft)
+              console.error(`[Max] Напоминание о ДЗ отправлено пользователю ${user.firstName} ${user.lastName} (2 часа)`)
             }
           }
         }
@@ -257,12 +311,29 @@ async function sendWeeklyHomeworkSummaries() {
       }
     })
 
-    console.log(`Отправка еженедельных сводок по ДЗ ${telegramUsers.length} пользователям`)
+    // Получаем всех активных пользователей с Max
+    const maxUsers = await prisma.maxUser.findMany({
+      where: {
+        isActive: true,
+        notifications: true
+      },
+      include: {
+        user: true
+      }
+    })
 
-    // Отправляем сводки
+    console.error(`Отправка еженедельных сводок по ДЗ ${telegramUsers.length} Telegram пользователям и ${maxUsers.length} Max пользователям`)
+
+    // Отправляем сводки через Telegram
     for (const telegramUser of telegramUsers) {
-      await sendWeeklyHomeworkSummary(telegramUser.userId)
-      console.log(`Еженедельная сводка по ДЗ отправлена пользователю ${telegramUser.user.firstName} ${telegramUser.user.lastName}`)
+      await sendTelegramWeeklyHomeworkSummary(telegramUser.userId)
+      console.error(`[Telegram] Еженедельная сводка по ДЗ отправлена пользователю ${telegramUser.user.firstName} ${telegramUser.user.lastName}`)
+    }
+
+    // Отправляем сводки через Max
+    for (const maxUser of maxUsers) {
+      await sendMaxWeeklyHomeworkSummary(maxUser.userId)
+      console.error(`[Max] Еженедельная сводка по ДЗ отправлена пользователю ${maxUser.user.firstName} ${maxUser.user.lastName}`)
     }
   } catch (error) {
     console.error('Ошибка при отправке еженедельных сводок по ДЗ:', error)
@@ -273,9 +344,9 @@ async function sendWeeklyHomeworkSummaries() {
  * Остановить все cron задачи
  */
 export function stopCronJobs() {
-  console.log('🛑 Остановка cron задач...')
+  console.error('🛑 Остановка cron задач...')
   cron.getTasks().forEach(task => {
     task.stop()
   })
-  console.log('✅ Cron задачи остановлены')
+  console.error('✅ Cron задачи остановлены')
 }

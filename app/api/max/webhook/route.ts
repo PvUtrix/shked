@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.text()
     const update: MaxUpdate = JSON.parse(body)
 
-    console.log('Received Max update:', JSON.stringify(update, null, 2))
+    console.error('Received Max update:', JSON.stringify(update, null, 2))
 
     // Handle regular messages
     if (update.message) {
@@ -26,11 +26,11 @@ export async function POST(request: NextRequest) {
       let response: string
 
       if (text.startsWith('/')) {
-        const [command, ...args] = text.split(' ')
-        response = await routeCommand(from.id.toString(), chat.id, command, args)
+        const [_command, ...args] = text.split(' ')
+        response = await routeCommand(from.id.toString(), chat.id, text, args)
       } else {
         // Handle natural language
-        const [command, ...args] = text.split(' ')
+        const [_command, ...args] = text.split(' ')
         response = await routeCommand(from.id.toString(), chat.id, text, args)
       }
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Handle callback queries (buttons)
     if (update.callback_query) {
-      const { id, from, data } = update.callback_query
+      const { id: _id, from, data } = update.callback_query
 
       // Update user info
       await updateUserInfo(from.id.toString(), from.id.toString(), from)
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
       // Handle callback data
       if (data) {
-        console.log('Callback data:', data)
+        console.error('Callback data:', data)
       }
     }
 

@@ -17,17 +17,17 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    console.log('🔄 Начинаем простую миграцию базы данных...')
+    console.error('🔄 Начинаем простую миграцию базы данных...')
 
     // Проверяем существующие колонки
     const existingColumns = await prisma.$queryRaw`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'users' 
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_name = 'users'
       AND column_name IN ('canHelp', 'lookingFor')
     `
 
-    console.log('📋 Существующие колонки:', existingColumns)
+    console.error('📋 Существующие колонки:', existingColumns)
 
     const results = []
 
@@ -37,10 +37,10 @@ export async function POST(request: NextRequest) {
       try {
         await prisma.$executeRaw`ALTER TABLE users ADD COLUMN "canHelp" TEXT`
         results.push('✅ Добавлена колонка canHelp')
-        console.log('✅ Добавлена колонка canHelp')
+        console.error('✅ Добавлена колонка canHelp')
       } catch (error) {
         results.push(`❌ Ошибка добавления canHelp: ${error instanceof Error ? error.message : 'Unknown error'}`)
-        console.log('❌ Ошибка добавления canHelp:', error)
+        console.error('❌ Ошибка добавления canHelp:', error)
       }
     } else {
       results.push('ℹ️ Колонка canHelp уже существует')
@@ -52,16 +52,16 @@ export async function POST(request: NextRequest) {
       try {
         await prisma.$executeRaw`ALTER TABLE users ADD COLUMN "lookingFor" TEXT`
         results.push('✅ Добавлена колонка lookingFor')
-        console.log('✅ Добавлена колонка lookingFor')
+        console.error('✅ Добавлена колонка lookingFor')
       } catch (error) {
         results.push(`❌ Ошибка добавления lookingFor: ${error instanceof Error ? error.message : 'Unknown error'}`)
-        console.log('❌ Ошибка добавления lookingFor:', error)
+        console.error('❌ Ошибка добавления lookingFor:', error)
       }
     } else {
       results.push('ℹ️ Колонка lookingFor уже существует')
     }
 
-    console.log('✅ Миграция завершена!')
+    console.error('✅ Миграция завершена!')
 
     return NextResponse.json({
       message: 'Простая миграция базы данных завершена!',

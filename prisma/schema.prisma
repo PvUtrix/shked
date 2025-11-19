@@ -77,6 +77,15 @@ model User {
   forumPosts          ForumPost[]
   subgroupMemberships SubgroupStudent[]
   activityLogs        ActivityLog[]
+  sentMessages        DirectMessage[]      @relation("SentMessages")
+  receivedMessages    DirectMessage[]      @relation("ReceivedMessages")
+  studentThesis       Thesis?              @relation("StudentThesis")
+  supervisedTheses    Thesis[]             @relation("SupervisedTheses")
+  assistantSubjects   SubjectAssistant[]   @relation("AssistantSubjects")
+  assignedAssistants  SubjectAssistant[]   @relation("AssignedAssistants")
+  departmentId        String?
+  department          Department?          @relation("DepartmentFaculty", fields: [departmentId], references: [id])
+  headOfDepartment    Department?          @relation("DepartmentHead")
 
   @@index([email])
   @@index([role])
@@ -128,11 +137,16 @@ model Subject {
   schedules   Schedule[]
   homework    Homework[]
   lectors     SubjectLector[]
+  assistants  SubjectAssistant[]
   documents   SubjectDocument[]
   resources   ExternalResource[]
   subgroups   Subgroup[]
   exams       Exam[]
   forumTopics ForumTopic[]
+
+  departmentId   String?
+  department     Department?     @relation("DepartmentSubjects", fields: [departmentId], references: [id])
+  programCourses ProgramCourse[]
 
   @@index([isActive])
   @@map("subjects")
@@ -222,6 +236,7 @@ model MaxUser {
 model BotSettings {
   id                   String   @id @default(cuid())
   telegramBotToken     String?
+  telegramBotUsername  String? // Bot username for deep linking (without @)
   telegramWebhookUrl   String?
   maxBotToken          String?
   maxWebhookUrl        String?
@@ -327,6 +342,25 @@ model SubjectLector {
   @@index([userId])
   @@index([role])
   @@map("subject_lectors")
+}
+
+model SubjectAssistant {
+  id         String   @id @default(cuid())
+  subjectId  String
+  userId     String
+  assignedBy String // userId of who assigned the assistant
+  assignedAt DateTime @default(now())
+  isActive   Boolean  @default(true)
+
+  subject  Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  user     User    @relation("AssistantSubjects", fields: [userId], references: [id], onDelete: Cascade)
+  assigner User    @relation("AssignedAssistants", fields: [assignedBy], references: [id], onDelete: Cascade)
+
+  @@unique([subjectId, userId])
+  @@index([subjectId])
+  @@index([userId])
+  @@index([isActive])
+  @@map("subject_assistants")
 }
 
 model SubjectDocument {
@@ -561,4 +595,127 @@ model ActivityLog {
   @@index([entityType])
   @@index([createdAt])
   @@map("activity_logs")
+}
+
+// Личные сообщения
+model DirectMessage {
+  id         String    @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String    @db.Text
+  isRead     Boolean   @default(false)
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("direct_messages")
+}
+
+// Выпускная квалификационная работа
+model Thesis {
+  id           String    @id @default(cuid())
+  studentId    String    @unique
+  supervisorId String
+  title        String
+  abstract     String?   @db.Text
+  status       String    @default("IN_PROGRESS") // IN_PROGRESS, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, DEFENDED
+  milestones   Json? // [{id, name, deadline, status, completedAt, description}]
+  artifacts    Json? // [{id, type, url, uploadedAt, description, fileName}]
+  defenseDate  DateTime?
+  grade        String? // Оценка после защиты
+  notes        String?   @db.Text // Заметки научного руководителя (MDX)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  student    User @relation("StudentThesis", fields: [studentId], references: [id], onDelete: Cascade)
+  supervisor User @relation("SupervisedTheses", fields: [supervisorId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([supervisorId])
+  @@index([status])
+  @@index([defenseDate])
+  @@map("theses")
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  code        String?  @unique // e.g., "CS", "MATH", "PHYS"
+  headId      String?  @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  head             User?               @relation("DepartmentHead", fields: [headId], references: [id])
+  faculty          User[]              @relation("DepartmentFaculty")
+  subjects         Subject[]           @relation("DepartmentSubjects")
+  settings         DepartmentSettings?
+  academicPrograms AcademicProgram[]
+
+  @@index([headId])
+  @@index([isActive])
+  @@map("departments")
+}
+
+model DepartmentSettings {
+  id           String @id @default(cuid())
+  departmentId String @unique
+
+  // Academic policies
+  minAttendance Int? @default(75) // Minimum attendance percentage
+  passingGrade  Int? @default(3) // Minimum passing grade
+  maxAbsences   Int? @default(3) // Max absences before action
+
+  // Notifications
+  notifyOnLowGrades  Boolean @default(true)
+  notifyOnAbsences   Boolean @default(true)
+  emailNotifications Boolean @default(true)
+
+  // Metadata
+  contactEmail String?
+  contactPhone String?
+  office       String?
+  website      String?
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@map("department_settings")
+}
+
+model AcademicProgram {
+  id              String          @id @default(cuid())
+  name            String
+  degreeType      String // Bachelor, Master, PhD
+  departmentId    String
+  department      Department      @relation(fields: [departmentId], references: [id])
+  requiredCredits Int
+  courses         ProgramCourse[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("academic_programs")
+}
+
+model ProgramCourse {
+  id         String          @id @default(cuid())
+  programId  String
+  program    AcademicProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  subjectId  String
+  subject    Subject         @relation(fields: [subjectId], references: [id])
+  semester   Int
+  isRequired Boolean         @default(true)
+  credits    Int
+
+  @@map("program_courses")
 }
