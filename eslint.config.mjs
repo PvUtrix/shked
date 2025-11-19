@@ -93,6 +93,15 @@ export default [
       '@typescript-eslint/no-var-requires': 'off',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
+      'no-console': 'off', // Allow console in tests
+    },
+  },
+  {
+    // Scripts can use console.log for output
+    files: ['scripts/**/*'],
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
 ]
