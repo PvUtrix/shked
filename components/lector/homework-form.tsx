@@ -44,7 +44,7 @@ const homeworkSchema = z.object({
   deadline: z.string().min(1, 'Дедлайн обязателен'),
   materials: z.array(materialSchema).optional(),
   subjectId: z.string().min(1, 'Предмет обязателен'),
-  groupId: z.string().optional(),
+  groupId: z.string().min(1).optional().or(z.literal('')), // Allow empty string or valid groupId
 })
 
 interface HomeworkFormProps {
@@ -62,6 +62,8 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
 
   const form = useForm<HomeworkFormData>({
     resolver: zodResolver(homeworkSchema),
+    mode: 'onChange', // Валидация при изменении полей
+    reValidateMode: 'onChange', // Повторная валидация при изменении
     defaultValues: {
       title: '',
       description: '',
@@ -136,11 +138,48 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
   }, [homework, form])
 
   const onSubmit = async (data: HomeworkFormData) => {
+    // Принудительно валидируем все поля перед отправкой
+    const isValid = await form.trigger()
+    if (!isValid) {
+      // Получаем первое поле с ошибкой и переводим на него фокус
+      const errorFields = Object.keys(form.formState.errors)
+      if (errorFields.length > 0) {
+        const firstError = errorFields[0]
+        // Для Select полей нужно искать по другому селектору
+        let fieldElement = document.querySelector(`[name="${firstError}"]`) as HTMLElement
+        if (!fieldElement) {
+          // Пробуем найти через aria-invalid или через FormField
+          fieldElement = document.querySelector(`[aria-invalid="true"]`) as HTMLElement
+        }
+        if (fieldElement) {
+          fieldElement.focus()
+          // Прокручиваем к полю с ошибкой
+          setTimeout(() => {
+            fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }, 100)
+        }
+      }
+      toast.error('Пожалуйста, заполните все обязательные поля')
+      return
+    }
+
     setLoading(true)
+    let isMounted = true
+    
     try {
       const url = '/api/homework'
       const method = isEditing ? 'PUT' : 'POST'
-      const body = isEditing ? { ...data, id: homework.id } : data
+
+      // Convert empty strings to undefined for optional fields
+      const cleanedData = {
+        ...data,
+        groupId: data.groupId || undefined,
+        taskUrl: data.taskUrl || undefined,
+        description: data.description || undefined,
+        content: data.content || undefined,
+      }
+
+      const body = isEditing ? { ...cleanedData, id: homework.id } : cleanedData
 
       const response = await fetch(url, {
         method,
@@ -149,6 +188,10 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
         },
         body: JSON.stringify(body),
       })
+
+      if (!isMounted) {
+        return
+      }
 
       if (response.ok) {
         toast.success(
@@ -162,10 +205,14 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
         toast.error(error.error || 'Произошла ошибка')
       }
     } catch (error) {
-      console.error('Ошибка при сохранении задания:', error)
-      toast.error('Произошла ошибка при сохранении')
+      if (isMounted) {
+        console.error('Ошибка при сохранении задания:', error)
+        toast.error('Произошла ошибка при сохранении')
+      }
     } finally {
-      setLoading(false)
+      if (isMounted) {
+        setLoading(false)
+      }
     }
   }
 
@@ -175,8 +222,8 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle>
             {isEditing ? 'Редактировать задание' : 'Создать задание'}
           </DialogTitle>
@@ -188,8 +235,9 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
           </DialogDescription>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="flex-1 overflow-y-auto px-6 min-h-0">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -419,22 +467,27 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
                 </div>
               ))}
             </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={loading}
-              >
-                Отмена
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Сохранение...' : (isEditing ? 'Обновить' : 'Создать')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            </form>
+          </Form>
+        </div>
+        
+        <DialogFooter className="px-6 pb-6 pt-4 flex-shrink-0 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={loading}
+          >
+            Отмена
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={loading || !form.formState.isValid} 
+            onClick={form.handleSubmit(onSubmit)}
+          >
+            {loading ? 'Сохранение...' : (isEditing ? 'Обновить' : 'Создать')}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

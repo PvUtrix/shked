@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { HomeworkFormData } from '@/lib/types'
+import { logActivity } from '@/lib/activity-log'
 
 // GET /api/homework - получение списка домашних заданий
 export async function GET(request: NextRequest) {
@@ -53,14 +54,12 @@ export async function GET(request: NextRequest) {
       const user = await prisma.user.findUnique({
         where: { id: session.user.id }
       })
-      
-      // Временно отключаем фильтрацию по mentorGroupIds до применения миграции
-      // if (user?.mentorGroupIds) {
-      //   const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
-      //   where.groupId = {
-      //     in: groupIds
-      //   }
-      // }
+
+      if (user?.mentorGroupIds && Array.isArray(user.mentorGroupIds)) {
+        where.groupId = {
+          in: user.mentorGroupIds as string[]
+        }
+      }
     }
 
     const homework = await prisma.homework.findMany({
@@ -140,14 +139,18 @@ export async function POST(request: NextRequest) {
     
     // Для преподавателей проверяем, что предмет принадлежит им
     if (session.user.role === 'lector') {
-      const subject = await prisma.subject.findUnique({
-        where: { id: body.subjectId }
+      const subjectLector = await prisma.subjectLector.findUnique({
+        where: {
+          subjectId_userId: {
+            subjectId: body.subjectId,
+            userId: session.user.id
+          }
+        }
       })
 
-      // Временно отключаем проверку lectorId до применения миграции
-      // if (!subject || subject.lectorId !== session.user.id) {
-      //   return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
-      // }
+      if (!subjectLector) {
+        return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
+      }
     }
     
     // Валидация обязательных полей
@@ -201,10 +204,45 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Логируем создание домашнего задания
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'Homework',
+      entityId: homework.id,
+      request,
+      details: {
+        after: {
+          id: homework.id,
+          title: homework.title,
+          subjectId: homework.subjectId,
+          groupId: homework.groupId,
+          deadline: homework.deadline.toISOString()
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json(homework, { status: 201 })
 
   } catch (error) {
     console.error('Ошибка при создании домашнего задания:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'CREATE',
+        entityType: 'Homework',
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

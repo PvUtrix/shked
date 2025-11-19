@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   User, 
   Mail, 
@@ -16,6 +17,7 @@ import {
   Edit,
   Check
 } from 'lucide-react'
+import { getFullName } from '@/lib/utils'
 
 type UserProfile = {
   id: string
@@ -23,6 +25,10 @@ type UserProfile = {
   email: string
   firstName?: string
   lastName?: string
+  middleName?: string
+  birthday?: string
+  snils?: string
+  sex?: string
   role: string
   mentorGroupIds?: string[]
   createdAt: Date
@@ -41,7 +47,11 @@ export default function MentorProfilePage() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    name: ''
+    middleName: '',
+    name: '',
+    birthday: '',
+    snils: '',
+    sex: ''
   })
 
   useEffect(() => {
@@ -57,7 +67,11 @@ export default function MentorProfilePage() {
         setFormData({
           firstName: data.user.firstName || '',
           lastName: data.user.lastName || '',
-          name: data.user.name || ''
+          middleName: data.user.middleName || '',
+          name: data.user.name || '',
+          birthday: data.user.birthday ? new Date(data.user.birthday).toISOString().split('T')[0] : '',
+          snils: data.user.snils || '',
+          sex: data.user.sex || ''
         })
       }
     } catch (error) {
@@ -75,7 +89,15 @@ export default function MentorProfilePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          middleName: formData.middleName,
+          name: formData.name,
+          birthday: formData.birthday || null,
+          snils: formData.snils,
+          sex: formData.sex || null
+        }),
       })
 
       if (response.ok) {
@@ -208,6 +230,20 @@ export default function MentorProfilePage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="middleName">Отчество</Label>
+                {editing ? (
+                  <Input
+                    id="middleName"
+                    value={formData.middleName}
+                    onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
+                    placeholder="Введите отчество"
+                  />
+                ) : (
+                  <p className="text-gray-900">{profile.middleName || 'Не указано'}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="name">Полное имя</Label>
                 {editing ? (
                   <Input
@@ -217,7 +253,68 @@ export default function MentorProfilePage() {
                     placeholder="Введите полное имя"
                   />
                 ) : (
-                  <p className="text-gray-900">{profile.name || 'Не указано'}</p>
+                  <p className="text-gray-900">{profile.name || getFullName(profile) || 'Не указано'}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="birthday">Дата рождения</Label>
+                  {editing ? (
+                    <Input
+                      id="birthday"
+                      type="date"
+                      max={(() => {
+                        // Максимальная дата: сегодня минус 10 лет
+                        const today = new Date()
+                        const maxDate = new Date(today)
+                        maxDate.setFullYear(today.getFullYear() - 10)
+                        return maxDate.toISOString().split('T')[0]
+                      })()}
+                      min={(() => {
+                        // Минимальная дата: сегодня минус 150 лет
+                        const today = new Date()
+                        const minDate = new Date(today)
+                        minDate.setFullYear(today.getFullYear() - 150)
+                        return minDate.toISOString().split('T')[0]
+                      })()}
+                      value={formData.birthday}
+                      onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+                    />
+                  ) : (
+                    <p className="text-gray-900">{profile.birthday ? formatDate(profile.birthday) : 'Не указано'}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sex">Пол</Label>
+                  {editing ? (
+                    <Select value={formData.sex} onValueChange={(value) => setFormData({ ...formData, sex: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите пол" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Мужской</SelectItem>
+                        <SelectItem value="female">Женский</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-gray-900">{profile.sex === 'male' ? 'Мужской' : profile.sex === 'female' ? 'Женский' : 'Не указано'}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="snils">СНИЛС</Label>
+                {editing ? (
+                  <Input
+                    id="snils"
+                    value={formData.snils}
+                    onChange={(e) => setFormData({ ...formData, snils: e.target.value })}
+                    placeholder="СНИЛС (только цифры)"
+                  />
+                ) : (
+                  <p className="text-gray-900">{profile.snils || 'Не указано'}</p>
                 )}
               </div>
 

@@ -25,13 +25,19 @@ export async function POST(request: NextRequest) {
     const adminPassword = await bcryptjs.hash('admin123', 12)
     const admin = await prisma.user.upsert({
       where: { email: 'admin@shked.com' },
-      update: {},
+      update: {
+        firstName: 'Иван',
+        lastName: 'Администраторов',
+        name: 'Иван Администраторов',
+        sex: 'male',
+      },
       create: {
         email: 'admin@shked.com',
         password: adminPassword,
-        firstName: 'Администратор',
-        lastName: 'Системы',
-        name: 'Администратор Системы',
+        firstName: 'Иван',
+        lastName: 'Администраторов',
+        name: 'Иван Администраторов',
+        sex: 'male',
         role: 'admin',
       },
     })
@@ -39,13 +45,19 @@ export async function POST(request: NextRequest) {
     const studentPassword = await bcryptjs.hash('student123', 12)
     const student = await prisma.user.upsert({
       where: { email: 'student@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Мария',
+        lastName: 'Студентова',
+        name: 'Мария Студентова',
+        sex: 'female',
+      },
       create: {
         email: 'student@demo.com',
         password: studentPassword,
-        firstName: 'Демо',
-        lastName: 'Студент',
-        name: 'Демо Студент',
+        firstName: 'Мария',
+        lastName: 'Студентова',
+        name: 'Мария Студентова',
+        sex: 'female',
         role: 'student',
       },
     })
@@ -53,13 +65,19 @@ export async function POST(request: NextRequest) {
     const lectorPassword = await bcryptjs.hash('lector123', 12)
     const lector = await prisma.user.upsert({
       where: { email: 'lector@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Александр',
+        lastName: 'Преподавателев',
+        name: 'Александр Преподавателев',
+        sex: 'male',
+      },
       create: {
         email: 'lector@demo.com',
         password: lectorPassword,
-        firstName: 'Демо',
-        lastName: 'Преподаватель',
-        name: 'Демо Преподаватель',
+        firstName: 'Александр',
+        lastName: 'Преподавателев',
+        name: 'Александр Преподавателев',
+        sex: 'male',
         role: 'lector',
       },
     })
@@ -67,13 +85,19 @@ export async function POST(request: NextRequest) {
     const mentorPassword = await bcryptjs.hash('mentor123', 12)
     const mentor = await prisma.user.upsert({
       where: { email: 'mentor@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Анна',
+        lastName: 'Менторова',
+        name: 'Анна Менторова',
+        sex: 'female',
+      },
       create: {
         email: 'mentor@demo.com',
         password: mentorPassword,
-        firstName: 'Демо',
-        lastName: 'Ментор',
-        name: 'Демо Ментор',
+        firstName: 'Анна',
+        lastName: 'Менторова',
+        name: 'Анна Менторова',
+        sex: 'female',
         role: 'mentor',
       },
     })
@@ -81,27 +105,39 @@ export async function POST(request: NextRequest) {
     const assistantPassword = await bcryptjs.hash('assistant123', 12)
     const assistant = await prisma.user.upsert({
       where: { email: 'assistant@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Дмитрий',
+        lastName: 'Ассистентов',
+        name: 'Дмитрий Ассистентов',
+        sex: 'male',
+      },
       create: {
         email: 'assistant@demo.com',
         password: assistantPassword,
-        firstName: 'Демо',
-        lastName: 'Ассистент',
-        name: 'Демо Ассистент',
+        firstName: 'Дмитрий',
+        lastName: 'Ассистентов',
+        name: 'Дмитрий Ассистентов',
+        sex: 'male',
         role: 'assistant',
       },
     })
 
     const coLectorPassword = await bcryptjs.hash('co_lecturer123', 12)
     const coLector = await prisma.user.upsert({
-      where: { email: 'co_lecturer@demo.com' },
-      update: {},
+      where: { email: 'co-lecturer@demo.com' },
+      update: {
+        firstName: 'Елена',
+        lastName: 'Со-преподавателева',
+        name: 'Елена Со-преподавателева',
+        sex: 'female',
+      },
       create: {
-        email: 'co_lecturer@demo.com',
+        email: 'co-lecturer@demo.com',
         password: coLectorPassword,
-        firstName: 'Демо',
-        lastName: 'Со-преподаватель',
-        name: 'Демо Со-преподаватель',
+        firstName: 'Елена',
+        lastName: 'Со-преподавателева',
+        name: 'Елена Со-преподавателева',
+        sex: 'female',
         role: 'co_lecturer',
       },
     })
@@ -109,13 +145,19 @@ export async function POST(request: NextRequest) {
     const eduOfficePassword = await bcryptjs.hash('eduoffice123', 12)
     const eduOffice = await prisma.user.upsert({
       where: { email: 'eduoffice@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Михаил',
+        lastName: 'Учебногоотдела',
+        name: 'Михаил Учебногоотдела',
+        sex: 'male',
+      },
       create: {
         email: 'eduoffice@demo.com',
         password: eduOfficePassword,
-        firstName: 'Демо',
-        lastName: 'Учебный отдел',
-        name: 'Демо Учебный отдел',
+        firstName: 'Михаил',
+        lastName: 'Учебногоотдела',
+        name: 'Михаил Учебногоотдела',
+        sex: 'male',
         role: 'education_office_head',
       },
     })
@@ -123,13 +165,19 @@ export async function POST(request: NextRequest) {
     const deptAdminPassword = await bcryptjs.hash('deptadmin123', 12)
     const deptAdmin = await prisma.user.upsert({
       where: { email: 'deptadmin@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Ольга',
+        lastName: 'Кафедрова',
+        name: 'Ольга Кафедрова',
+        sex: 'female',
+      },
       create: {
         email: 'deptadmin@demo.com',
         password: deptAdminPassword,
-        firstName: 'Демо',
-        lastName: 'Админ кафедры',
-        name: 'Демо Администратор кафедры',
+        firstName: 'Ольга',
+        lastName: 'Кафедрова',
+        name: 'Ольга Кафедрова',
+        sex: 'female',
         role: 'department_admin',
       },
     })
@@ -144,7 +192,7 @@ export async function POST(request: NextRequest) {
         { email: 'lector@demo.com', password: 'lector123', role: 'lector' },
         { email: 'mentor@demo.com', password: 'mentor123', role: 'mentor' },
         { email: 'assistant@demo.com', password: 'assistant123', role: 'assistant' },
-        { email: 'colecturer@demo.com', password: 'colecturer123', role: 'co_lecturer' },
+        { email: 'co-lecturer@demo.com', password: 'co_lecturer123', role: 'co_lecturer' },
         { email: 'eduoffice@demo.com', password: 'eduoffice123', role: 'education_office_head' },
         { email: 'deptadmin@demo.com', password: 'deptadmin123', role: 'department_admin' },
       ]

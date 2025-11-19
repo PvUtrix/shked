@@ -30,7 +30,6 @@ import { toast } from 'sonner'
 const subjectSchema = z.object({
   name: z.string().min(1, 'Название предмета обязательно'),
   description: z.string().optional(),
-  instructor: z.string().optional(),
   lectorId: z.string().optional(),
 })
 
@@ -48,54 +47,103 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
 
   const form = useForm<SubjectFormData>({
     resolver: zodResolver(subjectSchema),
+    mode: 'onChange', // Валидация при изменении полей
+    reValidateMode: 'onChange', // Повторная валидация при изменении
     defaultValues: {
       name: '',
       description: '',
-      instructor: '',
       lectorId: 'none',
     },
   })
 
   // Загружаем список преподавателей
   useEffect(() => {
+    let isMounted = true
+    
     const fetchLectors = async () => {
       try {
         const response = await fetch('/api/users?role=lector')
         if (response.ok) {
           const data = await response.json()
-          setLectors(data.users || [])
+          if (isMounted) {
+            setLectors(data.users || [])
+          }
         }
       } catch (error) {
-        console.error('Ошибка при загрузке преподавателей:', error)
+        if (isMounted) {
+          console.error('Ошибка при загрузке преподавателей:', error)
+        }
       }
     }
 
     if (open) {
       fetchLectors()
     }
+    
+    return () => {
+      isMounted = false
+    }
   }, [open])
 
   // Заполняем форму при редактировании
   useEffect(() => {
-    if (subject) {
-      form.reset({
-        name: subject.name || '',
-        description: subject.description || '',
-        instructor: subject.instructor || '',
-        lectorId: subject.lectorId || 'none',
-      })
-    } else {
-      form.reset({
-        name: '',
-        description: '',
-        instructor: '',
-        lectorId: 'none',
-      })
+    if (open) {
+      if (subject) {
+        form.reset({
+          name: subject.name || '',
+          description: subject.description || '',
+          lectorId: subject.lectorId || 'none',
+        }, {
+          keepErrors: false,
+          keepDirty: false,
+          keepDefaultValues: false,
+        })
+      } else {
+        form.reset({
+          name: '',
+          description: '',
+          lectorId: 'none',
+        }, {
+          keepErrors: false,
+          keepDirty: false,
+          keepDefaultValues: false,
+        })
+      }
+      
+      // Не валидируем при загрузке данных - валидация будет при изменении полей
+      // Это предотвращает ошибки ZodError при загрузке существующих данных
     }
-  }, [subject, form])
+  }, [subject, open, form])
 
   const onSubmit = async (data: SubjectFormData) => {
+    // Принудительно валидируем все поля перед отправкой
+    const isValid = await form.trigger()
+    if (!isValid) {
+      // Получаем первое поле с ошибкой и переводим на него фокус
+      const errorFields = Object.keys(form.formState.errors)
+      if (errorFields.length > 0) {
+        const firstError = errorFields[0]
+        // Для Select полей нужно искать по другому селектору
+        let fieldElement = document.querySelector(`[name="${firstError}"]`) as HTMLElement
+        if (!fieldElement) {
+          // Пробуем найти через aria-invalid или через FormField
+          fieldElement = document.querySelector(`[aria-invalid="true"]`) as HTMLElement
+        }
+        if (fieldElement) {
+          fieldElement.focus()
+          // Прокручиваем к полю с ошибкой
+          setTimeout(() => {
+            fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }, 100)
+        }
+      }
+      toast.error('Пожалуйста, заполните все обязательные поля')
+      return
+    }
+
     setLoading(true)
+    let isMounted = true
+    
     try {
       const url = '/api/subjects'
       const method = isEditing ? 'PUT' : 'POST'
@@ -116,6 +164,10 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
         body: JSON.stringify(body),
       })
 
+      if (!isMounted) {
+        return
+      }
+
       if (response.ok) {
         toast.success(
           isEditing ? 'Предмет обновлен' : 'Предмет создан'
@@ -128,10 +180,14 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
         toast.error(error.error || 'Произошла ошибка')
       }
     } catch (error) {
-      console.error('Ошибка при сохранении предмета:', error)
-      toast.error('Произошла ошибка при сохранении')
+      if (isMounted) {
+        console.error('Ошибка при сохранении предмета:', error)
+        toast.error('Произошла ошибка при сохранении')
+      }
     } finally {
-      setLoading(false)
+      if (isMounted) {
+        setLoading(false)
+      }
     }
   }
 
@@ -173,7 +229,7 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
                 <FormItem>
                   <FormLabel>Описание</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Описание предмета (необязательно)"
                       {...field}
                     />
@@ -182,21 +238,7 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
                 </FormItem>
               )}
             />
-            
-            <FormField
-              control={form.control}
-              name="instructor"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Преподаватель</FormLabel>
-                  <FormControl>
-                    <Input placeholder="ФИО преподавателя" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
+
             <FormField
               control={form.control}
               name="lectorId"
@@ -232,7 +274,7 @@ export function SubjectForm({ open, onOpenChange, subject, onSuccess }: SubjectF
               >
                 Отмена
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading || !form.formState.isValid}>
                 {loading ? 'Сохранение...' : (isEditing ? 'Обновить' : 'Создать')}
               </Button>
             </DialogFooter>

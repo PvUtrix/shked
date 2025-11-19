@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/activity-log'
 
 // GET /api/forum/topics - Получить список топиков
 export async function GET(request: NextRequest) {
@@ -115,6 +116,25 @@ export async function POST(request: NextRequest) {
           }
         }
       }
+    })
+
+    // Логируем создание топика
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'ForumTopic',
+      entityId: topic.id,
+      request,
+      details: {
+        after: {
+          id: topic.id,
+          title,
+          subjectId: topic.subjectId,
+          groupId: topic.groupId,
+          contentLength: content.length
+        }
+      },
+      result: 'SUCCESS'
     })
 
     return NextResponse.json(topic, { status: 201 })

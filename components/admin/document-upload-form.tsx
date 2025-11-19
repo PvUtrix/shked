@@ -29,9 +29,7 @@ import { FileUploader } from '@/components/ui/file-uploader'
 import { useToast } from '@/components/ui/use-toast'
 
 const documentFormSchema = z.object({
-  type: z.enum(['RPD', 'ANNOTATION', 'SYLLABUS', 'MATERIALS', 'OTHER'], {
-    required_error: 'Выберите тип документа',
-  }),
+  type: z.enum(['RPD', 'ANNOTATION', 'SYLLABUS', 'MATERIALS', 'OTHER']),
   description: z.string().optional(),
 })
 
@@ -122,7 +120,7 @@ export function DocumentUploadForm({
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Тип документа</FormLabel>
+              <FormLabel>Тип документа *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -166,7 +164,7 @@ export function DocumentUploadForm({
         />
 
         <div>
-          <FormLabel>Файл документа</FormLabel>
+          <FormLabel>Файл документа *</FormLabel>
           <div className="mt-2">
             <FileUploader
               onUpload={handleFileUpload}

@@ -16,13 +16,18 @@ import {
   ClipboardList,
   UserCog,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
+import { getFullName } from '@/lib/utils'
 
 interface AdminNavProps {
   user?: {
     name?: string
+    firstName?: string
+    lastName?: string
+    middleName?: string
     email?: string
   }
 }
@@ -65,6 +70,11 @@ export function AdminNav({ user }: AdminNavProps) {
       label: t('admin.nav.settings'),
       href: '/admin/settings',
       icon: Settings
+    },
+    {
+      label: t('admin.nav.activityLog'),
+      href: '/admin/activity-log',
+      icon: FileText
     }
   ]
 
@@ -104,7 +114,7 @@ export function AdminNav({ user }: AdminNavProps) {
               <div className="flex items-center space-x-3">
                 <UserCircle className="h-8 w-8 text-blue-600" />
                 <div>
-                  <p className="font-medium text-gray-900">{user?.name || t('admin.defaultName')}</p>
+                  <p className="font-medium text-gray-900">{user ? getFullName(user) || t('admin.defaultName') : t('admin.defaultName')}</p>
                   <p className="text-sm text-gray-500">{t('admin.role')}</p>
                 </div>
               </div>
@@ -119,7 +129,7 @@ export function AdminNav({ user }: AdminNavProps) {
         <nav className="space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
             
             return (
               <Link

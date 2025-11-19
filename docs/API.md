@@ -601,6 +601,78 @@ GET /api/endpoint?page=1&limit=20
 }
 ```
 
+### Лог активности
+
+#### GET /api/activity-logs
+Получить список логов активности с фильтрацией и пагинацией.
+
+**Права:** admin
+
+**Параметры запроса:**
+- `userId` - Фильтр по ID пользователя
+- `action` - Фильтр по типу действия (CREATE, UPDATE, DELETE, SETTINGS_CHANGE)
+- `entityType` - Фильтр по типу сущности (User, Group, Subject, Schedule, Homework, BotSettings)
+- `startDate` - Дата начала периода (YYYY-MM-DD)
+- `endDate` - Дата окончания периода (YYYY-MM-DD)
+- `page` - Номер страницы (по умолчанию 1)
+- `limit` - Количество записей на странице (по умолчанию 50)
+
+**Пример запроса:**
+```bash
+GET /api/activity-logs?action=UPDATE&entityType=User&startDate=2025-11-01&page=1&limit=50
+```
+
+**Ответ:**
+```json
+{
+  "logs": [
+    {
+      "id": "clx123...",
+      "userId": "user456",
+      "action": "UPDATE",
+      "entityType": "User",
+      "entityId": "user789",
+      "ipAddress": "192.168.1.100",
+      "details": {
+        "before": {
+          "id": "user789",
+          "name": "Иван Иванов",
+          "role": "student"
+        },
+        "after": {
+          "id": "user789",
+          "name": "Иван Петров",
+          "role": "student"
+        },
+        "changes": [
+          {
+            "field": "name",
+            "oldValue": "Иван Иванов",
+            "newValue": "Иван Петров"
+          }
+        ]
+      },
+      "result": "SUCCESS",
+      "createdAt": "2025-11-03T20:10:57Z",
+      "user": {
+        "id": "user456",
+        "name": "Администратор",
+        "email": "admin@example.com",
+        "role": "admin"
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 50,
+    "total": 150,
+    "pages": 3
+  }
+}
+```
+
+> **Примечание**: Логирование действий выполняется автоматически для всех CRUD операций и изменений настроек. Подробнее см. [Лог активности](./features/ACTIVITY_LOG.md).
+
 ## Rate Limiting (планируется)
 
 В production окружении будет применяться rate limiting:
@@ -610,6 +682,7 @@ GET /api/endpoint?page=1&limit=20
 ## Дополнительная документация
 
 - [Роли пользователей](./features/USER_ROLES.md)
+- [Лог активности](./features/ACTIVITY_LOG.md)
 - [Система подгрупп](./features/SUBGROUPS_SYSTEM.md)
 - [Отслеживание посещаемости](./features/ATTENDANCE_TRACKING.md)
 - [Управление экзаменами](./features/EXAM_MANAGEMENT.md)
@@ -619,7 +692,7 @@ GET /api/endpoint?page=1&limit=20
 
 ---
 
-*Документация обновлена: 30 октября 2025*
+*Документация обновлена: 3 ноября 2025*
 *Версия системы: 0.1.0-alpha*
 
 

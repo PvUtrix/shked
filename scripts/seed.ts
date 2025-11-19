@@ -28,13 +28,19 @@ async function main() {
     const adminPassword = await bcryptjs.hash('admin123', 12)
     const admin = await prisma.user.upsert({
       where: { email: 'admin@shked.com' },
-      update: {},
+      update: {
+        firstName: 'Иван',
+        lastName: 'Администраторов',
+        name: 'Иван Администраторов',
+        sex: 'male',
+      },
       create: {
         email: 'admin@shked.com',
         password: adminPassword,
-        firstName: 'Администратор',
-        lastName: 'Системы',
-        name: 'Администратор Системы',
+        firstName: 'Иван',
+        lastName: 'Администраторов',
+        name: 'Иван Администраторов',
+        sex: 'male',
         role: 'admin',
       },
     })
@@ -44,14 +50,19 @@ async function main() {
     const demoStudent = await prisma.user.upsert({
       where: { email: 'student@demo.com' },
       update: {
+        firstName: 'Мария',
+        lastName: 'Студентова',
+        name: 'Мария Студентова',
+        sex: 'female',
         groupId: techPredGroup.id,
       },
       create: {
         email: 'student@demo.com',
         password: studentPassword,
-        firstName: 'Демо',
-        lastName: 'Студент',
-        name: 'Демо Студент',
+        firstName: 'Мария',
+        lastName: 'Студентова',
+        name: 'Мария Студентова',
+        sex: 'female',
         role: 'student',
         groupId: techPredGroup.id,
       },
@@ -61,13 +72,19 @@ async function main() {
     const lectorPassword = await bcryptjs.hash('lector123', 12)
     const demoLector = await prisma.user.upsert({
       where: { email: 'lector@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Александр',
+        lastName: 'Преподавателев',
+        name: 'Александр Преподавателев',
+        sex: 'male',
+      },
       create: {
         email: 'lector@demo.com',
         password: lectorPassword,
-        firstName: 'Демо',
-        lastName: 'Преподаватель',
-        name: 'Демо Преподаватель',
+        firstName: 'Александр',
+        lastName: 'Преподавателев',
+        name: 'Александр Преподавателев',
+        sex: 'male',
         role: 'lector',
       },
     })
@@ -76,13 +93,19 @@ async function main() {
     const mentorPassword = await bcryptjs.hash('mentor123', 12)
     const demoMentor = await prisma.user.upsert({
       where: { email: 'mentor@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Анна',
+        lastName: 'Менторова',
+        name: 'Анна Менторова',
+        sex: 'female',
+      },
       create: {
         email: 'mentor@demo.com',
         password: mentorPassword,
-        firstName: 'Демо',
-        lastName: 'Ментор',
-        name: 'Демо Ментор',
+        firstName: 'Анна',
+        lastName: 'Менторова',
+        name: 'Анна Менторова',
+        sex: 'female',
         role: 'mentor',
       },
     })
@@ -91,13 +114,19 @@ async function main() {
     const assistantPassword = await bcryptjs.hash('assistant123', 12)
     const demoAssistant = await prisma.user.upsert({
       where: { email: 'assistant@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Дмитрий',
+        lastName: 'Ассистентов',
+        name: 'Дмитрий Ассистентов',
+        sex: 'male',
+      },
       create: {
         email: 'assistant@demo.com',
         password: assistantPassword,
-        firstName: 'Демо',
-        lastName: 'Ассистент',
-        name: 'Демо Ассистент',
+        firstName: 'Дмитрий',
+        lastName: 'Ассистентов',
+        name: 'Дмитрий Ассистентов',
+        sex: 'male',
         role: 'assistant',
       },
     })
@@ -105,14 +134,20 @@ async function main() {
     // Со-преподаватель
     const coLecturerPassword = await bcryptjs.hash('co_lecturer123', 12)
     const demoCoLecturer = await prisma.user.upsert({
-      where: { email: 'co_lecturer@demo.com' },
-      update: {},
+      where: { email: 'co-lecturer@demo.com' },
+      update: {
+        firstName: 'Елена',
+        lastName: 'Со-преподавателева',
+        name: 'Елена Со-преподавателева',
+        sex: 'female',
+      },
       create: {
-        email: 'co_lecturer@demo.com',
+        email: 'co-lecturer@demo.com',
         password: coLecturerPassword,
-        firstName: 'Демо',
-        lastName: 'Со-преподаватель',
-        name: 'Демо Со-преподаватель',
+        firstName: 'Елена',
+        lastName: 'Со-преподавателева',
+        name: 'Елена Со-преподавателева',
+        sex: 'female',
         role: 'co_lecturer',
       },
     })
@@ -121,13 +156,19 @@ async function main() {
     const eduOfficePassword = await bcryptjs.hash('eduoffice123', 12)
     const demoEduOffice = await prisma.user.upsert({
       where: { email: 'eduoffice@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Михаил',
+        lastName: 'Учебногоотдела',
+        name: 'Михаил Учебногоотдела',
+        sex: 'male',
+      },
       create: {
         email: 'eduoffice@demo.com',
         password: eduOfficePassword,
-        firstName: 'Демо',
-        lastName: 'Учебный отдел',
-        name: 'Демо Учебный отдел',
+        firstName: 'Михаил',
+        lastName: 'Учебногоотдела',
+        name: 'Михаил Учебногоотдела',
+        sex: 'male',
         role: 'education_office_head',
       },
     })
@@ -136,13 +177,19 @@ async function main() {
     const deptAdminPassword = await bcryptjs.hash('deptadmin123', 12)
     const demoDeptAdmin = await prisma.user.upsert({
       where: { email: 'deptadmin@demo.com' },
-      update: {},
+      update: {
+        firstName: 'Ольга',
+        lastName: 'Кафедрова',
+        name: 'Ольга Кафедрова',
+        sex: 'female',
+      },
       create: {
         email: 'deptadmin@demo.com',
         password: deptAdminPassword,
-        firstName: 'Демо',
-        lastName: 'Админ кафедры',
-        name: 'Демо Админ кафедры',
+        firstName: 'Ольга',
+        lastName: 'Кафедрова',
+        name: 'Ольга Кафедрова',
+        sex: 'female',
         role: 'department_admin',
       },
     })
@@ -200,9 +247,12 @@ async function main() {
     // Назначаем демо преподавателя к нескольким предметам
     const lectorSubjects = createdSubjects.slice(0, 3) // Первые 3 предмета
     for (const subject of lectorSubjects) {
-      await prisma.subject.update({
-        where: { id: subject.id },
-        data: { lectorId: demoLector.id }
+      await prisma.subjectLector.create({
+        data: {
+          subjectId: subject.id,
+          userId: demoLector.id,
+          role: 'LECTOR'
+        }
       })
     }
 

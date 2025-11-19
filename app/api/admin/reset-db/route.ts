@@ -61,22 +61,10 @@ export async function POST(request: NextRequest) {
       data: {
         email: 'admin@shked.com',
         password: adminPassword,
-        firstName: 'Администратор',
-        lastName: 'Системы',
-        name: 'Администратор Системы',
-        role: 'admin',
-      },
-    })
-
-    // Тестовый пользователь для системы
-    const testPassword = await bcryptjs.hash('johndoe123', 12)
-    const testUser = await prisma.user.create({
-      data: {
-        email: 'john@doe.com',
-        password: testPassword,
-        firstName: 'John',
-        lastName: 'Doe',
-        name: 'John Doe',
+        firstName: 'Иван',
+        lastName: 'Администраторов',
+        name: 'Иван Администраторов',
+        sex: 'male',
         role: 'admin',
       },
     })
@@ -87,9 +75,10 @@ export async function POST(request: NextRequest) {
       data: {
         email: 'student123@demo.com',
         password: demoStudentPassword,
-        firstName: 'Демо',
-        lastName: 'Студент',
-        name: 'Демо Студент',
+        firstName: 'Мария',
+        lastName: 'Студентова',
+        name: 'Мария Студентова',
+        sex: 'female',
         role: 'student',
       },
     })
@@ -100,9 +89,10 @@ export async function POST(request: NextRequest) {
       data: {
         email: 'lector@demo.com',
         password: demoLectorPassword,
-        firstName: 'Демо',
-        lastName: 'Преподаватель',
-        name: 'Демо Преподаватель',
+        firstName: 'Александр',
+        lastName: 'Преподавателев',
+        name: 'Александр Преподавателев',
+        sex: 'male',
         role: 'lector',
       },
     })
@@ -113,9 +103,10 @@ export async function POST(request: NextRequest) {
       data: {
         email: 'mentor@demo.com',
         password: demoMentorPassword,
-        firstName: 'Демо',
-        lastName: 'Ментор',
-        name: 'Демо Ментор',
+        firstName: 'Анна',
+        lastName: 'Менторова',
+        name: 'Анна Менторова',
+        sex: 'female',
         role: 'mentor',
       },
     })
@@ -182,9 +173,12 @@ export async function POST(request: NextRequest) {
     // Назначаем демо преподавателя к нескольким предметам
     const lectorSubjects = createdSubjects.slice(0, 3) // Первые 3 предмета
     for (const subject of lectorSubjects) {
-      await prisma.subject.update({
-        where: { id: subject.id },
-        data: { lectorId: demoLector.id }
+      await prisma.subjectLector.create({
+        data: {
+          subjectId: subject.id,
+          userId: demoLector.id,
+          role: 'LECTOR'
+        }
       })
     }
 
@@ -204,7 +198,34 @@ export async function POST(request: NextRequest) {
         const names = studentData.Студент.split(' ')
         const firstName = names[1] || 'Студент'
         const lastName = names[0] || 'Неизвестный'
-        const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@student.mipt.ru`.replace(/[^a-z0-9@.]/g, '')
+        
+        // Функция транслитерации кириллицы в латиницу
+        const transliterate = (str: string): string => {
+          const ru = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+          const en = 'abvgdeezhziyklmnoprstufhccss_y_eua'
+          
+          return str.toLowerCase()
+            .split('')
+            .map(char => {
+              const index = ru.indexOf(char)
+              return index >= 0 ? en[index] : char
+            })
+            .join('')
+        }
+        
+        // Транслитерируем и очищаем от недопустимых символов
+        const cleanFirstName = transliterate(firstName).replace(/[^a-z0-9+-]/g, '') || 'student'
+        const cleanLastName = transliterate(lastName).replace(/[^a-z0-9+-]/g, '') || 'unknown'
+        
+        // Собираем локальную часть email (часть перед @)
+        const localPart = `${cleanFirstName}.${cleanLastName}`
+          .replace(/\.+/g, '.') // Убираем множественные точки
+          .replace(/^\.+|\.+$/g, '') // Убираем точки в начале и конце
+        
+        // Если локальная часть пустая, используем дефолтное значение
+        const email = localPart && localPart.length > 0 
+          ? `${localPart}@student.mipt.ru`
+          : `student.${Math.random().toString(36).substring(2, 8)}@student.mipt.ru`
         
         const studentPassword = await bcryptjs.hash('student123', 12)
         const student = await prisma.user.create({
@@ -214,6 +235,7 @@ export async function POST(request: NextRequest) {
             firstName,
             lastName,
             name: studentData.Студент,
+            sex: null, // Пол не указан в исходных данных
             role: 'student',
             groupId: techPredGroup.id,
           },

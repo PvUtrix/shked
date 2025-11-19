@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/activity-log'
 
 // GET /api/homework/[id]/submissions/[submissionId]/comments - получение всех комментариев
 export async function GET(
@@ -24,7 +25,7 @@ export async function GET(
           include: {
             subject: {
               select: {
-                lectorId: true
+                lectors: { select: { userId: true } }
               }
             }
           }
@@ -40,9 +41,10 @@ export async function GET(
     }
 
     // Проверка прав доступа
-    const canView = 
+    const isLector = submission.homework.subject?.lectors.some(l => l.userId === session.user.id)
+    const canView =
       session.user.role === 'admin' ||
-      (session.user.role === 'lector' && submission.homework.subject?.lectorId === session.user.id) ||
+      (session.user.role === 'lector' && isLector) ||
       (session.user.role === 'mentor' && submission.homework.groupId === session.user.groupId) ||
       (session.user.role === 'student' && submission.userId === session.user.id)
 
@@ -110,7 +112,7 @@ export async function POST(
           include: {
             subject: {
               select: {
-                lectorId: true
+                lectors: { select: { userId: true } }
               }
             }
           }
@@ -126,9 +128,10 @@ export async function POST(
     }
 
     // Только лекторы и админы могут создавать комментарии
-    const canComment = 
+    const isLectorForComment = submission.homework.subject?.lectors.some(l => l.userId === session.user.id)
+    const canComment =
       session.user.role === 'admin' ||
-      (session.user.role === 'lector' && submission.homework.subject?.lectorId === session.user.id)
+      (session.user.role === 'lector' && isLectorForComment)
 
     if (!canComment) {
       return NextResponse.json(
@@ -156,8 +159,41 @@ export async function POST(
             lastName: true,
             email: true
           }
+        },
+        submission: {
+          select: {
+            id: true,
+            homeworkId: true,
+            homework: {
+              select: {
+                id: true,
+                title: true
+              }
+            }
+          }
         }
       }
+    })
+
+    // Логируем создание комментария
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'HomeworkComment',
+      entityId: comment.id,
+      request,
+      details: {
+        after: {
+          id: comment.id,
+          submissionId: comment.submissionId,
+          homeworkId: comment.submission.homeworkId,
+          homeworkTitle: comment.submission.homework.title,
+          contentLength: content.length,
+          startOffset,
+          endOffset
+        }
+      },
+      result: 'SUCCESS'
     })
 
     return NextResponse.json(comment, { status: 201 })

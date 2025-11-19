@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -57,6 +57,8 @@ export function SubgroupForm({
 
   const form = useForm<SubgroupFormValues>({
     resolver: zodResolver(subgroupFormSchema),
+    mode: 'onChange', // Валидация при изменении полей
+    reValidateMode: 'onChange', // Повторная валидация при изменении
     defaultValues: initialData || {
       name: '',
       number: 1,
@@ -65,8 +67,49 @@ export function SubgroupForm({
     },
   })
 
+  // Обновляем форму при изменении initialData (для редактирования)
+  useEffect(() => {
+    if (initialData) {
+      form.reset(initialData)
+    } else {
+      form.reset({
+        name: '',
+        number: 1,
+        subjectId: undefined,
+        description: '',
+      })
+    }
+  }, [initialData, form])
+
   const onSubmit = async (data: SubgroupFormValues) => {
+    // Принудительно валидируем все поля перед отправкой
+    const isValid = await form.trigger()
+    if (!isValid) {
+      // Получаем первое поле с ошибкой и переводим на него фокус
+      const errorFields = Object.keys(form.formState.errors)
+      if (errorFields.length > 0) {
+        const firstError = errorFields[0]
+        let fieldElement = document.querySelector(`[name="${firstError}"]`) as HTMLElement
+        if (!fieldElement) {
+          fieldElement = document.querySelector(`[aria-invalid="true"]`) as HTMLElement
+        }
+        if (fieldElement) {
+          fieldElement.focus()
+          setTimeout(() => {
+            fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }, 100)
+        }
+      }
+      toast({
+        title: 'Ошибка',
+        description: 'Пожалуйста, заполните все обязательные поля',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setLoading(true)
+    let isMounted = true
 
     try {
       const url = initialData?.id
@@ -84,6 +127,10 @@ export function SubgroupForm({
         }),
       })
 
+      if (!isMounted) {
+        return
+      }
+
       if (!response.ok) {
         const error = await response.json()
         throw new Error(error.error || 'Ошибка при сохранении подгруппы')
@@ -98,13 +145,17 @@ export function SubgroupForm({
       router.refresh()
       onSuccess?.()
     } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: error instanceof Error ? error.message : 'Не удалось сохранить подгруппу',
-        variant: 'destructive',
-      })
+      if (isMounted) {
+        toast({
+          title: 'Ошибка',
+          description: error instanceof Error ? error.message : 'Не удалось сохранить подгруппу',
+          variant: 'destructive',
+        })
+      }
     } finally {
-      setLoading(false)
+      if (isMounted) {
+        setLoading(false)
+      }
     }
   }
 
@@ -116,7 +167,7 @@ export function SubgroupForm({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Название подгруппы</FormLabel>
+              <FormLabel>Название подгруппы *</FormLabel>
               <FormControl>
                 <Input placeholder="Подгруппа 1 (Коммерция)" {...field} />
               </FormControl>
@@ -133,7 +184,7 @@ export function SubgroupForm({
           name="number"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Номер подгруппы</FormLabel>
+              <FormLabel>Номер подгруппы *</FormLabel>
               <FormControl>
                 <Input type="number" min="1" placeholder="1" {...field} />
               </FormControl>
@@ -205,7 +256,7 @@ export function SubgroupForm({
               Отмена
             </Button>
           )}
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading || !form.formState.isValid}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

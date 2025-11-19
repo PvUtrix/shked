@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { getFullName } from '@/lib/utils'
 
 interface Submission {
   id: string
@@ -34,6 +36,7 @@ interface Submission {
     name?: string
     firstName?: string
     lastName?: string
+    middleName?: string
     email: string
   }
 }
@@ -321,9 +324,7 @@ export default function ReviewSubmissionPage({
                 <User className="h-4 w-4 text-gray-400" />
                 <div>
                   <p className="font-medium">
-                    {submission.user?.name || 
-                     `${submission.user?.firstName || ''} ${submission.user?.lastName || ''}`.trim() ||
-                     'Имя не указано'}
+                    {submission.user ? (getFullName(submission.user) || 'Имя не указано') : 'Имя не указано'}
                   </p>
                   <p className="text-sm text-gray-500">{submission.user?.email}</p>
                 </div>

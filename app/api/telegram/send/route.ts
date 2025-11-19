@@ -26,22 +26,23 @@ export async function POST(request: NextRequest) {
     let result: any = {}
 
     switch (type) {
-      case 'test':
+      case 'test': {
         if (!testUserId) {
           return NextResponse.json(
             { error: 'ID пользователя для теста не указан' },
             { status: 400 }
           )
         }
-        
+
         const testSuccess = await sendTestMessage(testUserId)
         result = {
           success: testSuccess,
           message: testSuccess ? 'Тестовое сообщение отправлено' : 'Ошибка отправки'
         }
         break
+      }
 
-      case 'broadcast_all':
+      case 'broadcast_all': {
         const allResult = await broadcastToAll(message, targetRole)
         result = {
           success: allResult.sent > 0,
@@ -50,15 +51,16 @@ export async function POST(request: NextRequest) {
           message: `Отправлено ${allResult.sent} из ${allResult.total} пользователей`
         }
         break
+      }
 
-      case 'broadcast_group':
+      case 'broadcast_group': {
         if (!targetGroup) {
           return NextResponse.json(
             { error: 'Группа не указана' },
             { status: 400 }
           )
         }
-        
+
         const groupResult = await broadcastToGroup(targetGroup, message)
         result = {
           success: groupResult.sent > 0,
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
           message: `Отправлено ${groupResult.sent} из ${groupResult.total} пользователей группы`
         }
         break
+      }
 
       case 'custom':
         // Отправка кастомного сообщения (пока не реализовано)

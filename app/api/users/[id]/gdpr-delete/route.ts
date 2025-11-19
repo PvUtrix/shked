@@ -87,7 +87,7 @@ export async function POST(
         canHelp: null,
         lookingFor: null,
         groupId: null,
-        mentorGroupIds: Prisma.JsonNull,
+        mentorGroupIds: null,
         isActive: false,
         // Сохраняем роль для целостности учебных данных
         // Роль остается для связи с учебными записями

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -31,15 +31,9 @@ import { useToast } from '@/components/ui/use-toast'
 const examFormSchema = z.object({
   subjectId: z.string().min(1, 'Выберите предмет'),
   groupId: z.string().min(1, 'Выберите группу'),
-  type: z.enum(['EXAM', 'CREDIT', 'DIFF_CREDIT'], {
-    required_error: 'Выберите тип аттестации',
-  }),
-  format: z.enum(['ORAL', 'WRITTEN', 'MIXED'], {
-    required_error: 'Выберите формат',
-  }),
-  date: z.date({
-    required_error: 'Укажите дату и время',
-  }),
+  type: z.enum(['EXAM', 'CREDIT', 'DIFF_CREDIT']),
+  format: z.enum(['ORAL', 'WRITTEN', 'MIXED']),
+  date: z.date(),
   location: z.string().optional(),
   description: z.string().optional(),
 })
@@ -67,6 +61,8 @@ export function ExamForm({
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examFormSchema),
+    mode: 'onChange', // Валидация при изменении полей
+    reValidateMode: 'onChange', // Повторная валидация при изменении
     defaultValues: initialData || {
       subjectId: '',
       groupId: '',
@@ -78,8 +74,52 @@ export function ExamForm({
     },
   })
 
+  // Обновляем форму при изменении initialData (для редактирования)
+  useEffect(() => {
+    if (initialData) {
+      form.reset(initialData)
+    } else {
+      form.reset({
+        subjectId: '',
+        groupId: '',
+        type: 'EXAM',
+        format: 'ORAL',
+        date: new Date(),
+        location: '',
+        description: '',
+      })
+    }
+  }, [initialData, form])
+
   const onSubmit = async (data: ExamFormValues) => {
+    // Принудительно валидируем все поля перед отправкой
+    const isValid = await form.trigger()
+    if (!isValid) {
+      // Получаем первое поле с ошибкой и переводим на него фокус
+      const errorFields = Object.keys(form.formState.errors)
+      if (errorFields.length > 0) {
+        const firstError = errorFields[0]
+        let fieldElement = document.querySelector(`[name="${firstError}"]`) as HTMLElement
+        if (!fieldElement) {
+          fieldElement = document.querySelector(`[aria-invalid="true"]`) as HTMLElement
+        }
+        if (fieldElement) {
+          fieldElement.focus()
+          setTimeout(() => {
+            fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }, 100)
+        }
+      }
+      toast({
+        title: 'Ошибка',
+        description: 'Пожалуйста, заполните все обязательные поля',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setLoading(true)
+    let isMounted = true
 
     try {
       const url = initialData?.id
@@ -93,6 +133,10 @@ export function ExamForm({
         },
         body: JSON.stringify(data),
       })
+
+      if (!isMounted) {
+        return
+      }
 
       if (!response.ok) {
         const error = await response.json()
@@ -108,13 +152,17 @@ export function ExamForm({
       router.refresh()
       onSuccess?.()
     } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: error instanceof Error ? error.message : 'Не удалось сохранить экзамен',
-        variant: 'destructive',
-      })
+      if (isMounted) {
+        toast({
+          title: 'Ошибка',
+          description: error instanceof Error ? error.message : 'Не удалось сохранить экзамен',
+          variant: 'destructive',
+        })
+      }
     } finally {
-      setLoading(false)
+      if (isMounted) {
+        setLoading(false)
+      }
     }
   }
 
@@ -126,7 +174,7 @@ export function ExamForm({
           name="subjectId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Предмет</FormLabel>
+              <FormLabel>Предмет *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -151,7 +199,7 @@ export function ExamForm({
           name="groupId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Группа</FormLabel>
+              <FormLabel>Группа *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -177,7 +225,7 @@ export function ExamForm({
             name="type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Тип аттестации</FormLabel>
+                <FormLabel>Тип аттестации *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -200,7 +248,7 @@ export function ExamForm({
             name="format"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Формат</FormLabel>
+                <FormLabel>Формат *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -224,7 +272,7 @@ export function ExamForm({
           name="date"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Дата и время</FormLabel>
+              <FormLabel>Дата и время *</FormLabel>
               <DateTimePicker
                 value={field.value}
                 onChange={field.onChange}
@@ -285,7 +333,7 @@ export function ExamForm({
               Отмена
             </Button>
           )}
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading || !form.formState.isValid}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

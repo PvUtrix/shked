@@ -19,10 +19,14 @@ import {
   Award
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
+import { getFullName } from '@/lib/utils'
 
 interface LectorNavProps {
   user?: {
     name?: string
+    firstName?: string
+    lastName?: string
+    middleName?: string
     email?: string
   }
 }
@@ -107,7 +111,7 @@ export function LectorNav({ user }: LectorNavProps) {
               <div className="flex items-center space-x-3">
                 <UserCircle className="h-8 w-8 text-purple-600" />
                 <div>
-                  <p className="font-medium text-gray-900">{user?.name || t('lector.defaultName')}</p>
+                  <p className="font-medium text-gray-900">{user ? getFullName(user) || t('lector.defaultName') : t('lector.defaultName')}</p>
                   <p className="text-sm text-gray-500">{t('lector.role')}</p>
                 </div>
               </div>

@@ -16,10 +16,14 @@ import {
   ChevronRight
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
+import { getFullName } from '@/lib/utils'
 
 interface MentorNavProps {
   user?: {
     name?: string
+    firstName?: string
+    lastName?: string
+    middleName?: string
     email?: string
   }
 }
@@ -94,7 +98,7 @@ export function MentorNav({ user }: MentorNavProps) {
               <div className="flex items-center space-x-3">
                 <UserCircle className="h-8 w-8 text-orange-600" />
                 <div>
-                  <p className="font-medium text-gray-900">{user?.name || t('mentor.defaultName')}</p>
+                  <p className="font-medium text-gray-900">{user ? getFullName(user) || t('mentor.defaultName') : t('mentor.defaultName')}</p>
                   <p className="text-sm text-gray-500">{t('mentor.role')}</p>
                 </div>
               </div>

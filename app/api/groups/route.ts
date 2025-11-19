@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/activity-log'
 
 // GET /api/groups - получение списка групп
 export async function GET(request: NextRequest) {
@@ -22,14 +23,12 @@ export async function GET(request: NextRequest) {
       const user = await prisma.user.findUnique({
         where: { id: session.user.id }
       })
-      
-      // Временно отключаем фильтрацию по mentorGroupIds до применения миграции
-      // if (user?.mentorGroupIds) {
-      //   const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
-      //   where.id = {
-      //     in: groupIds
-      //   }
-      // }
+
+      if (user?.mentorGroupIds && Array.isArray(user.mentorGroupIds)) {
+        where.id = {
+          in: user.mentorGroupIds as string[]
+        }
+      }
     }
 
     const groups = await prisma.group.findMany({
@@ -109,10 +108,45 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Логируем создание группы
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'Group',
+      entityId: group.id,
+      request,
+      details: {
+        after: {
+          id: group.id,
+          name: group.name,
+          description: group.description,
+          semester: group.semester,
+          year: group.year
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json(group, { status: 201 })
 
   } catch (error) {
     console.error('Ошибка при создании группы:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'CREATE',
+        entityType: 'Group',
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
@@ -138,6 +172,26 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    // Получаем текущее состояние группы для логирования
+    const existingGroup = await prisma.group.findUnique({
+      where: { id: body.id },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        semester: true,
+        year: true,
+        isActive: true
+      }
+    })
+
+    if (!existingGroup) {
+      return NextResponse.json(
+        { error: 'Группа не найдена' },
+        { status: 404 }
+      )
+    }
+
     const group = await prisma.group.update({
       where: { id: body.id },
       data: {
@@ -157,10 +211,38 @@ export async function PUT(request: NextRequest) {
       }
     })
 
+    // Логируем обновление группы
+    await logActivity({
+      userId: session.user.id,
+      action: 'UPDATE',
+      entityType: 'Group',
+      entityId: group.id,
+      request,
+      details: {
+        before: {
+          id: existingGroup.id,
+          name: existingGroup.name,
+          description: existingGroup.description,
+          semester: existingGroup.semester,
+          year: existingGroup.year,
+          isActive: existingGroup.isActive
+        },
+        after: {
+          id: group.id,
+          name: group.name,
+          description: group.description,
+          semester: group.semester,
+          year: group.year
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json(group)
 
   } catch (error) {
     console.error('Ошибка при обновлении группы:', error)
+
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
@@ -205,10 +287,49 @@ export async function DELETE(request: NextRequest) {
       data: { isActive: false }
     })
 
+    // Логируем удаление группы
+    await logActivity({
+      userId: session.user.id,
+      action: 'DELETE',
+      entityType: 'Group',
+      entityId: id,
+      request,
+      details: {
+        before: {
+          id: existingGroup.id,
+          name: existingGroup.name,
+          description: existingGroup.description,
+          isActive: existingGroup.isActive
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json({ message: 'Группа удалена' })
 
   } catch (error) {
     console.error('Ошибка при удалении группы:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      const { searchParams } = new URL(request.url)
+      const id = searchParams.get('id')
+      if (id) {
+        await logActivity({
+          userId: session.user.id,
+          action: 'DELETE',
+          entityType: 'Group',
+          entityId: id,
+          request,
+          details: {
+            error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+          },
+          result: 'FAILURE'
+        })
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

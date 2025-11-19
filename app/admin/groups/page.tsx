@@ -9,6 +9,7 @@ import { Users, UserPlus, Edit, Trash2, UserCheck } from 'lucide-react'
 import { GroupForm } from '@/components/admin/group-form'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { toast } from 'sonner'
+import { getFullName } from '@/lib/utils'
 
 interface Group {
   id: string
@@ -28,6 +29,7 @@ interface Mentor {
   name?: string
   firstName?: string
   lastName?: string
+  middleName?: string
   email: string
   mentorGroupIds?: string[]
 }
@@ -160,7 +162,8 @@ export default function GroupsPage() {
   }
 
   const handleFormSuccess = () => {
-    fetchData()
+    setEditingGroup(null) // Сбрасываем editingGroup после успешного сохранения
+    fetchData() // Обновляем список групп
   }
 
   if (loading) {
@@ -278,7 +281,7 @@ export default function GroupsPage() {
                           <SelectItem value="none">Без ментора</SelectItem>
                           {mentors.map(mentor => (
                             <SelectItem key={mentor.id} value={mentor.id}>
-                              {mentor.name || `${mentor.firstName || ''} ${mentor.lastName || ''}`.trim() || mentor.email}
+                              {getFullName(mentor) || mentor.email}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -308,7 +311,13 @@ export default function GroupsPage() {
       {/* Форма группы */}
       <GroupForm
         open={groupFormOpen}
-        onOpenChange={setGroupFormOpen}
+        onOpenChange={(open) => {
+          setGroupFormOpen(open)
+          if (!open) {
+            // Сбрасываем editingGroup при закрытии формы
+            setEditingGroup(null)
+          }
+        }}
         group={editingGroup}
         onSuccess={handleFormSuccess}
       />

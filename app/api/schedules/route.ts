@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/activity-log'
 
 // GET /api/schedules - получение списка расписания
 export async function GET(request: NextRequest) {
@@ -197,11 +198,58 @@ export async function POST(request: NextRequest) {
     const date = new Date(body.date)
     const dayOfWeek = date.getDay()
 
+    // Обрабатываем subgroupId
+    // Если subgroupId пустой или равен 'none', устанавливаем null
+    // Если subgroupId это просто номер (строка "1", "2", "3", "4"), пытаемся найти реальную подгруппу
+    let subgroupId: string | null = null
+    if (body.subgroupId && body.subgroupId.trim() !== '' && body.subgroupId !== 'none') {
+      // Проверяем, является ли это ID подгруппы (cuid имеет длину ~25 символов)
+      // или это просто номер подгруппы (1-2 символа)
+      if (body.subgroupId.length <= 4 && /^\d+$/.test(body.subgroupId)) {
+        // Это номер подгруппы, пытаемся найти реальную подгруппу
+        const subgroupNumber = parseInt(body.subgroupId, 10)
+        if (body.groupId) {
+          const subgroup = await prisma.subgroup.findFirst({
+            where: {
+              groupId: body.groupId,
+              number: subgroupNumber,
+              // Ищем либо общую подгруппу (subjectId = null), либо подгруппу для этого предмета
+              OR: [
+                { subjectId: null },
+                { subjectId: body.subjectId }
+              ],
+              isActive: true
+            }
+          })
+          
+          if (subgroup) {
+            subgroupId = subgroup.id
+          } else {
+            // Если подгруппа не найдена, просто не устанавливаем subgroupId (null)
+            // Это означает, что занятие для всей группы
+            subgroupId = null
+          }
+        }
+      } else {
+        // Это похоже на реальный ID подгруппы, проверяем его существование
+        const subgroup = await prisma.subgroup.findUnique({
+          where: { id: body.subgroupId }
+        })
+        
+        if (subgroup) {
+          subgroupId = body.subgroupId
+        } else {
+          // Если подгруппа не найдена, устанавливаем null
+          subgroupId = null
+        }
+      }
+    }
+
     const schedule = await prisma.schedule.create({
       data: {
         subjectId: body.subjectId,
         groupId: body.groupId,
-        subgroupId: body.subgroupId,
+        subgroupId: subgroupId,
         date: date,
         dayOfWeek: dayOfWeek,
         startTime: body.startTime,
@@ -226,10 +274,46 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Логируем создание расписания
+    await logActivity({
+      userId: session.user.id,
+      action: 'CREATE',
+      entityType: 'Schedule',
+      entityId: schedule.id,
+      request,
+      details: {
+        after: {
+          id: schedule.id,
+          subjectId: schedule.subjectId,
+          groupId: schedule.groupId,
+          date: schedule.date.toISOString(),
+          startTime: schedule.startTime,
+          endTime: schedule.endTime
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json(schedule, { status: 201 })
 
   } catch (error) {
     console.error('Ошибка при создании расписания:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'CREATE',
+        entityType: 'Schedule',
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
@@ -239,14 +323,15 @@ export async function POST(request: NextRequest) {
 
 // PUT /api/schedules - обновление расписания
 export async function PUT(request: NextRequest) {
+  let body: any = null
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
-    const body = await request.json()
+    body = await request.json()
     
     if (!body.id) {
       return NextResponse.json(
@@ -257,7 +342,17 @@ export async function PUT(request: NextRequest) {
 
     // Проверка существования расписания
     const existingSchedule = await prisma.schedule.findUnique({
-      where: { id: body.id }
+      where: { id: body.id },
+      select: {
+        id: true,
+        subjectId: true,
+        groupId: true,
+        date: true,
+        startTime: true,
+        endTime: true,
+        location: true,
+        isActive: true
+      }
     })
 
     if (!existingSchedule) {
@@ -299,7 +394,56 @@ export async function PUT(request: NextRequest) {
     
     if (body.subjectId !== undefined) updateData.subjectId = body.subjectId
     if (body.groupId !== undefined) updateData.groupId = body.groupId
-    if (body.subgroupId !== undefined) updateData.subgroupId = body.subgroupId
+    // Обрабатываем subgroupId
+    if (body.subgroupId !== undefined) {
+      // Если subgroupId пустой или равен 'none', устанавливаем null
+      if (!body.subgroupId || body.subgroupId.trim() === '' || body.subgroupId === 'none') {
+        updateData.subgroupId = null
+      } else {
+        // Проверяем, является ли это ID подгруппы или номер подгруппы
+        if (body.subgroupId.length <= 4 && /^\d+$/.test(body.subgroupId)) {
+          // Это номер подгруппы, пытаемся найти реальную подгруппу
+          const subgroupNumber = parseInt(body.subgroupId, 10)
+          const existingSchedule = await prisma.schedule.findUnique({
+            where: { id: body.id },
+            select: { groupId: true, subjectId: true }
+          })
+          
+          if (existingSchedule?.groupId) {
+            const subgroup = await prisma.subgroup.findFirst({
+              where: {
+                groupId: existingSchedule.groupId,
+                number: subgroupNumber,
+                OR: [
+                  { subjectId: null },
+                  { subjectId: existingSchedule.subjectId }
+                ],
+                isActive: true
+              }
+            })
+            
+            if (subgroup) {
+              updateData.subgroupId = subgroup.id
+            } else {
+              updateData.subgroupId = null
+            }
+          } else {
+            updateData.subgroupId = null
+          }
+        } else {
+          // Это похоже на реальный ID подгруппы, проверяем его существование
+          const subgroup = await prisma.subgroup.findUnique({
+            where: { id: body.subgroupId }
+          })
+          
+          if (subgroup) {
+            updateData.subgroupId = body.subgroupId
+          } else {
+            updateData.subgroupId = null
+          }
+        }
+      }
+    }
     if (body.date) {
       const date = new Date(body.date)
       updateData.date = date
@@ -330,10 +474,58 @@ export async function PUT(request: NextRequest) {
       }
     })
 
+    // Логируем обновление расписания
+    await logActivity({
+      userId: session.user.id,
+      action: 'UPDATE',
+      entityType: 'Schedule',
+      entityId: schedule.id,
+      request,
+      details: {
+        before: {
+          id: existingSchedule.id,
+          subjectId: existingSchedule.subjectId,
+          groupId: existingSchedule.groupId,
+          date: existingSchedule.date.toISOString(),
+          startTime: existingSchedule.startTime,
+          endTime: existingSchedule.endTime,
+          location: existingSchedule.location,
+          isActive: existingSchedule.isActive
+        },
+        after: {
+          id: schedule.id,
+          subjectId: schedule.subjectId,
+          groupId: schedule.groupId,
+          date: schedule.date.toISOString(),
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          location: schedule.location
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json(schedule)
 
   } catch (error) {
     console.error('Ошибка при обновлении расписания:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user && body?.id) {
+      await logActivity({
+        userId: session.user.id,
+        action: 'UPDATE',
+        entityType: 'Schedule',
+        entityId: body.id,
+        request,
+        details: {
+          error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+        },
+        result: 'FAILURE'
+      })
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
@@ -378,10 +570,49 @@ export async function DELETE(request: NextRequest) {
       data: { isActive: false }
     })
 
+    // Логируем удаление расписания
+    await logActivity({
+      userId: session.user.id,
+      action: 'DELETE',
+      entityType: 'Schedule',
+      entityId: id,
+      request,
+      details: {
+        before: {
+          id: existingSchedule.id,
+          subjectId: existingSchedule.subjectId,
+          groupId: existingSchedule.groupId,
+          isActive: existingSchedule.isActive
+        }
+      },
+      result: 'SUCCESS'
+    })
+
     return NextResponse.json({ message: 'Расписание удалено' })
 
   } catch (error) {
     console.error('Ошибка при удалении расписания:', error)
+    
+    // Логируем ошибку
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      const { searchParams } = new URL(request.url)
+      const id = searchParams.get('id')
+      if (id) {
+        await logActivity({
+          userId: session.user.id,
+          action: 'DELETE',
+          entityType: 'Schedule',
+          entityId: id,
+          request,
+          details: {
+            error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+          },
+          result: 'FAILURE'
+        })
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }

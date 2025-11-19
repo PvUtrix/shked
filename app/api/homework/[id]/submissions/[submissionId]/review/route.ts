@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/activity-log'
 
 // POST /api/homework/[id]/submissions/[submissionId]/review - проверка работы студента
 export async function POST(
@@ -27,7 +28,7 @@ export async function POST(
           include: {
             subject: {
               select: {
-                lectorId: true
+                lectors: { select: { userId: true } }
               }
             }
           }
@@ -55,7 +56,8 @@ export async function POST(
       // Админы имеют полный доступ
     } else if (session.user.role === 'lector') {
       // Лекторы могут проверять работы только по своим предметам
-      if (submission.homework.subject?.lectorId !== session.user.id) {
+      const isLector = submission.homework.subject?.lectors.some(l => l.userId === session.user.id)
+      if (!isLector) {
         return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
       }
     } else {
@@ -80,8 +82,42 @@ export async function POST(
             lastName: true,
             email: true
           }
+        },
+        homework: {
+          select: {
+            id: true,
+            title: true
+          }
         }
       }
+    })
+
+    // Логируем проверку работы
+    await logActivity({
+      userId: session.user.id,
+      action: 'UPDATE',
+      entityType: 'HomeworkSubmission',
+      entityId: updatedSubmission.id,
+      request,
+      details: {
+        before: {
+          id: submission.id,
+          homeworkId: submission.homeworkId,
+          grade: submission.grade,
+          status: submission.status
+        },
+        after: {
+          id: updatedSubmission.id,
+          homeworkId: updatedSubmission.homeworkId,
+          homeworkTitle: updatedSubmission.homework.title,
+          grade: updatedSubmission.grade,
+          status: updatedSubmission.status,
+          hasComment: !!updatedSubmission.comment,
+          hasFeedback: !!updatedSubmission.feedback,
+          studentId: updatedSubmission.userId
+        }
+      },
+      result: 'SUCCESS'
     })
 
     return NextResponse.json(updatedSubmission)

@@ -10,20 +10,27 @@ import { BookOpen, Plus, Edit, Trash2, User, UserCheck } from 'lucide-react'
 import { SubjectForm } from '@/components/admin/subject-form'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { toast } from 'sonner'
+import { getFullName } from '@/lib/utils'
 
 interface Subject {
   id: string
   name: string
   description?: string
   instructor?: string
-  lectorId?: string
-  lector?: {
+  lectors?: Array<{
     id: string
-    name?: string
-    firstName?: string
-    lastName?: string
-    email: string
-  }
+    userId: string
+    role: string
+    isPrimary: boolean
+    lector: {
+      id: string
+      name?: string
+      firstName?: string
+      lastName?: string
+      middleName?: string
+      email: string
+    }
+  }>
   _count?: {
     schedules: number
     homework: number
@@ -74,28 +81,49 @@ export default function SubjectsPage() {
     }
   }
 
-  const assignLector = async (subjectId: string, lectorId: string) => {
+  const assignLector = async (subjectId: string, lectorId: string, role: string = 'LECTOR') => {
     try {
-      const response = await fetch('/api/subjects', {
-        method: 'PUT',
+      const response = await fetch(`/api/subjects/${subjectId}/lectors`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: subjectId,
-          lectorId: lectorId === 'none' ? null : lectorId
+          userId: lectorId,
+          role: role,
+          isPrimary: role === 'LECTOR'
         }),
       })
 
       if (response.ok) {
+        toast.success('Преподаватель добавлен')
         await fetchData() // Обновляем данные
       } else {
         const error = await response.json()
-        alert(`Ошибка: ${error.message || 'Не удалось назначить преподавателя'}`)
+        toast.error(error.error || 'Не удалось назначить преподавателя')
       }
     } catch (error) {
       console.error('Ошибка при назначении преподавателя:', error)
-      alert('Произошла ошибка при назначении преподавателя')
+      toast.error('Произошла ошибка при назначении преподавателя')
+    }
+  }
+
+  const removeLector = async (subjectId: string, lectorAssignmentId: string) => {
+    try {
+      const response = await fetch(`/api/subjects/${subjectId}/lectors/${lectorAssignmentId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast.success('Преподаватель удален')
+        await fetchData()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Не удалось удалить преподавателя')
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении преподавателя:', error)
+      toast.error('Произошла ошибка при удалении преподавателя')
     }
   }
 
@@ -139,7 +167,8 @@ export default function SubjectsPage() {
   }
 
   const handleFormSuccess = () => {
-    fetchData()
+    setEditingSubject(null) // Сбрасываем editingSubject после успешного сохранения
+    fetchData() // Обновляем список предметов
   }
 
   if (loading) {
@@ -213,12 +242,6 @@ export default function SubjectsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {subject?.instructor && (
-                      <div className="flex items-center space-x-2 text-sm">
-                        <User className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-600">{subject.instructor}</span>
-                      </div>
-                    )}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-500">Занятий:</span>
@@ -230,33 +253,72 @@ export default function SubjectsPage() {
                       </div>
                     </div>
 
-                    {/* Назначение преподавателя */}
+                    {/* Назначенные преподаватели */}
                     <div className="space-y-2 pt-2 border-t">
-                      <div className="flex items-center space-x-2">
-                        <UserCheck className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm font-medium text-gray-700">Преподаватель:</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <UserCheck className="h-4 w-4 text-gray-400" />
+                          <span className="text-sm font-medium text-gray-700">Преподаватели:</span>
+                        </div>
                       </div>
-                      <Select
-                        value={subject?.lectorId || 'none'}
-                        onValueChange={(value) => assignLector(subject.id, value)}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Выберите преподавателя" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Без преподавателя</SelectItem>
-                          {lectors.map(lector => (
-                            <SelectItem key={lector.id} value={lector.id}>
-                              {lector.name || `${lector.firstName || ''} ${lector.lastName || ''}`.trim() || lector.email}
-                            </SelectItem>
+
+                      {/* Список назначенных преподавателей */}
+                      {subject?.lectors && subject.lectors.length > 0 ? (
+                        <div className="space-y-1">
+                          {subject.lectors.map((assignment) => (
+                            <div key={assignment.id} className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded">
+                              <div className="flex items-center space-x-2">
+                                <User className="h-3 w-3 text-gray-500" />
+                                <span className="text-gray-700">
+                                  {getFullName(assignment.lector) || assignment.lector.email}
+                                </span>
+                                {assignment.isPrimary && (
+                                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Основной</span>
+                                )}
+                                {assignment.role === 'CO_LECTOR' && (
+                                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Со-преподаватель</span>
+                                )}
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeLector(subject.id, assignment.id)}
+                                className="h-6 w-6 p-0"
+                              >
+                                <Trash2 className="h-3 w-3 text-red-500" />
+                              </Button>
+                            </div>
                           ))}
-                        </SelectContent>
-                      </Select>
-                      {subject?.lector && (
-                        <p className="text-xs text-gray-500">
-                          Назначен: {subject.lector.name || `${subject.lector.firstName || ''} ${subject.lector.lastName || ''}`.trim() || subject.lector.email}
-                        </p>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500">Нет назначенных преподавателей</p>
                       )}
+
+                      {/* Добавление нового преподавателя */}
+                      <div className="space-y-2">
+                        <Select
+                          value="none"
+                          onValueChange={(value) => {
+                            if (value !== 'none') {
+                              assignLector(subject.id, value, 'LECTOR')
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Добавить преподавателя" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Выберите преподавателя</SelectItem>
+                            {lectors
+                              .filter(lector => !subject?.lectors?.some(a => a.userId === lector.id))
+                              .map(lector => (
+                                <SelectItem key={lector.id} value={lector.id}>
+                                  {getFullName(lector) || lector.email}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                     <div className="pt-2">
@@ -280,7 +342,13 @@ export default function SubjectsPage() {
       {/* Форма предмета */}
       <SubjectForm
         open={subjectFormOpen}
-        onOpenChange={setSubjectFormOpen}
+        onOpenChange={(open) => {
+          setSubjectFormOpen(open)
+          if (!open) {
+            // Сбрасываем editingSubject при закрытии формы
+            setEditingSubject(null)
+          }
+        }}
         subject={editingSubject}
         onSuccess={handleFormSuccess}
       />

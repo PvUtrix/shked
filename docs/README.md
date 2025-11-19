@@ -41,6 +41,7 @@
 Описание основных возможностей системы:
 
 - [**USER_ROLES.md**](features/USER_ROLES.md) — Роли пользователей и права доступа
+- [**ACTIVITY_LOG.md**](features/ACTIVITY_LOG.md) — Лог активности пользователей и аудит действий
 - [**SUBGROUPS.md**](features/SUBGROUPS.md) — Система управления подгруппами
 - [**TELEGRAM_BOT.md**](features/TELEGRAM_BOT.md) — Интеграция с Telegram
 - [**MDX_EDITOR_INTEGRATION.md**](features/MDX_EDITOR_INTEGRATION.md) — Rich text редактор для заданий
@@ -151,5 +152,5 @@ docs(readme): обновить установку
 
 **Текущая версия проекта:** 0.1.0-alpha  
 **Версия документации:** 0.1.0-alpha  
-**Последнее обновление:** 31 октября 2025  
+**Последнее обновление:** 3 ноября 2025  
 **Статус:** ✅ Актуальная
