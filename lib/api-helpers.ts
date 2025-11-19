@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { ApiErrors } from '@/lib/api-error'
+import { ApiErrors } from '@/lib/errors'
 import { Session } from 'next-auth'
 
 /**
