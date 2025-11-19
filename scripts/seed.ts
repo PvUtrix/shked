@@ -26,7 +26,7 @@ async function main() {
     
     // Админ
     const adminPassword = await bcryptjs.hash('admin123', 12)
-    const admin = await prisma.user.upsert({
+    const _admin = await prisma.user.upsert({
       where: { email: 'admin@shked.com' },
       update: {
         firstName: 'Иван',
@@ -112,7 +112,7 @@ async function main() {
 
     // Ассистент
     const assistantPassword = await bcryptjs.hash('assistant123', 12)
-    const demoAssistant = await prisma.user.upsert({
+    const _demoAssistant = await prisma.user.upsert({
       where: { email: 'assistant@demo.com' },
       update: {
         firstName: 'Дмитрий',
@@ -133,7 +133,7 @@ async function main() {
 
     // Со-преподаватель
     const coLecturerPassword = await bcryptjs.hash('co_lecturer123', 12)
-    const demoCoLecturer = await prisma.user.upsert({
+    const _demoCoLecturer = await prisma.user.upsert({
       where: { email: 'co-lecturer@demo.com' },
       update: {
         firstName: 'Елена',
@@ -154,7 +154,7 @@ async function main() {
 
     // Учебный отдел
     const eduOfficePassword = await bcryptjs.hash('eduoffice123', 12)
-    const demoEduOffice = await prisma.user.upsert({
+    const _demoEduOffice = await prisma.user.upsert({
       where: { email: 'eduoffice@demo.com' },
       update: {
         firstName: 'Михаил',
@@ -175,7 +175,7 @@ async function main() {
 
     // Админ кафедры
     const deptAdminPassword = await bcryptjs.hash('deptadmin123', 12)
-    const demoDeptAdmin = await prisma.user.upsert({
+    const _demoDeptAdmin = await prisma.user.upsert({
       where: { email: 'deptadmin@demo.com' },
       update: {
         firstName: 'Ольга',

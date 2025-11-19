@@ -6,7 +6,7 @@
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 export interface LogContext {
-  [key: string]: any
+  [key: string]: unknown
 }
 
 class Logger {
@@ -31,6 +31,7 @@ class Logger {
    */
   debug(message: string, context?: LogContext): void {
     if (this.isDevelopment && !this.isTest) {
+      // eslint-disable-next-line no-console
       console.debug(this.formatMessage('debug', message, context))
     }
   }
@@ -40,6 +41,7 @@ class Logger {
    */
   info(message: string, context?: LogContext): void {
     if (!this.isTest) {
+      // eslint-disable-next-line no-console
       console.info(this.formatMessage('info', message, context))
     }
   }
