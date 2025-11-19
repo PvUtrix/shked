@@ -77,6 +77,10 @@ model User {
   forumPosts          ForumPost[]
   subgroupMemberships SubgroupStudent[]
   activityLogs        ActivityLog[]
+  sentMessages        DirectMessage[]  @relation("SentMessages")
+  receivedMessages    DirectMessage[]  @relation("ReceivedMessages")
+  studentThesis       Thesis?          @relation("StudentThesis")
+  supervisedTheses    Thesis[]         @relation("SupervisedTheses")
 
   @@index([email])
   @@index([role])
@@ -562,4 +566,51 @@ model ActivityLog {
   @@index([entityType])
   @@index([createdAt])
   @@map("activity_logs")
+}
+
+// Личные сообщения
+model DirectMessage {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String   @db.Text
+  isRead     Boolean  @default(false)
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("direct_messages")
+}
+
+// Выпускная квалификационная работа
+model Thesis {
+  id           String    @id @default(cuid())
+  studentId    String    @unique
+  supervisorId String
+  title        String
+  abstract     String?   @db.Text
+  status       String    @default("IN_PROGRESS") // IN_PROGRESS, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, DEFENDED
+  milestones   Json? // [{id, name, deadline, status, completedAt, description}]
+  artifacts    Json? // [{id, type, url, uploadedAt, description, fileName}]
+  defenseDate  DateTime?
+  grade        String? // Оценка после защиты
+  notes        String?   @db.Text // Заметки научного руководителя (MDX)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  student    User @relation("StudentThesis", fields: [studentId], references: [id], onDelete: Cascade)
+  supervisor User @relation("SupervisedTheses", fields: [supervisorId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([supervisorId])
+  @@index([status])
+  @@index([defenseDate])
+  @@map("theses")
 }

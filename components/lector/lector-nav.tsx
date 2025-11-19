@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { LogoutButton } from '@/components/auth/logout-button'
 import { useSidebar } from '@/hooks/use-sidebar'
 import {
@@ -16,10 +17,12 @@ import {
   ChevronRight,
   FileText,
   Users,
-  Award
+  Award,
+  MessageCircle
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { getFullName } from '@/lib/utils'
+import { useState, useEffect } from 'react'
 
 interface LectorNavProps {
   user?: {
@@ -35,6 +38,28 @@ export function LectorNav({ user }: LectorNavProps) {
   const pathname = usePathname()
   const { isCollapsed, toggle, mounted } = useSidebar()
   const t = useTranslations()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread message count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch('/api/messages/unread')
+        if (response.ok) {
+          const data = await response.json()
+          setUnreadCount(data.count || 0)
+        }
+      } catch (error) {
+        console.error('Error fetching unread count:', error)
+      }
+    }
+
+    fetchUnreadCount()
+
+    // Poll every 30 seconds for new messages
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const navItems = [
     {
@@ -61,6 +86,12 @@ export function LectorNav({ user }: LectorNavProps) {
       label: t('lector.nav.exams'),
       href: '/lector/exams',
       icon: Award
+    },
+    {
+      label: 'Сообщения',
+      href: '/messages',
+      icon: MessageCircle,
+      badge: unreadCount > 0 ? unreadCount : undefined
     },
     {
       label: t('lector.nav.documents'),
@@ -141,8 +172,27 @@ export function LectorNav({ user }: LectorNavProps) {
                 }`}
                 title={mounted && isCollapsed ? item.label : undefined}
               >
-                <Icon className="h-5 w-5 flex-shrink-0" />
-                {(!mounted || !isCollapsed) && <span className="font-medium">{item.label}</span>}
+                <div className="relative flex-shrink-0">
+                  <Icon className="h-5 w-5" />
+                  {item.badge && (mounted && isCollapsed) && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </Badge>
+                  )}
+                </div>
+                {(!mounted || !isCollapsed) && (
+                  <span className="font-medium flex items-center justify-between flex-1">
+                    {item.label}
+                    {item.badge && (
+                      <Badge variant="destructive" className="ml-auto">
+                        {item.badge > 9 ? '9+' : item.badge}
+                      </Badge>
+                    )}
+                  </span>
+                )}
               </Link>
             )
           })}
