@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ thesis }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 })
+      return NextResponse.json({ error: error.issues }, { status: 400 })
     }
     console.error('Ошибка при создании ВКР:', error)
     return NextResponse.json(
@@ -317,7 +317,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ thesis })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 })
+      return NextResponse.json({ error: error.issues }, { status: 400 })
     }
     console.error('Ошибка при обновлении ВКР:', error)
     return NextResponse.json(
