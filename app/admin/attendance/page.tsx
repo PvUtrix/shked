@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AttendanceForm } from '@/components/admin/attendance-form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Users, TrendingUp, AlertCircle, Calendar } from 'lucide-react'
+import { ExportButton } from '@/components/export/export-button'
 
 export default async function AdminAttendancePage() {
   const session = await getServerSession(authOptions)
@@ -102,11 +103,18 @@ export default async function AdminAttendancePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Управление посещаемостью</h1>
-        <p className="text-muted-foreground mt-2">
-          Отметка и просмотр посещаемости по всем занятиям
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Управление посещаемостью</h1>
+          <p className="text-muted-foreground mt-2">
+            Отметка и просмотр посещаемости по всем занятиям
+          </p>
+        </div>
+        <ExportButton
+          endpoint="/api/reports/attendance/export"
+          label="Экспорт в Excel"
+          variant="default"
+        />
       </div>
 
       {/* Статистика */}

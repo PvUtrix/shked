@@ -9,6 +9,7 @@ import { ExamGradeBadge } from '@/components/ui/exam-grade-badge'
 import { Award, Users, TrendingUp, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ExportButton } from '@/components/export/export-button'
 
 export default async function LectorExamsPage({
   searchParams,
@@ -239,11 +240,20 @@ export default async function LectorExamsPage({
                           {new Date(exam.date).toLocaleDateString('ru-RU')}
                         </CardDescription>
                       </div>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/lector/exams/${exam.id}`}>
-                          Результаты
-                        </Link>
-                      </Button>
+                      <div className="flex gap-2">
+                        <ExportButton
+                          endpoint="/api/exams/export"
+                          params={{ examId: exam.id }}
+                          label="Экспорт"
+                          variant="outline"
+                          size="sm"
+                        />
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/lector/exams/${exam.id}`}>
+                            Результаты
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
