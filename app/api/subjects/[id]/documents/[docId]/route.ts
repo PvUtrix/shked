@@ -57,8 +57,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
 
-    // Проверка прав доступа (только admin, teacher)
-    if (!['admin', 'teacher'].includes(session.user.role)) {
+    // Проверка прав доступа (только admin, lector)
+    if (!['admin', 'lector'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 

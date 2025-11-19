@@ -56,8 +56,8 @@ export async function POST(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
 
-    // Проверка прав доступа (только admin, teacher)
-    if (!['admin', 'teacher', 'assistant'].includes(session.user.role)) {
+    // Проверка прав доступа (только admin, lector)
+    if (!['admin', 'lector', 'assistant'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 

@@ -38,7 +38,7 @@ async function getAllData() {
     externalResources,
     subgroups,
     subgroupStudents,
-    subjectTeachers,
+    subjectLectors,
   ] = await Promise.all([
     prisma.user.findMany(),
     prisma.group.findMany(),
@@ -58,7 +58,7 @@ async function getAllData() {
     prisma.externalResource.findMany(),
     prisma.subgroup.findMany(),
     prisma.subgroupStudent.findMany(),
-    prisma.subjectTeacher.findMany(),
+    prisma.subjectLector.findMany(),
   ])
 
   return {
@@ -80,7 +80,7 @@ async function getAllData() {
     externalResources,
     subgroups,
     subgroupStudents,
-    subjectTeachers,
+    subjectLectors,
   }
 }
 
@@ -97,7 +97,7 @@ async function clearDatabase() {
   await prisma.forumTopic.deleteMany()
   await prisma.subgroupStudent.deleteMany()
   await prisma.subgroup.deleteMany()
-  await prisma.subjectTeacher.deleteMany()
+  await prisma.subjectLector.deleteMany()
   await prisma.subjectDocument.deleteMany()
   await prisma.externalResource.deleteMany()
   await prisma.schedule.deleteMany()
@@ -147,9 +147,9 @@ async function restoreData(data: any) {
     }
   }
 
-  if (data.subjectTeachers?.length > 0) {
-    for (const subjectTeacher of data.subjectTeachers) {
-      await prisma.subjectTeacher.create({ data: subjectTeacher })
+  if (data.subjectLectors?.length > 0) {
+    for (const subjectLector of data.subjectLectors) {
+      await prisma.subjectLector.create({ data: subjectLector })
     }
   }
 

@@ -226,7 +226,7 @@ const commentsByAuthor = await prisma.homeworkComment.groupBy({
 ```typescript
 const recentComments = await prisma.homeworkComment.findMany({
   where: {
-    authorId: teacherId,
+    authorId: lectorId,
     submission: {
       homework: {
         subjectId
@@ -338,7 +338,7 @@ DELETE /api/homework/comments/[id]
   onResolveComment={(commentId) => {
     // Отметить как решенный
   }}
-  editable={role === 'teacher' || role === 'mentor'}
+  editable={role === 'lector' || role === 'mentor'}
 />
 ```
 
@@ -366,7 +366,7 @@ if (student.telegramUser?.notifications) {
 ## Права доступа
 
 ### Кто может создавать комментарии?
-- ✅ [[Teacher]] - к работам своего предмета
+- ✅ [[Lector]] - к работам своего предмета
 - ✅ [[Mentor]] - к работам студентов своей группы
 - ❌ [[Student]] - не может комментировать чужие работы (TODO: можно добавить reply на комментарии)
 
@@ -428,7 +428,7 @@ graph LR
 - [[Homework API]] - endpoints для комментариев
 
 ### Роли
-- [[Teacher]] - основной автор комментариев
+- [[Lector]] - основной автор комментариев
 - [[Mentor]] - помощь студентам
 - [[Student]] - получатель комментариев
 

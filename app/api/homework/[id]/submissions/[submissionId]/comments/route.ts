@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // GET /api/homework/[id]/submissions/[submissionId]/comments - получение всех комментариев
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; submissionId: string } }
+  { params }: { params: Promise<{ id: string; submissionId: string }> }
 ) {
   try {
+    const { submissionId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -17,7 +18,7 @@ export async function GET(
 
     // Проверяем существование submission
     const submission = await prisma.homeworkSubmission.findUnique({
-      where: { id: params.submissionId },
+      where: { id: submissionId },
       include: {
         homework: {
           include: {
@@ -51,7 +52,7 @@ export async function GET(
 
     // Получаем все комментарии
     const comments = await prisma.homeworkComment.findMany({
-      where: { submissionId: params.submissionId },
+      where: { submissionId },
       include: {
         author: {
           select: {
@@ -80,9 +81,10 @@ export async function GET(
 // POST /api/homework/[id]/submissions/[submissionId]/comments - создание комментария
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string; submissionId: string } }
+  { params }: { params: Promise<{ id: string; submissionId: string }> }
 ) {
   try {
+    const { submissionId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -102,7 +104,7 @@ export async function POST(
 
     // Проверяем существование submission
     const submission = await prisma.homeworkSubmission.findUnique({
-      where: { id: params.submissionId },
+      where: { id: submissionId },
       include: {
         homework: {
           include: {
@@ -138,7 +140,7 @@ export async function POST(
     // Создаем комментарий
     const comment = await prisma.homeworkComment.create({
       data: {
-        submissionId: params.submissionId,
+        submissionId,
         authorId: session.user.id,
         content,
         startOffset,

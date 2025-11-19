@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,19 +18,23 @@ import {
 import Link from 'next/link'
 import { Homework, Subject, Group } from '@/lib/types'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface Material {
   name: string
   url: string
 }
 
-export default function EditHomeworkPage({ params }: { params: { id: string } }) {
+export default function EditHomeworkPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const router = useRouter()
   const [homework, setHomework] = useState<Homework | null>(null)
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [materialToDelete, setMaterialToDelete] = useState<number | null>(null)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -43,12 +47,12 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
 
   useEffect(() => {
     fetchData()
-  }, [params.id])
+  }, [id])
 
   const fetchData = async () => {
     try {
       // Загружаем домашнее задание
-      const homeworkResponse = await fetch(`/api/homework/${params.id}`)
+      const homeworkResponse = await fetch(`/api/homework/${id}`)
       if (homeworkResponse.ok) {
         const homeworkData = await homeworkResponse.json()
         setHomework(homeworkData)
@@ -67,14 +71,14 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
       const subjectsResponse = await fetch('/api/subjects')
       if (subjectsResponse.ok) {
         const subjectsData = await subjectsResponse.json()
-        setSubjects(subjectsData)
+        setSubjects(subjectsData.subjects || [])
       }
 
       // Загружаем группы
       const groupsResponse = await fetch('/api/groups')
       if (groupsResponse.ok) {
         const groupsData = await groupsResponse.json()
-        setGroups(groupsData)
+        setGroups(groupsData.groups || [])
       }
     } catch (error) {
       console.error('Ошибка при загрузке данных:', error)
@@ -89,7 +93,7 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
     setSaving(true)
 
     try {
-      const response = await fetch(`/api/homework/${params.id}`, {
+      const response = await fetch(`/api/homework/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +103,7 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
 
       if (response.ok) {
         toast.success('Домашнее задание обновлено')
-        router.push(`/admin/homework/${params.id}`)
+        router.push(`/admin/homework/${id}`)
       } else {
         const error = await response.json()
         toast.error(error.error || 'Ошибка при обновлении задания')
@@ -119,11 +123,21 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
     }))
   }
 
-  const removeMaterial = (index: number) => {
+  const handleRemoveMaterial = (index: number) => {
+    setMaterialToDelete(index)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmRemoveMaterial = () => {
+    if (materialToDelete === null) return
+    
     setFormData(prev => ({
       ...prev,
-      materials: prev.materials.filter((_, i) => i !== index)
+      materials: prev.materials.filter((_, i) => i !== materialToDelete)
     }))
+    
+    setDeleteDialogOpen(false)
+    setMaterialToDelete(null)
   }
 
   const updateMaterial = (index: number, field: keyof Material, value: string) => {
@@ -163,7 +177,7 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href={`/admin/homework/${params.id}`}>
+            <Link href={`/admin/homework/${id}`}>
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
@@ -246,7 +260,7 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => removeMaterial(index)}
+                      onClick={() => handleRemoveMaterial(index)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -336,6 +350,18 @@ export default function EditHomeworkPage({ params }: { params: { id: string } })
           </div>
         </div>
       </form>
+
+      {/* Диалог подтверждения удаления материала */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Удалить материал"
+        description={`Вы уверены, что хотите удалить материал "${formData.materials[materialToDelete || 0]?.name || 'без названия'}"?`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        onConfirm={confirmRemoveMaterial}
+        variant="destructive"
+      />
     </div>
   )
 }

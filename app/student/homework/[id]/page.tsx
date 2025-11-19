@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,8 @@ import {
 import { Homework, HomeworkSubmission } from '@/lib/types'
 import Link from 'next/link'
 
-export default function StudentHomeworkDetailPage({ params }: { params: { id: string } }) {
+export default function StudentHomeworkDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const router = useRouter()
   const [homework, setHomework] = useState<Homework | null>(null)
   const [submission, setSubmission] = useState<HomeworkSubmission | null>(null)
@@ -28,11 +29,11 @@ export default function StudentHomeworkDetailPage({ params }: { params: { id: st
 
   useEffect(() => {
     fetchHomework()
-  }, [params.id])
+  }, [id])
 
   const fetchHomework = async () => {
     try {
-      const response = await fetch(`/api/homework/${params.id}`)
+      const response = await fetch(`/api/homework/${id}`)
       if (response.ok) {
         const data = await response.json()
         setHomework(data)

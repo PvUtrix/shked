@@ -7,9 +7,10 @@ import { HomeworkFormData } from '@/lib/types'
 // GET /api/homework/[id] - получение конкретного домашнего задания
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -17,7 +18,7 @@ export async function GET(
     }
 
     const homework = await prisma.homework.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         subject: true,
         group: true,
@@ -74,9 +75,10 @@ export async function GET(
 // PUT /api/homework/[id] - обновление домашнего задания
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -87,7 +89,7 @@ export async function PUT(
 
     // Проверка существования домашнего задания
     const existingHomework = await prisma.homework.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         subject: {
           select: {
@@ -156,7 +158,7 @@ export async function PUT(
     if (body.groupId !== undefined) updateData.groupId = body.groupId
 
     const homework = await prisma.homework.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         subject: true,
@@ -191,9 +193,10 @@ export async function PUT(
 // DELETE /api/homework/[id] - удаление домашнего задания
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user || session.user.role !== 'admin') {
@@ -202,7 +205,7 @@ export async function DELETE(
 
     // Проверка существования домашнего задания
     const existingHomework = await prisma.homework.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingHomework) {
@@ -214,7 +217,7 @@ export async function DELETE(
 
     // Мягкое удаление - помечаем как неактивное
     await prisma.homework.update({
-      where: { id: params.id },
+      where: { id },
       data: { isActive: false }
     })
 

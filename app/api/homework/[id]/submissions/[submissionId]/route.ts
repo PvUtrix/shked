@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // GET /api/homework/[id]/submissions/[submissionId] - получение конкретной работы студента
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; submissionId: string } }
+  { params }: { params: Promise<{ id: string; submissionId: string }> }
 ) {
   try {
+    const { id, submissionId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -16,7 +17,7 @@ export async function GET(
     }
 
     const submission = await prisma.homeworkSubmission.findUnique({
-      where: { id: params.submissionId },
+      where: { id: submissionId },
       select: {
         id: true,
         content: true,
@@ -60,7 +61,7 @@ export async function GET(
     }
 
     // Проверяем, что работа принадлежит указанному домашнему заданию
-    if (submission.homeworkId !== params.id) {
+    if (submission.homeworkId !== id) {
       return NextResponse.json(
         { error: 'Работа не принадлежит указанному заданию' },
         { status: 400 }

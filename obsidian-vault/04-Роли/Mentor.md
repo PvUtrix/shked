@@ -394,9 +394,9 @@ const problematicStudents = studentsNeedingHelp.filter(student =>
 )
 ```
 
-## Отличие от Teacher
+## Отличие от Lector
 
-| Возможность | Teacher       | Mentor |
+| Возможность | Lector       | Mentor |
 |-------------|--------|--------|
 | Создание ДЗ | ✅ Да          | ❌ Нет |
 | Редактирование ДЗ | ✅ Да (свои)   | ❌ Нет |
@@ -448,7 +448,7 @@ const problematicStudents = studentsNeedingHelp.filter(student =>
 ### Другие роли
 - [[Admin]] - администраторы
 - [[Student]] - студенты
-- [[Teacher]] - преподаватели
+- [[Lector]] - преподаватели
 
 ### Модели
 - [[User]] - модель пользователя

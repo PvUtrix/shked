@@ -306,7 +306,7 @@ const stats = await prisma.telegramUser.aggregate({
 })
 
 const totalUsers = await prisma.user.count({
-  where: { role: { in: ['student', 'teacher'] }}
+  where: { role: { in: ['student', 'lector'] }}
 })
 
 console.log({
@@ -332,7 +332,7 @@ const byRole = await prisma.telegramUser.groupBy({
 const usersWithoutTelegram = await prisma.user.findMany({
   where: {
     telegramUser: null,
-    role: { in: ['student', 'teacher'] }
+    role: { in: ['student', 'lector'] }
   },
   select: {
     id: true,
@@ -476,7 +476,7 @@ ALTER TABLE "telegram_users"
 ### Роли
 - [[Admin]] - управление ботом
 - [[Student]] - получение уведомлений
-- [[Teacher]] - получение уведомлений
+- [[Lector]] - получение уведомлений
 
 ## Файлы
 
@@ -484,7 +484,7 @@ ALTER TABLE "telegram_users"
 - **Типы**: `lib/types.ts`
 - **API**: `app/api/telegram/**/*.ts`
 - **Библиотека**: `lib/telegram/**/*.ts`
-- **Страница профиля**: `app/student/profile/page.tsx`, `app/teacher/profile/page.tsx`
+- **Страница профиля**: `app/student/profile/page.tsx`, `app/lector/profile/page.tsx`
 
 ## Официальная документация
 

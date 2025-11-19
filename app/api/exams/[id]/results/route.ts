@@ -65,7 +65,7 @@ export async function POST(
     }
 
     // Проверка прав доступа
-    if (!['admin', 'teacher'].includes(session.user.role)) {
+    if (!['admin', 'lector'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 

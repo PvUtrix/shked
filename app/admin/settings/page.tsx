@@ -12,6 +12,7 @@ import { Slider } from '@/components/ui/slider'
 // import { useAnimationSettings } from '@/lib/stores/animation-store' // Временно отключен
 import { Settings, Database, Users, Bell, Shield, MessageSquare, Send, BarChart3, TestTube, Palette, Zap, AlertTriangle, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
+import packageJson from '@/package.json'
 
 export default function SettingsPage() {
   const [telegramConfig, setTelegramConfig] = useState({
@@ -746,7 +747,7 @@ export default function SettingsPage() {
         <CardContent>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-gray-900">v1.1.0</div>
+              <div className="text-2xl font-bold text-gray-900">v{packageJson.version}</div>
               <div className="text-sm text-gray-500">Версия системы</div>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">

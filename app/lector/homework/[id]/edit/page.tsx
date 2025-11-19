@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -24,7 +24,8 @@ interface Material {
   url: string
 }
 
-export default function LectorEditHomeworkPage({ params }: { params: { id: string } }) {
+export default function LectorEditHomeworkPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const router = useRouter()
   const [homework, setHomework] = useState<Homework | null>(null)
   const [subjects, setSubjects] = useState<Subject[]>([])
@@ -43,12 +44,12 @@ export default function LectorEditHomeworkPage({ params }: { params: { id: strin
 
   useEffect(() => {
     fetchData()
-  }, [params.id])
+  }, [id])
 
   const fetchData = async () => {
     try {
       // Загружаем домашнее задание
-      const homeworkResponse = await fetch(`/api/homework/${params.id}`)
+      const homeworkResponse = await fetch(`/api/homework/${id}`)
       if (homeworkResponse.ok) {
         const homeworkData = await homeworkResponse.json()
         setHomework(homeworkData)
@@ -89,7 +90,7 @@ export default function LectorEditHomeworkPage({ params }: { params: { id: strin
     setSaving(true)
 
     try {
-      const response = await fetch(`/api/homework/${params.id}`, {
+      const response = await fetch(`/api/homework/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +100,7 @@ export default function LectorEditHomeworkPage({ params }: { params: { id: strin
 
       if (response.ok) {
         toast.success('Домашнее задание обновлено')
-        router.push(`/lector/homework/${params.id}`)
+        router.push(`/lector/homework/${id}`)
       } else {
         const error = await response.json()
         toast.error(error.error || 'Ошибка при обновлении задания')
@@ -163,7 +164,7 @@ export default function LectorEditHomeworkPage({ params }: { params: { id: strin
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href={`/lector/homework/${params.id}`}>
+            <Link href={`/lector/homework/${id}`}>
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>

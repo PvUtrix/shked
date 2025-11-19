@@ -44,7 +44,8 @@ export const authOptions: NextAuthOptions = {
           firstName: user.firstName || undefined,
           lastName: user.lastName || undefined,
           role: user.role as 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_lecturer' | 'education_office_head' | 'department_admin',
-          groupId: user.groupId || undefined
+          groupId: user.groupId || undefined,
+          mustChangePassword: user.mustChangePassword || false
         }
       }
     })
@@ -57,6 +58,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role
         token.groupId = user.groupId
+        token.mustChangePassword = (user as any).mustChangePassword || false
       }
       return token
     },
@@ -65,6 +67,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub!
         session.user.role = token.role as 'admin' | 'student' | 'lector' | 'mentor' | 'assistant' | 'co_lecturer' | 'education_office_head' | 'department_admin'
         session.user.groupId = token.groupId as string | undefined
+        session.user.mustChangePassword = (token.mustChangePassword as boolean) || false
       }
       return session
     }

@@ -231,7 +231,7 @@ curl https://shked.innovators.moscow/api/health
 ```json
 {
   "status": "healthy",
-  "timestamp": "2024-10-16T...",
+  "timestamp": "2025-10-31T...",
   "database": "connected"
 }
 ```

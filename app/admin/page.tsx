@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Users, BookOpen, Clock } from 'lucide-react'
 import { Schedule, Subject, Group } from '@prisma/client'
+import Link from 'next/link'
 
 export const dynamic = "force-dynamic"
 
@@ -183,7 +184,13 @@ export default async function AdminDashboard() {
                       {schedule?.startTime || '00:00'} - {schedule?.endTime || '00:00'}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {schedule?.date ? new Date(schedule.date).toLocaleDateString('ru-RU') : 'Дата не указана'}
+                      {schedule?.date 
+                        ? new Date(schedule.date).toLocaleDateString('ru-RU', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          })
+                        : 'Дата не указана'}
                     </p>
                   </div>
                 </div>
@@ -203,21 +210,30 @@ export default async function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+            <Link
+              href="/admin/schedule"
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+            >
               <Calendar className="h-8 w-8 text-blue-600 mb-2" />
               <h3 className="font-medium text-gray-900">Создать расписание</h3>
               <p className="text-sm text-gray-500">Добавить новое занятие в расписание</p>
-            </div>
-            <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+            </Link>
+            <Link
+              href="/admin/groups"
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+            >
               <Users className="h-8 w-8 text-green-600 mb-2" />
               <h3 className="font-medium text-gray-900">Управление группами</h3>
               <p className="text-sm text-gray-500">Создать или изменить учебные группы</p>
-            </div>
-            <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+            </Link>
+            <Link
+              href="/admin/subjects"
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+            >
               <BookOpen className="h-8 w-8 text-purple-600 mb-2" />
               <h3 className="font-medium text-gray-900">Добавить предмет</h3>
               <p className="text-sm text-gray-500">Создать новый предмет в базе</p>
-            </div>
+            </Link>
           </div>
         </CardContent>
       </Card>

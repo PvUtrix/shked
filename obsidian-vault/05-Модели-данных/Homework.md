@@ -140,21 +140,21 @@ def hello():
 
 ### Основные операции
 - `GET /api/homework` - список заданий
-  - Фильтры: `subjectId`, `groupId`, `teacherId`
+  - Фильтры: `subjectId`, `groupId`, `lectorId`
   - Роли видят разные данные
 - `GET /api/homework/[id]` - детали задания
-- `POST /api/homework` - создать задание (teacher, admin)
-- `PUT /api/homework/[id]` - обновить задание (teacher своих, admin всех)
-- `DELETE /api/homework/[id]` - удалить задание (teacher своих, admin всех)
+- `POST /api/homework` - создать задание (lector, admin)
+- `PUT /api/homework/[id]` - обновить задание (lector своих, admin всех)
+- `DELETE /api/homework/[id]` - удалить задание (lector своих, admin всех)
 
 ### Работа с submissions
 - `GET /api/homework/[id]/submissions` - все работы по заданию
 - `POST /api/homework/[id]/submit` - сдать работу (student)
-- `POST /api/homework/[id]/review` - проверить работу (teacher)
+- `POST /api/homework/[id]/review` - проверить работу (lector)
 
 ## Компоненты
 
-### Teacher компоненты
+### Lector компоненты
 - [[homework-form.tsx]] - форма создания/редактирования задания
 - [[markdown-editor.tsx]] - MDX редактор для контента
 
@@ -163,7 +163,7 @@ def hello():
 - [[markdown-viewer.tsx]] - просмотр MDX контента
 
 ### Admin компоненты
-- Используют те же компоненты что и Teacher
+- Используют те же компоненты что и Lector
 
 ## TypeScript типы
 
@@ -204,7 +204,7 @@ export interface HomeworkWithRelations extends Homework {
 - ✅ Просмотр всех submissions
 - ✅ Проверка всех работ
 
-### Teacher
+### Lector
 - ✅ CRUD заданий по своим предметам
 - ✅ Просмотр submissions по своим предметам
 - ✅ Проверка работ по своим предметам
@@ -223,7 +223,7 @@ export interface HomeworkWithRelations extends Homework {
 
 ## Примеры использования
 
-### Создание задания (teacher)
+### Создание задания (lector)
 ```typescript
 const homework = await prisma.homework.create({
   data: {
@@ -272,7 +272,7 @@ const homeworks = await prisma.homework.findMany({
     subject: {
       select: {
         name: true,
-        teacher: {
+        lector: {
           select: { name: true }
         }
       }
@@ -294,7 +294,7 @@ const homeworks = await prisma.homework.findMany({
 const homeworks = await prisma.homework.findMany({
   where: {
     subject: {
-      teacherId: teacher.id
+      lectorId: lector.id
     }
   },
   include: {
@@ -432,7 +432,7 @@ const reviewed = studentHomeworks.filter(h =>
 - [[Homework API]] - endpoints для работы с заданиями
 
 ### Роли
-- [[Teacher]] - создает задания
+- [[Lector]] - создает задания
 - [[Student]] - сдает задания
 - [[Admin]] - полный доступ
 
@@ -445,7 +445,7 @@ const reviewed = studentHomeworks.filter(h =>
 - **Типы**: `lib/types.ts`
 - **API**: `app/api/homework/route.ts`, `app/api/homework/[id]/route.ts`
 - **Компоненты**: 
-  - `components/teacher/homework-form.tsx`
+  - `components/lector/homework-form.tsx`
   - `components/ui/markdown-editor.tsx`
   - `components/ui/markdown-viewer.tsx`
 

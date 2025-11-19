@@ -29,10 +29,10 @@
 ```
 👨‍💼 Админ:           admin@shked.com / admin123
 🎓 Студент:          student@demo.com / student123
-👨‍🏫 Преподаватель:   teacher@demo.com / teacher123
+👨‍🏫 Преподаватель:   lector@demo.com / lector123
 👤 Ментор:           mentor@demo.com / mentor123
 🤝 Ассистент:        assistant@demo.com / assistant123
-👥 Со-препод:        coteacher@demo.com / coteacher123
+👥 Со-препод:        colecturer@demo.com / colecturer123
 📊 Учебный отдел:    eduoffice@demo.com / eduoffice123
 🏛️ Админ кафедры:    deptadmin@demo.com / deptadmin123
 ```
@@ -59,7 +59,7 @@
 - Всё остальное
 
 **Что создается после сброса**:
-1. Тестовые пользователи (admin, student, teacher, mentor)
+1. Тестовые пользователи (admin, student, lector, mentor)
 2. Группа "ТехПред МФТИ 2025-27"
 3. Предметы из Excel файла
 4. Расписание занятий
@@ -228,7 +228,7 @@
     "externalResources": [...],
     "subgroups": [...],
     "subgroupStudents": [...],
-    "subjectTeachers": [...]
+    "subjectLectors": [...]
   }
 }
 ```

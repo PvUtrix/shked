@@ -4,7 +4,7 @@
 
 ## Обзор
 
-Subjects API предоставляет endpoints для создания, чтения, обновления и удаления предметов ([[Subject]]) с привязкой к преподавателям ([[Teacher]]).
+Subjects API предоставляет endpoints для создания, чтения, обновления и удаления предметов ([[Subject]]) с привязкой к преподавателям ([[Lector]]).
 
 **Модель**: [[Subject]], [[User]]
 
@@ -27,7 +27,7 @@ Subjects API предоставляет endpoints для создания, чт�
 
 | Параметр | Тип | Описание |
 |----------|-----|----------|
-| `teacher` | `boolean` | Только предметы преподавателя |
+| `lector` | `boolean` | Только предметы преподавателя |
 
 #### Response
 
@@ -39,11 +39,11 @@ Subjects API предоставляет endpoints для создания, чт�
       name: string
       description?: string
       instructor?: string  // Устаревшее поле
-      teacherId?: string
+      lectorId?: string
       isActive: boolean
       createdAt: Date
       updatedAt: Date
-      teacher?: {
+      lector?: {
         id: string
         name: string
         firstName?: string
@@ -69,7 +69,7 @@ const response = await fetch('/api/subjects', {
 })
 
 // Получить предметы преподавателя
-const response = await fetch('/api/subjects?teacher=true', {
+const response = await fetch('/api/subjects?lector=true', {
   method: 'GET',
   credentials: 'include'
 })
@@ -83,7 +83,7 @@ const response = await fetch('/api/subjects?teacher=true', {
 
 #### Права доступа
 - ✅ [[Admin]] - может создавать
-- ✅ [[Teacher]] - может создавать (автоматически назначается teacherId)
+- ✅ [[Lector]] - может создавать (автоматически назначается lectorId)
 
 #### Request Body
 
@@ -91,8 +91,8 @@ const response = await fetch('/api/subjects?teacher=true', {
 {
   name: string         // Обязательно
   description?: string
-  instructor?: string  // Устаревшее, используйте teacherId
-  teacherId?: string    // ID преподавателя (только для admin)
+  instructor?: string  // Устаревшее, используйте lectorId
+  lectorId?: string    // ID преподавателя (только для admin)
 }
 ```
 
@@ -104,11 +104,11 @@ const response = await fetch('/api/subjects?teacher=true', {
   name: string
   description?: string
   instructor?: string
-  teacherId?: string
+  lectorId?: string
   isActive: boolean
   createdAt: Date
   updatedAt: Date
-  teacher?: User
+  lector?: User
 }
 ```
 
@@ -124,7 +124,7 @@ const response = await fetch('/api/subjects', {
   body: JSON.stringify({
     name: 'Алгоритмы и структуры данных',
     description: 'Курс по основам алгоритмов',
-    teacherId: 'teacher-user-id'  // Только для admin
+    lectorId: 'lector-user-id'  // Только для admin
   })
 })
 
@@ -139,7 +139,7 @@ const subject = await response.json()
 
 #### Права доступа
 - ✅ [[Admin]] - может обновлять любые предметы
-- ✅ [[Teacher]] - может обновлять только свои предметы
+- ✅ [[Lector]] - может обновлять только свои предметы
 
 #### Request Body
 
@@ -149,7 +149,7 @@ const subject = await response.json()
   name?: string
   description?: string
   instructor?: string
-  teacherId?: string    // Только для admin
+  lectorId?: string    // Только для admin
 }
 ```
 
@@ -159,7 +159,7 @@ const subject = await response.json()
 {
   id: string
   // ... полные данные предмета
-  teacher?: User
+  lector?: User
 }
 ```
 
@@ -171,7 +171,7 @@ const subject = await response.json()
 
 #### Права доступа
 - ✅ [[Admin]] - может удалять
-- ✅ [[Teacher]] - может удалять свои предметы
+- ✅ [[Lector]] - может удалять свои предметы
 
 #### Query Parameters
 
@@ -197,12 +197,12 @@ model Subject {
   name        String
   description String?
   instructor  String?  // Устаревшее
-  teacherId    String?
+  lectorId    String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  teacher      User?     @relation(...)
+  lector      User?     @relation(...)
   schedules   Schedule[]
   homework    Homework[]
 }
@@ -218,7 +218,7 @@ model Subject {
 
 ### Роли
 - [[Admin]] - полный доступ
-- [[Teacher]] - управление своими предметами
+- [[Lector]] - управление своими предметами
 
 ## Файлы
 

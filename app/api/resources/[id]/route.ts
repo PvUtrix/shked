@@ -15,7 +15,7 @@ export async function PATCH(
     }
 
     // Проверка прав доступа
-    if (!['admin', 'teacher'].includes(session.user.role)) {
+    if (!['admin', 'lector'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
@@ -54,7 +54,7 @@ export async function DELETE(
     }
 
     // Проверка прав доступа
-    if (!['admin', 'teacher'].includes(session.user.role)) {
+    if (!['admin', 'lector'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 

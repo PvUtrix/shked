@@ -3,7 +3,8 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { LoginForm } from '@/components/auth/login-form'
-import { GraduationCap, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { LogoWithText } from '@/components/ui/logo'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -38,9 +39,8 @@ export default async function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <GraduationCap className="h-10 w-10 text-white" />
-            <h1 className="text-3xl font-bold text-white">Шкед</h1>
+          <div className="flex items-center justify-center mb-4">
+            <LogoWithText size={40} variant="white" textClassName="text-3xl" />
           </div>
           <p className="text-white/70">Система управления расписанием</p>
         </div>

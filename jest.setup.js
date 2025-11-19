@@ -63,6 +63,49 @@ jest.mock('next-auth/react', () => ({
   SessionProvider: ({ children }) => children,
 }))
 
+// Мокаем next-auth/next для серверных API routes
+jest.mock('next-auth/next', () => ({
+  getServerSession: jest.fn(),
+}))
+
+// Мокаем проблемные ESM модули, которые используются через next-auth
+jest.mock('openid-client', () => ({
+  Client: jest.fn(),
+  Issuer: jest.fn(),
+}))
+
+jest.mock('jose', () => ({
+  compactDecrypt: jest.fn(),
+  compactVerify: jest.fn(),
+  SignJWT: jest.fn(),
+  jwtVerify: jest.fn(),
+  jwtDecrypt: jest.fn(),
+}))
+
+// Мокаем next-intl и use-intl для компонентов
+jest.mock('next-intl', () => ({
+  useTranslations: jest.fn(() => (key) => key),
+  useFormatter: jest.fn(() => ({
+    dateTime: jest.fn((value) => String(value)),
+    number: jest.fn((value) => String(value)),
+  })),
+  NextIntlClientProvider: ({ children }) => children,
+  getTranslations: jest.fn(() => Promise.resolve((key) => key)),
+}))
+
+jest.mock('use-intl', () => ({
+  useTranslations: jest.fn(() => (key) => key),
+  useFormatter: jest.fn(() => ({
+    dateTime: jest.fn((value) => String(value)),
+    number: jest.fn((value) => String(value)),
+  })),
+}))
+
+// Мокаем @panva/hkdf и связанные ESM модули
+jest.mock('@panva/hkdf', () => ({
+  default: jest.fn(),
+}))
+
 // Мокаем переменные окружения для тестов
 // Используем невалидный DATABASE_URL для предотвращения подключения к БД в юнит-тестах
 // В юнит-тестах Prisma должен быть замокан через jest.mock в самих тестах

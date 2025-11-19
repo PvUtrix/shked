@@ -94,7 +94,7 @@
 ```typescript
 interface Assistant extends User {
   role: 'assistant'
-  teacherSubjects: SubjectTeacher[]  // Привязка через SubjectTeacher с role='ASSISTANT'
+  lectorSubjects: SubjectLector[]  // Привязка через SubjectLector с role='ASSISTANT'
 }
 ```
 
@@ -103,7 +103,7 @@ interface Assistant extends User {
 **Действие**: Выполняет [[Admin]]
 
 ```typescript
-await prisma.subjectTeacher.create({
+await prisma.subjectLector.create({
   data: {
     subjectId: subjectId,
     userId: assistantId,
@@ -116,13 +116,13 @@ await prisma.subjectTeacher.create({
 
 ### Другие роли
 - [[Admin]] - администраторы
-- [[Teacher]] - преподаватели
-- [[Co-Teacher]] - со-преподаватели
+- [[Lector]] - преподаватели
+- [[Co-Lector]] - со-преподаватели
 - [[Student]] - студенты
 
 ### Модели
 - [[User]] - модель пользователя
-- [[SubjectTeacher]] - привязка к предметам
+- [[SubjectLector]] - привязка к предметам
 
 ---
 

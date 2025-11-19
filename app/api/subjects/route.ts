@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const teacherId = searchParams.get('teacherId')
+    const lectorId = searchParams.get('lectorId')
     const assistantId = searchParams.get('assistantId')
     const includeRelations = searchParams.get('includeRelations') === 'true'
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     // Для преподавателей, ассистентов и со-преподавателей показываем только их предметы
     if (['lector', 'assistant', 'co_lecturer'].includes(session.user.role)) {
-      where.teachers = {
+      where.lectors = {
         some: {
           userId: session.user.id
         }
@@ -29,18 +29,18 @@ export async function GET(request: NextRequest) {
     }
 
     // Фильтрация по ID преподавателя
-    if (teacherId) {
-      where.teachers = {
+    if (lectorId) {
+      where.lectors = {
         some: {
-          userId: teacherId,
-          role: 'TEACHER'
+          userId: lectorId,
+          role: 'LECTOR'
         }
       }
     }
 
     // Фильтрация по ID ассистента
     if (assistantId) {
-      where.teachers = {
+      where.lectors = {
         some: {
           userId: assistantId,
           role: 'ASSISTANT'
@@ -62,9 +62,9 @@ export async function GET(request: NextRequest) {
           }
         },
         // Новая система множественных преподавателей
-        teachers: {
+        lectors: {
           include: {
-            teacher: {
+            lector: {
               select: {
                 id: true,
                 name: true,
@@ -156,9 +156,9 @@ export async function POST(request: NextRequest) {
             email: true
           }
         },
-        teachers: {
+        lectors: {
           include: {
-            teacher: {
+            lector: {
               select: {
                 id: true,
                 name: true,
@@ -170,13 +170,13 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Если указан lectorId, создаем запись в SubjectTeacher для обратной совместимости
+    // Если указан lectorId, создаем запись в SubjectLector для обратной совместимости
     if (body.lectorId) {
-      await prisma.subjectTeacher.create({
+      await prisma.subjectLector.create({
         data: {
           subjectId: subject.id,
           userId: body.lectorId,
-          role: 'TEACHER'
+          role: 'LECTOR'
         }
       })
     }
@@ -197,8 +197,8 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    // Только admin и teacher могут редактировать предметы
-    if (!session?.user || !['admin', 'teacher', 'lector'].includes(session.user.role)) {
+    // Только admin и lector могут редактировать предметы
+    if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
@@ -216,7 +216,7 @@ export async function PUT(request: NextRequest) {
       const existingSubject = await prisma.subject.findUnique({
         where: { id: body.id },
         include: {
-          teachers: {
+          lectors: {
             where: {
               userId: session.user.id,
               role: { in: ['LECTOR', 'CO_LECTOR'] }
@@ -225,7 +225,7 @@ export async function PUT(request: NextRequest) {
         }
       })
 
-      if (!existingSubject || existingSubject.teachers.length === 0) {
+      if (!existingSubject || existingSubject.lectors.length === 0) {
         return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
       }
     }
@@ -248,9 +248,9 @@ export async function PUT(request: NextRequest) {
             email: true
           }
         },
-        teachers: {
+        lectors: {
           include: {
-            teacher: {
+            lector: {
               select: {
                 id: true,
                 name: true,

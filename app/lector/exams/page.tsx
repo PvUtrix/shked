@@ -10,7 +10,7 @@ import { Award, Users, TrendingUp, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-export default async function TeacherExamsPage({
+export default async function LectorExamsPage({
   searchParams,
 }: {
   searchParams: { subject?: string }
@@ -21,7 +21,7 @@ export default async function TeacherExamsPage({
     redirect('/login')
   }
 
-  const teacherId = session.user.id
+  const lectorId = session.user.id
   const subjectId = searchParams.subject
 
   // Получаем экзамены преподавателя
@@ -30,9 +30,9 @@ export default async function TeacherExamsPage({
       subjectId,
     } : {
       subject: {
-        teachers: {
+        lectors: {
           some: {
-            userId: teacherId,
+            userId: lectorId,
           },
         },
       },
@@ -118,7 +118,7 @@ export default async function TeacherExamsPage({
           </p>
         </div>
         <Button asChild>
-          <Link href="/teacher/exams/new">
+          <Link href="/lector/exams/new">
             <Plus className="h-4 w-4 mr-2" />
             Создать экзамен
           </Link>
@@ -169,7 +169,7 @@ export default async function TeacherExamsPage({
                   Нет предстоящих экзаменов
                 </p>
                 <Button asChild>
-                  <Link href="/teacher/exams/new">
+                  <Link href="/lector/exams/new">
                     <Plus className="h-4 w-4 mr-2" />
                     Создать экзамен
                   </Link>
@@ -191,7 +191,7 @@ export default async function TeacherExamsPage({
                       </CardDescription>
                     </div>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/teacher/exams/${exam.id}`}>
+                      <Link href={`/lector/exams/${exam.id}`}>
                         Управление
                       </Link>
                     </Button>
@@ -240,7 +240,7 @@ export default async function TeacherExamsPage({
                         </CardDescription>
                       </div>
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/teacher/exams/${exam.id}`}>
+                        <Link href={`/lector/exams/${exam.id}`}>
                           Результаты
                         </Link>
                       </Button>

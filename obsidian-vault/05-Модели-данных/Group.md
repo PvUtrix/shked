@@ -117,7 +117,7 @@ export interface GroupWithStats extends Group {
 - ✅ Назначение менторов к группам
 - ✅ Управление студентами в группе
 
-### Teacher
+### Lector
 - ✅ Просмотр групп для своих предметов
 - ❌ Создание/редактирование групп
 
@@ -249,7 +249,7 @@ const schedules = await prisma.schedule.findMany({
   include: {
     subject: {
       include: {
-        teacher: {
+        lector: {
           select: { name: true }
         }
       }

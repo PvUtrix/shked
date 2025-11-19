@@ -1,15 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Search, Users, UserCheck, GraduationCap, BookOpen, UserCog, Plus, Edit, Trash2 } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Search, Users, UserCheck, GraduationCap, BookOpen, UserCog, Plus, Edit, Trash2, RotateCcw, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { UserForm } from '@/components/admin/user-form'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { GdprDeleteDialog } from '@/components/ui/gdpr-delete-dialog'
 
 interface User {
   id: string
@@ -20,6 +24,7 @@ interface User {
   role: string
   groupId: string | null
   createdAt: string
+  isActive?: boolean
   group?: {
     id: string
     name: string
@@ -27,31 +32,38 @@ interface User {
 }
 
 export default function UsersPage() {
+  const t = useTranslations()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
+  const [showInactive, setShowInactive] = useState(false)
   const [userFormOpen, setUserFormOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false)
+  const [userToRestore, setUserToRestore] = useState<User | null>(null)
+  const [gdprDeleteDialogOpen, setGdprDeleteDialogOpen] = useState(false)
+  const [userToGdprDelete, setUserToGdprDelete] = useState<User | null>(null)
 
   useEffect(() => {
     fetchUsers()
-  }, [])
+  }, [showInactive])
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users')
+      const url = showInactive ? '/api/users?includeInactive=true' : '/api/users'
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         setUsers(data.users || [])
       } else {
-        toast.error('Ошибка при загрузке пользователей')
+        toast.error(t('admin.pages.users.toast.loadError'))
       }
     } catch (error) {
       console.error('Ошибка при загрузке пользователей:', error)
-      toast.error('Ошибка при загрузке пользователей')
+      toast.error(t('admin.pages.users.toast.loadError'))
     } finally {
       setLoading(false)
     }
@@ -74,14 +86,14 @@ export default function UsersPage() {
             user.id === userId ? { ...user, role: newRole } : user
           )
         )
-        toast.success('Роль пользователя обновлена')
+        toast.success(t('admin.pages.users.toast.roleUpdated'))
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Ошибка при обновлении роли')
+        toast.error(error.error || t('admin.pages.users.toast.roleUpdateError'))
       }
     } catch (error) {
       console.error('Ошибка при обновлении роли:', error)
-      toast.error('Ошибка при обновлении роли')
+      toast.error(t('admin.pages.users.toast.roleUpdateError'))
     }
   }
 
@@ -109,18 +121,80 @@ export default function UsersPage() {
       })
 
       if (response.ok) {
-        toast.success('Пользователь деактивирован')
+        toast.success(t('admin.pages.users.toast.userDeleted'))
         await fetchUsers()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Ошибка при деактивации пользователя')
+        toast.error(error.error || t('common.messages.errorOccurred'))
       }
     } catch (error) {
       console.error('Ошибка при деактивации пользователя:', error)
-      toast.error('Произошла ошибка при деактивации')
+      toast.error(t('common.messages.errorOccurred'))
     } finally {
       setDeleteDialogOpen(false)
       setUserToDelete(null)
+    }
+  }
+
+  const handleRestoreUser = (user: User) => {
+    setUserToRestore(user)
+    setRestoreDialogOpen(true)
+  }
+
+  const confirmRestoreUser = async () => {
+    if (!userToRestore) return
+
+    try {
+      const response = await fetch(`/api/users/${userToRestore.id}/restore`, {
+        method: 'PATCH',
+      })
+
+      if (response.ok) {
+        toast.success(t('admin.pages.users.toast.userRestored'))
+        await fetchUsers()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || t('common.messages.errorOccurred'))
+      }
+    } catch (error) {
+      console.error('Ошибка при восстановлении пользователя:', error)
+      toast.error(t('common.messages.errorOccurred'))
+    } finally {
+      setRestoreDialogOpen(false)
+      setUserToRestore(null)
+    }
+  }
+
+  const handleGdprDeleteUser = (user: User) => {
+    setUserToGdprDelete(user)
+    setGdprDeleteDialogOpen(true)
+  }
+
+  const confirmGdprDeleteUser = async (confirmedName: string) => {
+    if (!userToGdprDelete) return
+
+    try {
+      const response = await fetch(`/api/users/${userToGdprDelete.id}/gdpr-delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userName: confirmedName }),
+      })
+
+      if (response.ok) {
+        toast.success(t('admin.pages.users.toast.gdprDeleted'))
+        await fetchUsers()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || t('common.messages.errorOccurred'))
+      }
+    } catch (error) {
+      console.error('Ошибка при GDPR удалении пользователя:', error)
+      toast.error(t('common.messages.errorOccurred'))
+    } finally {
+      setGdprDeleteDialogOpen(false)
+      setUserToGdprDelete(null)
     }
   }
 
@@ -134,7 +208,6 @@ export default function UsersPage() {
         return <UserCog className="h-4 w-4" />
       case 'student':
         return <GraduationCap className="h-4 w-4" />
-      case 'teacher':
       case 'lector':
       case 'assistant':
       case 'co_lecturer':
@@ -155,9 +228,7 @@ export default function UsersPage() {
         return 'bg-red-100 text-red-800'
       case 'student':
         return 'bg-blue-100 text-blue-800'
-      case 'teacher':
-        return 'bg-purple-100 text-purple-800'
-      case 'lector': // Обратная совместимость
+      case 'lector':
         return 'bg-purple-100 text-purple-800'
       case 'assistant':
         return 'bg-indigo-100 text-indigo-800'
@@ -175,28 +246,11 @@ export default function UsersPage() {
   }
 
   const getRoleLabel = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'Администратор'
-      case 'student':
-        return 'Студент'
-      case 'teacher':
-        return 'Преподаватель'
-      case 'lector': // Обратная совместимость
-        return 'Преподаватель (legacy)'
-      case 'assistant':
-        return 'Ассистент'
-      case 'co_lecturer':
-        return 'Со-преподаватель'
-      case 'mentor':
-        return 'Ментор'
-      case 'education_office_head':
-        return 'Учебный отдел'
-      case 'department_admin':
-        return 'Администратор кафедры'
-      default:
-        return role
-    }
+    const roleKey = role === 'co_lecturer' ? 'coLecturer' : 
+                    role === 'education_office_head' ? 'educationOfficeHead' :
+                    role === 'department_admin' ? 'departmentAdmin' : role
+    
+    return t(`ui.statusBadge.roles.${roleKey}`, { defaultValue: role })
   }
 
   const filteredUsers = users.filter(user => {
@@ -216,7 +270,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Загрузка пользователей...</p>
+          <p className="mt-2 text-gray-600">{t('common.messages.loading')}</p>
         </div>
       </div>
     )
@@ -244,37 +298,51 @@ export default function UsersPage() {
       </div>
 
       {/* Фильтры */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Поиск по имени, email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder={t('admin.pages.users.search')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="w-full sm:w-48">
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('admin.pages.users.roleFilter')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('common.filters.all')}</SelectItem>
+                  <SelectItem value="admin">{t('ui.statusBadge.roles.admin')}</SelectItem>
+                  <SelectItem value="student">{t('ui.statusBadge.roles.student')}</SelectItem>
+                  <SelectItem value="lector">{t('ui.statusBadge.roles.lector')}</SelectItem>
+                  <SelectItem value="assistant">{t('ui.statusBadge.roles.assistant')}</SelectItem>
+                  <SelectItem value="co_lecturer">{t('ui.statusBadge.roles.coLecturer')}</SelectItem>
+                  <SelectItem value="mentor">{t('ui.statusBadge.roles.mentor')}</SelectItem>
+                  <SelectItem value="education_office_head">{t('ui.statusBadge.roles.educationOfficeHead')}</SelectItem>
+                  <SelectItem value="department_admin">{t('ui.statusBadge.roles.departmentAdmin')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="show-inactive"
+                checked={showInactive}
+                onCheckedChange={setShowInactive}
+              />
+              <Label htmlFor="show-inactive" className="cursor-pointer">
+                {t('common.filters.showInactive')}
+              </Label>
+            </div>
           </div>
-        </div>
-        <div className="w-full sm:w-48">
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Фильтр по роли" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все роли</SelectItem>
-              <SelectItem value="admin">Администраторы</SelectItem>
-              <SelectItem value="student">Студенты</SelectItem>
-              <SelectItem value="teacher">Преподаватели</SelectItem>
-              <SelectItem value="assistant">Ассистенты</SelectItem>
-              <SelectItem value="co_lecturer">Со-преподаватели</SelectItem>
-              <SelectItem value="mentor">Менторы</SelectItem>
-              <SelectItem value="education_office_head">Учебный отдел</SelectItem>
-              <SelectItem value="department_admin">Администраторы кафедры</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Список пользователей */}
       <div className="grid gap-4">
@@ -282,51 +350,83 @@ export default function UsersPage() {
           <Card>
             <CardContent className="text-center py-8">
               <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Пользователи не найдены</p>
+              <p className="text-gray-600">{t('admin.pages.users.noUsers')}</p>
             </CardContent>
           </Card>
         ) : (
-          filteredUsers.map((user) => (
-            <Card key={user.id}>
+          filteredUsers.map((user) => {
+            const isInactive = user.isActive === false
+            return (
+            <Card key={user.id} className={isInactive ? 'opacity-60 border-gray-300' : ''}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center space-x-2">
                       {getRoleIcon(user.role)}
-                      <CardTitle className="text-lg">
+                      <CardTitle className={`text-lg ${isInactive ? 'text-gray-500' : ''}`}>
                         {user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Без имени'}
                       </CardTitle>
                     </div>
                     <Badge className={getRoleColor(user.role)}>
                       {getRoleLabel(user.role)}
                     </Badge>
+                    {isInactive && (
+                      <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                        Удалён
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditUser(user)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteUser(user)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                    <Select
-                      value={user.role}
-                      onValueChange={(newRole) => updateUserRole(user.id, newRole)}
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Администратор</SelectItem>
-                        <SelectItem value="student">Студент</SelectItem>
-                        <SelectItem value="teacher">Преподаватель</SelectItem>
+                    {isInactive ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRestoreUser(user)}
+                        title="Восстановить пользователя"
+                      >
+                        <RotateCcw className="h-4 w-4 text-green-600" />
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditUser(user)}
+                          title="Редактировать"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user)}
+                          title="Деактивировать пользователя"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleGdprDeleteUser(user)}
+                          title="GDPR удаление (удалить персональные данные)"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <AlertTriangle className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                    {!isInactive && (
+                      <Select
+                        value={user.role}
+                        onValueChange={(newRole) => updateUserRole(user.id, newRole)}
+                      >
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Администратор</SelectItem>
+                          <SelectItem value="student">Студент</SelectItem>
+                        <SelectItem value="lector">Преподаватель</SelectItem>
                         <SelectItem value="assistant">Ассистент</SelectItem>
                         <SelectItem value="co_lecturer">Со-преподаватель</SelectItem>
                         <SelectItem value="mentor">Ментор</SelectItem>
@@ -334,26 +434,28 @@ export default function UsersPage() {
                         <SelectItem value="department_admin">Администратор кафедры</SelectItem>
                       </SelectContent>
                     </Select>
+                    )}
                   </div>
                 </div>
-                <CardDescription>
+                <div className="text-sm text-muted-foreground mt-2">
                   <div className="space-y-1">
-                    <p className="text-sm">
+                    <div className="text-sm">
                       <span className="font-medium">Email:</span> {user.email}
-                    </p>
+                    </div>
                     {user.group && (
-                      <p className="text-sm">
+                      <div className="text-sm">
                         <span className="font-medium">Группа:</span> {user.group.name}
-                      </p>
+                      </div>
                     )}
-                    <p className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500">
                       Зарегистрирован: {new Date(user.createdAt).toLocaleDateString('ru-RU')}
-                    </p>
+                    </div>
                   </div>
-                </CardDescription>
+                </div>
               </CardHeader>
             </Card>
-          ))
+            )
+          })
         )}
       </div>
 
@@ -369,13 +471,31 @@ export default function UsersPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Деактивировать пользователя"
-        description={`Вы уверены, что хотите деактивировать пользователя "${userToDelete?.name || userToDelete?.email}"? Пользователь не сможет войти в систему.`}
-        confirmText="Деактивировать"
-        cancelText="Отмена"
+        title={t('admin.pages.users.deleteConfirm', { name: userToDelete?.name || userToDelete?.email || 'пользователь' })}
+        description={t('admin.pages.users.deleteWarning')}
         onConfirm={confirmDeleteUser}
         variant="destructive"
       />
+
+      {/* Диалог подтверждения восстановления */}
+      <ConfirmDialog
+        open={restoreDialogOpen}
+        onOpenChange={setRestoreDialogOpen}
+        title={t('admin.pages.users.restoreConfirm', { name: userToRestore?.name || userToRestore?.email || 'пользователь' })}
+        description=""
+        onConfirm={confirmRestoreUser}
+      />
+
+      {/* Диалог GDPR удаления */}
+      {userToGdprDelete && (
+        <GdprDeleteDialog
+          open={gdprDeleteDialogOpen}
+          onOpenChange={setGdprDeleteDialogOpen}
+          userName={userToGdprDelete.name || `${userToGdprDelete.firstName || ''} ${userToGdprDelete.lastName || ''}`.trim() || userToGdprDelete.email}
+          userEmail={userToGdprDelete.email}
+          onConfirm={confirmGdprDeleteUser}
+        />
+      )}
     </div>
   )
 }

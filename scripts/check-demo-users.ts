@@ -13,13 +13,12 @@ async function main() {
     const demoUsers = [
       'admin@shked.com',
       'student@demo.com',
-      'teacher@demo.com',
+      'lector@demo.com',
       'mentor@demo.com',
       'assistant@demo.com',
-      'coteacher@demo.com',
+      'co_lecturer@demo.com',
       'eduoffice@demo.com',
-      'deptadmin@demo.com',
-      'lector@demo.com' // старый аккаунт
+      'deptadmin@demo.com'
     ]
     
     for (const email of demoUsers) {

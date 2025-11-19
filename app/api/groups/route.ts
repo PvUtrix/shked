@@ -36,6 +36,9 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         users: {
+          where: {
+            isActive: true
+          },
           select: {
             id: true,
             name: true,

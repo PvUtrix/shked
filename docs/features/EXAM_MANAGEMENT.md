@@ -35,7 +35,7 @@
 }
 ```
 
-**Права доступа:** admin, teacher
+**Права доступа:** admin, lector
 
 ### Обязательные поля
 
@@ -87,14 +87,14 @@
     "status": "PASSED",
     "notes": "Примечание",
     "takenAt": "2025-12-20T10:30:00Z",
-    "recordedBy": "teacher_id",
+    "recordedBy": "lector_id",
     "student": {
       "id": "user_id",
       "name": "Имя Фамилия",
       "email": "student@example.com"
     },
     "recorder": {
-      "id": "teacher_id",
+      "id": "lector_id",
       "name": "Преподаватель"
     }
   }
@@ -124,7 +124,7 @@
 }
 ```
 
-**Права доступа:** admin, teacher
+**Права доступа:** admin, lector
 
 ## Удаление экзамена
 
@@ -141,7 +141,7 @@
 | Роль | Создание | Редактирование | Внесение результатов | Просмотр | Удаление |
 |------|----------|----------------|---------------------|----------|----------|
 | Admin | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Teacher | ✅ | ✅ | ✅ | ✅ (свои предметы) | ❌ |
+| Lector | ✅ | ✅ | ✅ | ✅ (свои предметы) | ❌ |
 | Student | ❌ | ❌ | ❌ | ✅ (свои результаты) | ❌ |
 | Department Admin | ❌ | ❌ | ❌ | ✅ | ❌ |
 | Education Office | ❌ | ❌ | ❌ | ✅ | ❌ |
@@ -176,7 +176,7 @@ model ExamResult {
   status     String    @default("NOT_TAKEN") // NOT_TAKEN, PASSED, FAILED
   notes      String?
   takenAt    DateTime?
-  recordedBy String    // userId teacher
+  recordedBy String    // userId lector
   createdAt  DateTime  @default(now())
   
   exam       Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
@@ -240,6 +240,6 @@ model ExamResult {
 ---
 
 *Документация обновлена: 30 октября 2025*
-*Версия системы: 2.0.0*
+*Версия системы: 0.1.0-alpha*
 
 

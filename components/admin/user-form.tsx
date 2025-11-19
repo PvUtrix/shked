@@ -23,17 +23,22 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { UserFormData } from '@/lib/types'
 import { toast } from 'sonner'
 
 const userSchema = z.object({
   email: z.string().email('Некорректный email'),
-  password: z.string().min(6, 'Пароль должен содержать минимум 6 символов').optional(),
+  password: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.string().min(6, 'Пароль должен содержать минимум 6 символов').optional()
+  ),
   name: z.string().optional(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  role: z.enum(['admin', 'student', 'lector', 'mentor']),
+  role: z.enum(['admin', 'student', 'lector', 'mentor', 'assistant', 'co_lecturer', 'education_office_head', 'department_admin']),
   groupId: z.string().optional(),
+  mustChangePassword: z.boolean().optional(),
 })
 
 interface UserFormProps {
@@ -58,6 +63,7 @@ export function UserForm({ open, onOpenChange, user, onSuccess }: UserFormProps)
       lastName: '',
       role: 'student',
       groupId: '',
+      mustChangePassword: false,
     },
   })
 
@@ -91,6 +97,7 @@ export function UserForm({ open, onOpenChange, user, onSuccess }: UserFormProps)
         lastName: user.lastName || '',
         role: user.role || 'student',
         groupId: user.groupId || '',
+        mustChangePassword: user.mustChangePassword || false,
       })
     } else {
       form.reset({
@@ -101,6 +108,7 @@ export function UserForm({ open, onOpenChange, user, onSuccess }: UserFormProps)
         lastName: '',
         role: 'student',
         groupId: '',
+        mustChangePassword: false,
       })
     }
   }, [user, form])
@@ -111,7 +119,14 @@ export function UserForm({ open, onOpenChange, user, onSuccess }: UserFormProps)
       const url = '/api/users'
       const method = isEditing ? 'PUT' : 'POST'
       
-      // При редактировании не отправляем пароль, если он пустой
+      // Валидация пароля при создании нового пользователя
+      if (!isEditing && (!data.password || data.password.trim() === '')) {
+        toast.error('Пароль обязателен для нового пользователя')
+        setLoading(false)
+        return
+      }
+      
+      // При редактировании не отправляем пароль, если он пустой или undefined
       const body = isEditing 
         ? { ...data, id: user.id, password: data.password || undefined }
         : data
@@ -260,6 +275,10 @@ export function UserForm({ open, onOpenChange, user, onSuccess }: UserFormProps)
                       <SelectItem value="student">Студент</SelectItem>
                       <SelectItem value="lector">Преподаватель</SelectItem>
                       <SelectItem value="mentor">Ментор</SelectItem>
+                      <SelectItem value="assistant">Ассистент</SelectItem>
+                      <SelectItem value="co_lecturer">Со-преподаватель</SelectItem>
+                      <SelectItem value="education_office_head">Учебный отдел</SelectItem>
+                      <SelectItem value="department_admin">Админ кафедры</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -273,14 +292,17 @@ export function UserForm({ open, onOpenChange, user, onSuccess }: UserFormProps)
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Группа</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={(value) => field.onChange(value === 'none' ? '' : value)} 
+                    value={field.value || 'none'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите группу" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Без группы</SelectItem>
+                      <SelectItem value="none">Без группы</SelectItem>
                       {groups.map((group) => (
                         <SelectItem key={group.id} value={group.id}>
                           {group.name}
@@ -289,6 +311,29 @@ export function UserForm({ open, onOpenChange, user, onSuccess }: UserFormProps)
                     </SelectContent>
                   </Select>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="mustChangePassword"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Сменить пароль при следующем входе
+                    </FormLabel>
+                    <p className="text-sm text-muted-foreground">
+                      Пользователь будет обязан сменить пароль при следующем логине
+                    </p>
+                  </div>
                 </FormItem>
               )}
             />

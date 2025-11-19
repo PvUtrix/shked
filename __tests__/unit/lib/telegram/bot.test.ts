@@ -5,6 +5,7 @@ jest.resetModules()
 const mockBotSettingsFindFirst = jest.fn()
 const mockBotSettingsCreate = jest.fn()
 const mockBotSettingsUpdate = jest.fn()
+const mockBotSettingsUpdateMany = jest.fn()
 
 jest.mock('@prisma/client', () => {
   const mockPrismaClient = {
@@ -14,6 +15,7 @@ jest.mock('@prisma/client', () => {
       findUnique: jest.fn(),
       create: mockBotSettingsCreate,
       update: mockBotSettingsUpdate,
+      updateMany: mockBotSettingsUpdateMany,
       delete: jest.fn(),
     },
     user: {
@@ -68,6 +70,7 @@ jest.mock('@/lib/db', () => {
       findUnique: jest.fn(),
       create: mockBotSettingsCreate,
       update: mockBotSettingsUpdate,
+      updateMany: mockBotSettingsUpdateMany,
       delete: jest.fn(),
     },
     user: {
@@ -113,19 +116,11 @@ jest.mock('@/lib/db', () => {
   }
 })
 
-// Мокируем axios для HTTP запросов
-const mockAxiosPost = jest.fn()
-const mockAxiosGet = jest.fn()
+// Мокируем fetch для HTTP запросов
+const mockFetch = jest.fn()
 
-jest.mock('axios', () => {
-  return {
-    __esModule: true,
-    default: {
-      post: mockAxiosPost,
-      get: mockAxiosGet,
-    },
-  }
-})
+// Заменяем глобальный fetch на мок
+global.fetch = mockFetch as any
 
 import { describe, it, expect, beforeEach, beforeAll, jest } from '@jest/globals'
 import crypto from 'crypto'
@@ -161,9 +156,57 @@ describe('lib/telegram/bot.ts', () => {
     // Очищаем все моки перед каждым тестом
     jest.clearAllMocks()
     
-    // Устанавливаем дефолтные возвращаемые значения для axios
-    mockAxiosPost.mockResolvedValue({ data: { ok: true, result: { is_bot: true } } })
-    mockAxiosGet.mockResolvedValue({ data: { ok: true } })
+    // Устанавливаем дефолтные возвращаемые значения для fetch
+    // Мокируем успешные ответы от Telegram API
+    mockFetch.mockImplementation((url: string) => {
+      if (typeof url !== 'string') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ ok: true, result: { is_bot: true } }),
+          text: async () => JSON.stringify({ ok: true, result: { is_bot: true } }),
+        } as Response)
+      }
+
+      // Для getWebhookInfo
+      if (url.includes('/getWebhookInfo')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            ok: true,
+            result: {
+              url: 'https://example.com/webhook',
+              has_custom_certificate: false,
+              pending_update_count: 0,
+            },
+          }),
+          text: async () => JSON.stringify({ ok: true }),
+        } as Response)
+      }
+
+      // Для getBotInfo
+      if (url.includes('/getMe')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            ok: true,
+            result: {
+              id: 123456789,
+              is_bot: true,
+              first_name: 'TestBot',
+              username: 'test_bot',
+            },
+          }),
+          text: async () => JSON.stringify({ ok: true }),
+        } as Response)
+      }
+
+      // Для всех остальных запросов (sendMessage, editMessage, answerCallbackQuery, setWebhook)
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ ok: true }),
+        text: async () => JSON.stringify({ ok: true }),
+      } as Response)
+    })
   })
 
   describe('getBotSettings', () => {
@@ -394,14 +437,13 @@ describe('lib/telegram/bot.ts', () => {
       }
       
       mockBotSettingsFindFirst.mockResolvedValue(mockSettings)
-      mockBotSettingsUpdate.mockResolvedValue({
-        ...mockSettings,
-        webhookUrl: 'https://example.com/webhook',
-      })
+      mockBotSettingsUpdateMany.mockResolvedValue({ count: 1 })
 
       const result = await setWebhook('https://example.com/webhook')
       expect(result).toBe(true)
-      expect(mockBotSettingsUpdate).toHaveBeenCalled()
+      expect(mockBotSettingsUpdateMany).toHaveBeenCalledWith({
+        data: { webhookUrl: 'https://example.com/webhook' }
+      })
     })
 
     it('должен вернуть false при отсутствии токена', async () => {

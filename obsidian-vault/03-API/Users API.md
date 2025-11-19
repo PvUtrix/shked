@@ -7,7 +7,7 @@
 Users API предоставляет endpoints для создания, чтения, обновления и удаления пользователей ([[User]]) с поддержкой различных ролей.
 
 **Модель**: [[User]], [[Group]]  
-**Роли**: [[Admin]], [[Student]], [[Teacher]], [[Mentor]]
+**Роли**: [[Admin]], [[Student]], [[Lector]], [[Mentor]]
 
 ## Base URL
 
@@ -23,7 +23,7 @@ Users API предоставляет endpoints для создания, чтен
 
 #### Права доступа
 - ✅ [[Admin]] - все пользователи
-- ✅ [[Teacher]] - все пользователи (просмотр)
+- ✅ [[Lector]] - все пользователи (просмотр)
 - ✅ [[Mentor]] - студенты своих групп
 - ✅ [[Student]] - все пользователи (просмотр для коллаборации)
 
@@ -31,7 +31,7 @@ Users API предоставляет endpoints для создания, чтен
 
 | Параметр | Тип | Описание |
 |----------|-----|----------|
-| `role` | `string` | Фильтр по роли: `admin`, `student`, `teacher`, `mentor` |
+| `role` | `string` | Фильтр по роли: `admin`, `student`, `lector`, `mentor` |
 | `groupId` | `string` | Фильтр по группе |
 | `mentor` | `boolean` | Только студенты групп ментора |
 
@@ -46,7 +46,7 @@ Users API предоставляет endpoints для создания, чтен
       email: string
       firstName?: string
       lastName?: string
-      role: 'admin' | 'student' | 'teacher' | 'mentor'
+      role: 'admin' | 'student' | 'lector' | 'mentor'
       groupId?: string
       createdAt: Date
       group?: {
@@ -110,7 +110,7 @@ const response = await fetch('/api/users?mentor=true', {
   name?: string
   firstName?: string
   lastName?: string
-  role?: 'admin' | 'student' | 'teacher' | 'mentor'  // По умолчанию 'student'
+  role?: 'admin' | 'student' | 'lector' | 'mentor'  // По умолчанию 'student'
   groupId?: string        // Для студентов
 }
 ```
@@ -328,7 +328,7 @@ const profile = await response.json()
 
 ```typescript
 {
-  role: 'admin' | 'student' | 'teacher' | 'mentor'
+  role: 'admin' | 'student' | 'lector' | 'mentor'
 }
 ```
 
@@ -384,7 +384,7 @@ model User {
   userGroups    UserGroup[]
   homeworkSubmissions HomeworkSubmission[]
   homeworkComments    HomeworkComment[]
-  subjectsAsTeacher    Subject[]
+  subjectsAsLector    Subject[]
 }
 ```
 
@@ -402,10 +402,10 @@ model User {
 - Сдача домашних заданий
 - Доступ: `/student/*`
 
-### teacher
+### lector
 - Создание домашних заданий и расписания
 - Проверка работ студентов
-- Доступ: `/teacher/*`
+- Доступ: `/lector/*`
 
 ### mentor
 - Просмотр расписания своих групп
@@ -443,7 +443,7 @@ if (result?.ok) {
 ### Роли
 - [[Admin]] - администратор
 - [[Student]] - студент
-- [[Teacher]] - преподаватель
+- [[Lector]] - преподаватель
 - [[Mentor]] - ментор
 
 ### ADR

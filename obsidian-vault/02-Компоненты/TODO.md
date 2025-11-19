@@ -36,12 +36,12 @@
 ### Student компоненты (приоритет: высокий)
 - [ ] `homework-submission-form.tsx` - форма сдачи ДЗ
 
-### Teacher компоненты (приоритет: высокий)
+### Lector компоненты (приоритет: высокий)
 - [ ] `homework-form.tsx` - форма создания ДЗ
 
 ### Навигация (приоритет: низкий)
 - [ ] `admin-nav.tsx`
-- [ ] `teacher-nav.tsx`
+- [ ] `lector-nav.tsx`
 - [ ] `mentor-nav.tsx`
 - [ ] `student-nav.tsx`
 

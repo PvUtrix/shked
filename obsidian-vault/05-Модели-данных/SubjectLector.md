@@ -1,60 +1,60 @@
-# SubjectTeacher (Привязка преподавателя к предмету)
+# SubjectLector (Привязка преподавателя к предмету)
 
 > Модель для назначения множественных преподавателей к предмету
 
 ## Обзор
 
-Модель `SubjectTeacher` связывает преподавателей с предметами и определяет их роль.
+Модель `SubjectLector` связывает преподавателей с предметами и определяет их роль.
 
 **Файл**: `prisma/schema.prisma`
 
 ## Схема данных
 
 ```prisma
-model SubjectTeacher {
+model SubjectLector {
   id        String   @id @default(cuid())
   subjectId String
   userId    String
-  role      String   // TEACHER, ASSISTANT, CO_TEACHER
+  role      String   // LECTOR, ASSISTANT, CO_LECTOR
   createdAt DateTime @default(now())
-  
+
   subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
-  
+  lector    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([subjectId, userId])
-  @@map("subject_teachers")
+  @@map("subject_lectors")
 }
 ```
 
 ## Роли преподавателей
 
-- `TEACHER` - Основной преподаватель
+- `LECTOR` - Основной преподаватель
 - `ASSISTANT` - Ассистент
-- `CO_TEACHER` - Со-преподаватель
+- `CO_LECTOR` - Со-преподаватель
 
 ## Связи
 
 - `subject` - Предмет [[Subject]]
-- `user` - Преподаватель [[User]]
+- `lector` - Преподаватель [[User]]
 
 ## Использование
 
-Заменяет устаревшее поле `Subject.teacherId` и позволяет назначать множество преподавателей на один предмет.
+Заменяет устаревшее поле `Subject.lectorId` и позволяет назначать множество преподавателей на один предмет.
 
 ### Пример
 
 ```typescript
 // Назначить основного преподавателя
-await prisma.subjectTeacher.create({
+await prisma.subjectLector.create({
   data: {
     subjectId: 'subject_id',
-    userId: 'teacher_id',
-    role: 'TEACHER'
+    userId: 'lector_id',
+    role: 'LECTOR'
   }
 })
 
 // Назначить ассистента
-await prisma.subjectTeacher.create({
+await prisma.subjectLector.create({
   data: {
     subjectId: 'subject_id',
     userId: 'assistant_id',
@@ -65,6 +65,6 @@ await prisma.subjectTeacher.create({
 
 ---
 
-#model #subject-teacher #relationship #prisma
+#model #subject-lector #relationship #prisma
 
 

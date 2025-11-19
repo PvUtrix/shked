@@ -41,7 +41,7 @@
 }
 ```
 
-**Права доступа:** admin, teacher, assistant
+**Права доступа:** admin, lector, assistant
 
 ### Массовая отметка
 
@@ -63,7 +63,7 @@
     "status": "PRESENT",
     "source": "MANUAL",
     "notes": "Примечание",
-    "markedBy": "teacher_id",
+    "markedBy": "lector_id",
     "markedAt": "2025-11-01T10:30:00Z",
     "student": {
       "id": "user_id",
@@ -71,7 +71,7 @@
       "email": "student@example.com"
     },
     "marker": {
-      "id": "teacher_id",
+      "id": "lector_id",
       "name": "Преподаватель"
     }
   }
@@ -133,7 +133,7 @@ GET /api/attendance/report?groupId=group_id&startDate=2025-11-01&endDate=2025-11
 }
 ```
 
-**Права доступа:** admin, teacher, department_admin, education_office_head
+**Права доступа:** admin, lector, department_admin, education_office_head
 
 ## Интеграция с Zoom
 
@@ -149,7 +149,7 @@ GET /api/attendance/report?groupId=group_id&startDate=2025-11-01&endDate=2025-11
 | Роль | Отметка | Просмотр своей | Просмотр всех | Отчеты |
 |------|---------|----------------|---------------|--------|
 | Admin | ✅ | ✅ | ✅ | ✅ |
-| Teacher | ✅ | ✅ | ✅ (свои предметы) | ✅ |
+| Lector | ✅ | ✅ | ✅ (свои предметы) | ✅ |
 | Assistant | ❌ | ✅ | ✅ (предметы) | ❌ |
 | Student | ❌ | ✅ | ❌ | ❌ |
 | Mentor | ❌ | ✅ | ✅ (свои группы) | ❌ |
@@ -166,7 +166,7 @@ model Attendance {
   status     String   // PRESENT, ABSENT, LATE, EXCUSED
   source     String?  // MANUAL, ZOOM_AUTO, VISUAL
   notes      String?
-  markedBy   String   // userId admin/teacher
+  markedBy   String   // userId admin/lector
   markedAt   DateTime @default(now())
   
   schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
@@ -222,6 +222,6 @@ model Attendance {
 ---
 
 *Документация обновлена: 30 октября 2025*
-*Версия системы: 2.0.0*
+*Версия системы: 0.1.0-alpha*
 
 

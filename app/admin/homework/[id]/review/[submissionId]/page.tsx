@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -41,8 +41,9 @@ interface Submission {
 export default function ReviewSubmissionPage({ 
   params 
 }: { 
-  params: { id: string; submissionId: string } 
+  params: Promise<{ id: string; submissionId: string }> 
 }) {
+  const { id, submissionId } = use(params)
   const router = useRouter()
   const [submission, setSubmission] = useState<Submission | null>(null)
   const [loading, setLoading] = useState(true)
@@ -55,11 +56,11 @@ export default function ReviewSubmissionPage({
 
   useEffect(() => {
     fetchSubmission()
-  }, [params.id, params.submissionId])
+  }, [id, submissionId])
 
   const fetchSubmission = async () => {
     try {
-      const response = await fetch(`/api/homework/${params.id}/submissions/${params.submissionId}`)
+      const response = await fetch(`/api/homework/${id}/submissions/${submissionId}`)
       if (response.ok) {
         const data = await response.json()
         setSubmission(data)
@@ -69,11 +70,11 @@ export default function ReviewSubmissionPage({
           status: data.status || 'SUBMITTED'
         })
       } else {
-        router.push(`/admin/homework/${params.id}`)
+        router.push(`/admin/homework/${id}`)
       }
     } catch (error) {
       console.error('Ошибка при получении работы:', error)
-      router.push(`/admin/homework/${params.id}`)
+      router.push(`/admin/homework/${id}`)
     } finally {
       setLoading(false)
     }
@@ -84,7 +85,7 @@ export default function ReviewSubmissionPage({
     setSaving(true)
 
     try {
-      const response = await fetch(`/api/homework/${params.id}/submissions/${params.submissionId}/review`, {
+      const response = await fetch(`/api/homework/${id}/submissions/${submissionId}/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +99,7 @@ export default function ReviewSubmissionPage({
 
       if (response.ok) {
         toast.success('Работа проверена')
-        router.push(`/admin/homework/${params.id}`)
+        router.push(`/admin/homework/${id}`)
       } else {
         const error = await response.json()
         toast.error(error.error || 'Ошибка при проверке работы')
@@ -168,7 +169,7 @@ export default function ReviewSubmissionPage({
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Работа не найдена</h2>
         <Button asChild>
-          <Link href={`/admin/homework/${params.id}`}>
+          <Link href={`/admin/homework/${id}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Вернуться к заданию
           </Link>
@@ -183,7 +184,7 @@ export default function ReviewSubmissionPage({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href={`/admin/homework/${params.id}`}>
+            <Link href={`/admin/homework/${id}`}>
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>

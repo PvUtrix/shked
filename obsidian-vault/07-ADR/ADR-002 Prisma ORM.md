@@ -121,7 +121,7 @@
 graph LR
     User --> Group
     User --> HomeworkSubmission
-    User --> Subject["Subject (Teacher)"]
+    User --> Subject["Subject (Lector)"]
     Group --> Schedule
     Subject --> Schedule
     Subject --> Homework
