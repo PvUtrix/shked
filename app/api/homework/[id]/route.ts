@@ -110,11 +110,11 @@ export async function PUT(
       )
     }
 
-    // Проверка прав доступа: только админы и лекторы своих предметов
+    // Проверка прав доступа: только админы и преподаватели своих предметов
     if (session.user.role === 'admin') {
       // Админы имеют полный доступ
-    } else if (session.user.role === 'lector') {
-      // Лекторы могут редактировать только свои задания
+    } else if (['lector', 'co_lecturer', 'assistant'].includes(session.user.role)) {
+      // Преподаватели могут редактировать только свои задания
       const isLector = existingHomework.subject?.lectors.some(l => l.userId === session.user.id)
       if (!isLector) {
         return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })

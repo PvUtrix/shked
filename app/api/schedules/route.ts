@@ -86,9 +86,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Для преподавателей показываем только их предметы
-    if (session.user.role === 'lector' || lector) {
+    if (['lector', 'co_lecturer', 'assistant'].includes(session.user.role) || lector) {
       where.subject = {
-        lectorId: session.user.id
+        lectors: {
+          some: {
+            userId: session.user.id
+          }
+        }
       }
     }
 

@@ -62,6 +62,7 @@ export async function cleanupTestDb() {
     await prisma.homeworkSubmission.deleteMany()
     await prisma.homework.deleteMany()
     await prisma.schedule.deleteMany()
+    await prisma.subjectLector.deleteMany()
     await prisma.userGroup.deleteMany()
     await prisma.telegramUser.deleteMany()
     await prisma.session.deleteMany()
@@ -162,17 +163,30 @@ export async function createTestSubject(data: {
   if (!dbAvailable) {
     throw new Error('БД недоступна для создания тестового предмета')
   }
-  
+
   const prisma = getPrismaClient()
-  
-  return await prisma.subject.create({
+
+  const subject = await prisma.subject.create({
     data: {
       name: data.name,
       description: data.description,
       instructor: data.instructor,
-      lectorId: data.lectorId,
     },
   })
+
+  // Если указан lectorId, создаем связь через SubjectLector
+  if (data.lectorId) {
+    await prisma.subjectLector.create({
+      data: {
+        subjectId: subject.id,
+        userId: data.lectorId,
+        role: 'LECTOR',
+        isPrimary: true,
+      },
+    })
+  }
+
+  return subject
 }
 
 /**
