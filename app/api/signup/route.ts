@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db'
 
 export async function POST(request: Request) {
   try {
-    const { email, password, firstName, lastName, role = 'student' } = await request.json()
+    const { email, password, firstName, lastName } = await request.json()
 
     if (!email || !password || !firstName || !lastName) {
       return NextResponse.json(
@@ -29,7 +29,8 @@ export async function POST(request: Request) {
     // Хешируем пароль
     const hashedPassword = await bcryptjs.hash(password, 12)
 
-    // Создаем пользователя
+    // Создаем пользователя только с ролью 'student'
+    // Другие роли могут назначаться только администратором через /api/users
     const user = await prisma.user.create({
       data: {
         email,
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
         firstName,
         lastName,
         name: `${firstName} ${lastName}`,
-        role,
+        role: 'student',
       },
     })
 

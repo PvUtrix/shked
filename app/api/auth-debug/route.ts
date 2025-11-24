@@ -9,11 +9,17 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
+    // Проверка авторизации - только админы могут тестировать аутентификацию
+    const sessionCheck = await getServerSession(authOptions)
+    if (!sessionCheck?.user || sessionCheck.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
     const { email, password } = await request.json()
-    
+
     if (!email || !password) {
-      return NextResponse.json({ 
-        error: 'Email и пароль обязательны' 
+      return NextResponse.json({
+        error: 'Email и пароль обязательны'
       }, { status: 400 })
     }
 
@@ -99,8 +105,12 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    // Проверка авторизации - только админы
     const session = await getServerSession(authOptions)
-    
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
     return NextResponse.json({
       message: 'Auth debug info',
       session: session ? {

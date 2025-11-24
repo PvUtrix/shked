@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
@@ -8,6 +10,12 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(_request: NextRequest) {
   try {
+    // Проверка авторизации - только админы
+    const session = await getServerSession(authOptions)
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
     console.error('🔄 Добавляем недостающие колонки...')
 
     // Прямое добавление колонок

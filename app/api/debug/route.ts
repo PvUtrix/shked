@@ -8,8 +8,12 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
+    // Проверка авторизации - только админы
     const session = await getServerSession(authOptions)
-    
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
     // Получаем информацию о пользователе из базы данных
     let dbUser = null
     if (session?.user?.email) {
@@ -30,9 +34,8 @@ export async function GET(request: NextRequest) {
       message: 'Debug информация',
       environment: {
         NODE_ENV: process.env.NODE_ENV,
-        NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-        NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET',
-        DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET'
+        NEXTAUTH_URL: process.env.NEXTAUTH_URL
+        // Не раскрываем информацию о секретах и базе данных
       },
       session: session ? {
         user: session.user,
@@ -43,19 +46,17 @@ export async function GET(request: NextRequest) {
         url: request.url,
         headers: {
           host: request.headers.get('host'),
-          origin: request.headers.get('origin'),
-          referer: request.headers.get('referer'),
-          'user-agent': request.headers.get('user-agent')
+          origin: request.headers.get('origin')
         }
       }
     })
 
   } catch (error) {
     console.error('❌ Debug error:', error)
-    return NextResponse.json({ 
+    // Не раскрываем стек ошибки в ответе
+    return NextResponse.json({
       error: 'Debug error',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 }
