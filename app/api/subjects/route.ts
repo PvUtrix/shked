@@ -215,8 +215,8 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    // Только admin и lector могут редактировать предметы
-    if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
+    // Только admin и преподаватели могут редактировать предметы
+    if (!session?.user || !['admin', 'lector', 'co_lecturer', 'assistant'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
@@ -249,7 +249,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Для преподавателей проверяем, что предмет принадлежит им
-    if (session.user.role === 'lector') {
+    if (['lector', 'co_lecturer', 'assistant'].includes(session.user.role)) {
       const subjectWithLectors = await prisma.subject.findUnique({
         where: { id: body.id },
         include: {
