@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
@@ -8,12 +10,18 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
+    // Проверка авторизации - только админы
+    const session = await getServerSession(authOptions)
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
     // Проверяем, что это не production без явного разрешения
     const { force } = await request.json().catch(() => ({}))
-    
+
     if (process.env.NODE_ENV === 'production' && !force) {
-      return NextResponse.json({ 
-        error: 'Для production требуется параметр force: true' 
+      return NextResponse.json({
+        error: 'Для production требуется параметр force: true'
       }, { status: 400 })
     }
 

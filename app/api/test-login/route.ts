@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import bcryptjs from 'bcryptjs'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 // Принудительно делаем роут динамическим
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
+    // Проверка авторизации - только админы могут тестировать логин
+    const session = await getServerSession(authOptions)
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
     const { email, password } = await request.json()
-    
+
     if (!email || !password) {
-      return NextResponse.json({ 
-        error: 'Email и пароль обязательны' 
+      return NextResponse.json({
+        error: 'Email и пароль обязательны'
       }, { status: 400 })
     }
 

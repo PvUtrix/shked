@@ -98,13 +98,13 @@ export async function GET(request: NextRequest) {
 
     // Для менторов показываем только их группы
     if (session.user.role === 'mentor' || mentor) {
-      const user = await prisma.user.findUnique({
+      const _user = await prisma.user.findUnique({
         where: { id: session.user.id }
       })
-      
+
       // Временно отключаем фильтрацию по mentorGroupIds до применения миграции
-      // if (user?.mentorGroupIds) {
-      //   const groupIds = Array.isArray(user.mentorGroupIds) ? user.mentorGroupIds : []
+      // if (_user?.mentorGroupIds) {
+      //   const groupIds = Array.isArray(_user.mentorGroupIds) ? _user.mentorGroupIds : []
       //   where.groupId = {
       //     in: groupIds
       //   }

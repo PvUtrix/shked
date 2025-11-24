@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { broadcastToAll, broadcastToGroup, sendTestMessage } from '@/lib/telegram/notifications'
-import { sendMessage } from '@/lib/telegram/bot'
-import { prisma } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {

@@ -74,25 +74,41 @@ export default async function middleware(request: NextRequest) {
     )
   }
 
-  // Role-based route protection
+  // Role-based route protection using role hierarchy
+  // Role hierarchy: admin(100) > education_office_head(90) > department_admin(80) > lector(50) > co_lecturer(45) > assistant(40) > mentor(30) > student(10)
   const userRole = token.role as string
 
-  // Admin-only routes
+  // Admin-only routes - only admin can access
   if (pathname.startsWith('/admin') && userRole !== 'admin') {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Lector-only routes
-  if (pathname.startsWith('/lector') && !['admin', 'lector'].includes(userRole)) {
+  // Education office routes - admin and education_office_head can access
+  if (pathname.startsWith('/education-office') && !['admin', 'education_office_head'].includes(userRole)) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Mentor-only routes
-  if (pathname.startsWith('/mentor') && !['admin', 'mentor'].includes(userRole)) {
+  // Department routes - admin, education_office_head and department_admin can access
+  if (pathname.startsWith('/department') && !['admin', 'education_office_head', 'department_admin'].includes(userRole)) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Student-only routes
+  // Lector routes - admin, education_office_head, department_admin, lector, co_lecturer, and assistant can access
+  if (pathname.startsWith('/lector') && !['admin', 'education_office_head', 'department_admin', 'lector', 'co_lecturer', 'assistant'].includes(userRole)) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Assistant routes - admin, education_office_head, department_admin, lector, co_lecturer, and assistant can access
+  if (pathname.startsWith('/assistant') && !['admin', 'education_office_head', 'department_admin', 'lector', 'co_lecturer', 'assistant'].includes(userRole)) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Mentor routes - admin, education_office_head, department_admin, and mentor can access
+  if (pathname.startsWith('/mentor') && !['admin', 'education_office_head', 'department_admin', 'mentor'].includes(userRole)) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Student-only routes - admin and student can access
   if (pathname.startsWith('/student') && !['admin', 'student'].includes(userRole)) {
     return NextResponse.redirect(new URL('/', request.url))
   }

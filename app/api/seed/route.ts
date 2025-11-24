@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import bcryptjs from 'bcryptjs'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
@@ -10,12 +12,18 @@ export const dynamic = 'force-dynamic'
 // POST - создание тестовых пользователей
 export async function POST(request: NextRequest) {
   try {
+    // Проверка авторизации - только админы
+    const session = await getServerSession(authOptions)
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
     // Проверяем, что это не production без явного разрешения
     const { force } = await request.json().catch(() => ({}))
-    
+
     if (process.env.NODE_ENV === 'production' && !force) {
-      return NextResponse.json({ 
-        error: 'Для production требуется параметр force: true' 
+      return NextResponse.json({
+        error: 'Для production требуется параметр force: true'
       }, { status: 400 })
     }
 
@@ -184,17 +192,18 @@ export async function POST(request: NextRequest) {
 
     console.error('✅ Тестовые пользователи созданы успешно!')
 
+    // Не возвращаем пароли в ответе по соображениям безопасности
     return NextResponse.json({
       message: 'Тестовые пользователи созданы успешно! (8 ролей)',
       users: [
-        { email: 'admin@shked.com', password: 'admin123', role: 'admin' },
-        { email: 'student@demo.com', password: 'student123', role: 'student' },
-        { email: 'lector@demo.com', password: 'lector123', role: 'lector' },
-        { email: 'mentor@demo.com', password: 'mentor123', role: 'mentor' },
-        { email: 'assistant@demo.com', password: 'assistant123', role: 'assistant' },
-        { email: 'co-lecturer@demo.com', password: 'co_lecturer123', role: 'co_lecturer' },
-        { email: 'eduoffice@demo.com', password: 'eduoffice123', role: 'education_office_head' },
-        { email: 'deptadmin@demo.com', password: 'deptadmin123', role: 'department_admin' },
+        { email: 'admin@shked.com', role: 'admin' },
+        { email: 'student@demo.com', role: 'student' },
+        { email: 'lector@demo.com', role: 'lector' },
+        { email: 'mentor@demo.com', role: 'mentor' },
+        { email: 'assistant@demo.com', role: 'assistant' },
+        { email: 'co-lecturer@demo.com', role: 'co_lecturer' },
+        { email: 'eduoffice@demo.com', role: 'education_office_head' },
+        { email: 'deptadmin@demo.com', role: 'department_admin' },
       ]
     })
 
@@ -210,6 +219,12 @@ export async function POST(request: NextRequest) {
 // GET - проверка существующих пользователей
 export async function GET() {
   try {
+    // Проверка авторизации - только админы
+    const session = await getServerSession(authOptions)
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
     const users = await prisma.user.findMany({
       select: {
         id: true,
