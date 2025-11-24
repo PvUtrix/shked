@@ -43,9 +43,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Для преподавателей показываем только их предметы
-    if (session.user.role === 'lector' || lector) {
+    if (['lector', 'co_lecturer', 'assistant'].includes(session.user.role) || lector) {
       where.subject = {
-        lectorId: session.user.id
+        lectors: {
+          some: {
+            userId: session.user.id
+          }
+        }
       }
     }
 
@@ -131,14 +135,14 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
     
     // Проверяем права на создание домашнего задания
-    if (!session?.user || !['admin', 'lector'].includes(session.user.role)) {
+    if (!session?.user || !['admin', 'lector', 'co_lecturer', 'assistant'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
     const body: HomeworkFormData = await request.json()
-    
+
     // Для преподавателей проверяем, что предмет принадлежит им
-    if (session.user.role === 'lector') {
+    if (['lector', 'co_lecturer', 'assistant'].includes(session.user.role)) {
       const subjectLector = await prisma.subjectLector.findUnique({
         where: {
           subjectId_userId: {
