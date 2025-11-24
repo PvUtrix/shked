@@ -516,7 +516,7 @@ export default function UsersPage() {
                       <TableCell>
                         {isInactive ? (
                           <Badge variant="outline" className="bg-gray-100 text-gray-600">
-                            Удалён
+                            Неактивен
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="bg-green-100 text-green-800">
