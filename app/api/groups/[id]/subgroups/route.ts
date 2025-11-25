@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // GET /api/groups/[id]/subgroups - Получить подгруппы группы
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: groupId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -19,7 +20,7 @@ export async function GET(
 
     const subgroups = await prisma.subgroup.findMany({
       where: {
-        groupId: params.id,
+        groupId: groupId,
         ...(subjectId && { subjectId }),
         isActive: true
       },
@@ -68,9 +69,10 @@ export async function GET(
 // POST /api/groups/[id]/subgroups - Создать подгруппу
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: groupId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -94,7 +96,7 @@ export async function POST(
 
     // Проверка существования группы
     const group = await prisma.group.findUnique({
-      where: { id: params.id }
+      where: { id: groupId }
     })
 
     if (!group) {
@@ -108,7 +110,7 @@ export async function POST(
     const existingSubgroup = await prisma.subgroup.findUnique({
       where: {
         groupId_subjectId_number: {
-          groupId: params.id,
+          groupId: groupId,
           subjectId: subjectId || null,
           number
         }
@@ -125,7 +127,7 @@ export async function POST(
     // Создание подгруппы
     const subgroup = await prisma.subgroup.create({
       data: {
-        groupId: params.id,
+        groupId: groupId,
         subjectId: subjectId || null,
         name,
         number,

@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // GET /api/groups/[id]/students - получение списка студентов группы с подгруппами
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: groupId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user || !['admin', 'mentor', 'lector'].includes(session.user.role)) {
@@ -17,7 +18,7 @@ export async function GET(
 
     // Проверяем существование группы
     const group = await prisma.group.findUnique({
-      where: { id: params.id }
+      where: { id: groupId }
     })
 
     if (!group) {
@@ -30,7 +31,7 @@ export async function GET(
     // Получаем студентов группы
     const students = await prisma.user.findMany({
       where: {
-        groupId: params.id,
+        groupId: groupId,
         role: 'student',
         isActive: true
       },
@@ -42,7 +43,7 @@ export async function GET(
         email: true,
         userGroups: {
           where: {
-            groupId: params.id
+            groupId: groupId
           },
           select: {
             id: true,
@@ -89,9 +90,10 @@ export async function GET(
 // POST /api/groups/[id]/students - добавление студента в группу
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: groupId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user || session.user.role !== 'admin') {
@@ -109,7 +111,7 @@ export async function POST(
 
     // Проверяем существование группы
     const group = await prisma.group.findUnique({
-      where: { id: params.id }
+      where: { id: groupId }
     })
 
     if (!group) {
@@ -134,7 +136,7 @@ export async function POST(
     // Обновляем groupId пользователя
     await prisma.user.update({
       where: { id: body.userId },
-      data: { groupId: params.id }
+      data: { groupId: groupId }
     })
 
     // Создаем запись в UserGroup (если еще не существует)
@@ -142,7 +144,7 @@ export async function POST(
       where: {
         userId_groupId: {
           userId: body.userId,
-          groupId: params.id
+          groupId: groupId
         }
       }
     })
@@ -151,7 +153,7 @@ export async function POST(
       await prisma.userGroup.create({
         data: {
           userId: body.userId,
-          groupId: params.id,
+          groupId: groupId,
           subgroupCommerce: body.subgroupCommerce,
           subgroupTutorial: body.subgroupTutorial,
           subgroupFinance: body.subgroupFinance,
@@ -174,9 +176,10 @@ export async function POST(
 // DELETE /api/groups/[id]/students - удаление студента из группы
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: groupId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user || session.user.role !== 'admin') {
@@ -197,7 +200,7 @@ export async function DELETE(
     await prisma.userGroup.deleteMany({
       where: {
         userId,
-        groupId: params.id
+        groupId: groupId
       }
     })
 

@@ -8,17 +8,18 @@ import { logActivity } from '@/lib/activity-log'
 // POST /api/homework/[id]/submit - сдача домашнего задания
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: homeworkId } = await params
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user || session.user.role !== 'student') {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
     const body: HomeworkSubmissionFormData = await request.json()
-    
+
     // Проверяем, что есть либо контент, либо ссылка
     if (!body.content && !body.submissionUrl) {
       return NextResponse.json(
@@ -29,7 +30,7 @@ export async function POST(
 
     // Проверка существования домашнего задания
     const homework = await prisma.homework.findUnique({
-      where: { id: params.id },
+      where: { id: homeworkId },
       include: { group: true }
     })
 
@@ -60,7 +61,7 @@ export async function POST(
     const existingSubmission = await prisma.homeworkSubmission.findUnique({
       where: {
         homeworkId_userId: {
-          homeworkId: params.id,
+          homeworkId: homeworkId,
           userId: session.user.id
         }
       }
@@ -70,7 +71,7 @@ export async function POST(
     const submission = await prisma.homeworkSubmission.upsert({
       where: {
         homeworkId_userId: {
-          homeworkId: params.id,
+          homeworkId: homeworkId,
           userId: session.user.id
         }
       },
@@ -81,7 +82,7 @@ export async function POST(
         submittedAt: new Date()
       },
       create: {
-        homeworkId: params.id,
+        homeworkId: homeworkId,
         userId: session.user.id,
         content: body.content,  // MDX контент
         submissionUrl: body.submissionUrl,
@@ -148,9 +149,10 @@ export async function POST(
 // PUT /api/homework/[id]/submit - обновление сданного задания
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: homeworkId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user || session.user.role !== 'student') {
@@ -171,7 +173,7 @@ export async function PUT(
     const existingSubmission = await prisma.homeworkSubmission.findUnique({
       where: {
         homeworkId_userId: {
-          homeworkId: params.id,
+          homeworkId: homeworkId,
           userId: session.user.id
         }
       },
@@ -199,7 +201,7 @@ export async function PUT(
     const submission = await prisma.homeworkSubmission.update({
       where: {
         homeworkId_userId: {
-          homeworkId: params.id,
+          homeworkId: homeworkId,
           userId: session.user.id
         }
       },

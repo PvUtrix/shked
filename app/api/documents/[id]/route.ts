@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // DELETE /api/documents/[id] - Удалить документ по ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: documentId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -20,7 +21,7 @@ export async function DELETE(
     }
 
     const document = await prisma.subjectDocument.findUnique({
-      where: { id: params.id }
+      where: { id: documentId }
     })
 
     if (!document) {
@@ -29,7 +30,7 @@ export async function DELETE(
 
     // Мягкое удаление (деактивация)
     await prisma.subjectDocument.update({
-      where: { id: params.id },
+      where: { id: documentId },
       data: { isActive: false }
     })
 

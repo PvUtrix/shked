@@ -7,18 +7,16 @@ import { logActivity } from '@/lib/activity-log'
 // DELETE /api/subjects/[id]/lectors/[lectorId] - удаление преподавателя из предмета
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; lectorId: string } }
+  { params }: { params: Promise<{ id: string; lectorId: string }> }
 ) {
   try {
+    const { id: subjectId, lectorId: assignmentId } = await params
     const session = await getServerSession(authOptions)
 
     // Только admin может удалять назначения преподавателей
     if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
-
-    const subjectId = params.id
-    const assignmentId = params.lectorId
 
     // Проверяем существование назначения
     const assignment = await prisma.subjectLector.findUnique({

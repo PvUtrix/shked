@@ -7,9 +7,10 @@ import { HomeworkReviewFormData } from '@/lib/types'
 // PUT /api/homework/[id]/review - проверка и оценка домашнего задания
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: homeworkId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user || session.user.role !== 'admin') {
@@ -29,7 +30,7 @@ export async function PUT(
     const existingSubmission = await prisma.homeworkSubmission.findUnique({
       where: {
         homeworkId_userId: {
-          homeworkId: params.id,
+          homeworkId: homeworkId,
           userId: body.userId
         }
       },
@@ -66,7 +67,7 @@ export async function PUT(
     const submission = await prisma.homeworkSubmission.update({
       where: {
         homeworkId_userId: {
-          homeworkId: params.id,
+          homeworkId: homeworkId,
           userId: body.userId
         }
       },

@@ -6,16 +6,17 @@ import { prisma } from '@/lib/db'
 // GET /api/exams/[id] - Получить экзамен
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: examId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
 
     const exam = await prisma.exam.findUnique({
-      where: { id: params.id },
+      where: { id: examId },
       include: {
         subject: {
           select: {
@@ -70,9 +71,10 @@ export async function GET(
 // PATCH /api/exams/[id] - Обновить экзамен
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: examId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -87,7 +89,7 @@ export async function PATCH(
     const { type, format, date, location, description } = body
 
     const exam = await prisma.exam.update({
-      where: { id: params.id },
+      where: { id: examId },
       data: {
         ...(type && { type }),
         ...(format && { format }),
@@ -124,9 +126,10 @@ export async function PATCH(
 // DELETE /api/exams/[id] - Удалить экзамен
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: examId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -139,7 +142,7 @@ export async function DELETE(
 
     // Мягкое удаление
     await prisma.exam.update({
-      where: { id: params.id },
+      where: { id: examId },
       data: { isActive: false }
     })
 
