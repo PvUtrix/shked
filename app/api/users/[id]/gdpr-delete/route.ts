@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Prisma } from '@prisma/client'
 import bcryptjs from 'bcryptjs'
 import { randomUUID } from 'crypto'
 
@@ -87,7 +86,7 @@ export async function POST(
         canHelp: null,
         lookingFor: null,
         groupId: null,
-        mentorGroupIds: Prisma.JsonNull,
+        mentorGroupIds: null,
         isActive: false,
         // Сохраняем роль для целостности учебных данных
         // Роль остается для связи с учебными записями

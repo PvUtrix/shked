@@ -41,7 +41,7 @@ const homeworkSchema = z.object({
   description: z.string().optional(),
   content: z.string().optional(),  // MDX контент
   taskUrl: z.string().url('Некорректная ссылка').optional().or(z.literal('')),
-  deadline: z.date({ required_error: 'Дедлайн обязателен' }),
+  deadline: z.date({ message: 'Дедлайн обязателен' }),
   materials: z.array(materialSchema).optional(),
   subjectId: z.string().min(1, 'Предмет обязателен'),
   groupId: z.string().min(1).optional().or(z.literal('')), // Allow empty string or valid groupId
@@ -377,7 +377,7 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
                     <FormLabel>Дедлайн *</FormLabel>
                     <FormControl>
                       <DateTimePicker
-                        value={field.value}
+                        value={field.value instanceof Date ? field.value : undefined}
                         onChange={field.onChange}
                         placeholder="Выберите дату и время"
                       />
