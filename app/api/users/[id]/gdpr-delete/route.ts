@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import * as runtime from '@prisma/client/runtime/library'
 import bcryptjs from 'bcryptjs'
 import { randomUUID } from 'crypto'
 
@@ -87,7 +87,8 @@ export async function POST(
         canHelp: null,
         lookingFor: null,
         groupId: null,
-        mentorGroupIds: Prisma.JsonNull,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        mentorGroupIds: runtime.objectEnumValues.instances.DbNull as any,
         isActive: false,
         // Сохраняем роль для целостности учебных данных
         // Роль остается для связи с учебными записями

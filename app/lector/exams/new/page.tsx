@@ -1,20 +1,44 @@
-'use client'
-
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { redirect } from 'next/navigation'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { ExamForm } from '@/components/admin/exam-form'
 
-export default function NewExamPage() {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export default async function NewExamPage() {
+  const session = await getServerSession(authOptions)
 
-  const handleSuccess = () => {
-    router.push('/lector/exams')
+  if (!session?.user) {
+    redirect('/login')
   }
+
+  // Проверка роли - только преподаватели могут создавать экзамены
+  const allowedRoles = ['admin', 'lector', 'co_lecturer', 'assistant', 'education_office_head', 'department_admin']
+  if (!allowedRoles.includes(session.user.role)) {
+    redirect('/')
+  }
+
+  // Получаем предметы преподавателя через SubjectLector
+  const subjects = await prisma.subject.findMany({
+    where: {
+      lectors: {
+        some: {
+          userId: session.user.id
+        }
+      }
+    },
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  })
+
+  // Получаем группы
+  const groups = await prisma.group.findMany({
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  })
 
   return (
     <div className="space-y-6">
@@ -48,8 +72,9 @@ export default function NewExamPage() {
         </CardHeader>
         <CardContent>
           <ExamForm
-            onSuccess={handleSuccess}
-            onCancel={() => router.push('/lector/exams')}
+            subjects={subjects}
+            groups={groups}
+            onSuccess={() => redirect('/lector/exams')}
           />
         </CardContent>
       </Card>

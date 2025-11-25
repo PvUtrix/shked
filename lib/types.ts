@@ -28,6 +28,8 @@ export type DateRange = {
 }
 
 // Типы для модуля домашних заданий
+export type HomeworkStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED'
+
 export type Homework = {
   id: string
   title: string
@@ -38,6 +40,7 @@ export type Homework = {
   materials?: any[] // Дополнительные материалы
   subjectId: string
   groupId?: string
+  status: HomeworkStatus
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -82,7 +85,7 @@ export type HomeworkFormData = {
   description?: string
   content?: string  // MDX контент задания
   taskUrl?: string
-  deadline: string
+  deadline: Date | string  // Date в форме, string в API
   materials?: Array<{
     name: string
     url: string
@@ -90,6 +93,7 @@ export type HomeworkFormData = {
   }>
   subjectId: string
   groupId?: string
+  status?: HomeworkStatus  // Статус задания (DRAFT, ACTIVE, ARCHIVED)
 }
 
 export type HomeworkSubmissionFormData = {
@@ -107,6 +111,13 @@ export const HOMEWORK_STATUSES = {
   NOT_SUBMITTED: 'Не сдано',
   SUBMITTED: 'Сдано',
   REVIEWED: 'Проверено'
+} as const
+
+// Статусы самого домашнего задания (не сдачи)
+export const HOMEWORK_STATUS_TYPES = {
+  DRAFT: 'Черновик',
+  ACTIVE: 'Активное',
+  ARCHIVED: 'В архиве'
 } as const
 
 export const HOMEWORK_MATERIAL_TYPES = {

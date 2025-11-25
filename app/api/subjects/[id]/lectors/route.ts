@@ -7,17 +7,16 @@ import { logActivity } from '@/lib/activity-log'
 // POST /api/subjects/[id]/lectors - добавление преподавателя к предмету
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: subjectId } = await params
     const session = await getServerSession(authOptions)
 
     // Только admin может назначать преподавателей
     if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
-
-    const subjectId = params.id
     const body = await request.json()
 
     // Валидация

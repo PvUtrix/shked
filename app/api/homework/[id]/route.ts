@@ -152,7 +152,7 @@ export async function PUT(
     }
 
     const updateData: any = {}
-    
+
     if (body.title !== undefined) updateData.title = body.title
     if (body.description !== undefined) updateData.description = body.description
     if (body.content !== undefined) updateData.content = body.content  // MDX контент
@@ -161,6 +161,7 @@ export async function PUT(
     if (body.materials !== undefined) updateData.materials = body.materials
     if (body.subjectId !== undefined) updateData.subjectId = body.subjectId
     if (body.groupId !== undefined) updateData.groupId = body.groupId
+    if (body.status !== undefined) updateData.status = body.status  // DRAFT, ACTIVE, ARCHIVED
 
     const homework = await prisma.homework.update({
       where: { id },

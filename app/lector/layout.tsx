@@ -12,7 +12,9 @@ export default async function LectorLayout({
 }) {
   const session = await getServerSession(authOptions)
 
-  if (!session || session.user.role !== 'lector') {
+  // Разрешаем доступ преподавателям и связанным ролям
+  const allowedRoles = ['admin', 'lector', 'co_lecturer', 'assistant', 'education_office_head', 'department_admin']
+  if (!session || !allowedRoles.includes(session.user.role)) {
     redirect('/login')
   }
 

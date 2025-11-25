@@ -7,18 +7,19 @@ import { logActivity } from '@/lib/activity-log'
 // PATCH /api/users/[id]/restore - восстановление удалённого пользователя
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
     // Проверяем существование пользователя
     const existingUser = await prisma.user.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingUser) {
@@ -38,7 +39,7 @@ export async function PATCH(
 
     // Восстанавливаем пользователя (активируем)
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: { isActive: true }
     })
 
@@ -49,7 +50,7 @@ export async function PATCH(
         userId: session.user.email || session.user.id,
         action: 'UPDATE',
         entityType: 'User',
-        entityId: params.id,
+        entityId: id,
         request,
         details: {
           before: {

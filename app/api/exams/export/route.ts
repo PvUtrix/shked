@@ -5,6 +5,29 @@ import { prisma } from '@/lib/prisma'
 import { createExcelFile, createExcelResponse, ExcelColumn } from '@/lib/export/excel'
 import { getFullName } from '@/lib/utils'
 
+// Типы для результатов запроса
+interface ExamResultWithStudent {
+  userId: string
+  grade: number | null
+  status: string
+  takenAt: Date | null
+  notes: string | null
+  student: {
+    firstName: string | null
+    lastName: string | null
+    middleName: string | null
+    email: string
+  }
+}
+
+interface StudentSelect {
+  id: string
+  firstName: string | null
+  lastName: string | null
+  middleName: string | null
+  email: string
+}
+
 // GET /api/exams/export?examId=xxx - Экспорт экзаменационной ведомости в Excel
 export async function GET(request: NextRequest) {
   try {
@@ -94,12 +117,12 @@ export async function GET(request: NextRequest) {
     })
 
     // Создать Map результатов для быстрого доступа
-    const resultsMap = new Map(
-      exam.results.map((result) => [result.userId, result])
+    const resultsMap = new Map<string, ExamResultWithStudent>(
+      (exam.results as ExamResultWithStudent[]).map((result: ExamResultWithStudent) => [result.userId, result])
     )
 
     // Подготовить данные для экспорта (все студенты, включая тех, кто не сдавал)
-    const exportData = allStudents.map((student, index) => {
+    const exportData = (allStudents as StudentSelect[]).map((student: StudentSelect, index: number) => {
       const result = resultsMap.get(student.id)
       return {
         number: index + 1,

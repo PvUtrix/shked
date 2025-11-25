@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // GET /api/subjects/[id]/documents - Получить список документов предмета
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: subjectId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -16,7 +17,7 @@ export async function GET(
 
     const documents = await prisma.subjectDocument.findMany({
       where: {
-        subjectId: params.id,
+        subjectId: subjectId,
         isActive: true
       },
       include: {
@@ -48,9 +49,10 @@ export async function GET(
 // POST /api/subjects/[id]/documents - Загрузить документ предмета
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: subjectId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -74,7 +76,7 @@ export async function POST(
 
     // Проверка существования предмета
     const subject = await prisma.subject.findUnique({
-      where: { id: params.id }
+      where: { id: subjectId }
     })
 
     if (!subject) {
@@ -87,7 +89,7 @@ export async function POST(
     // Создание документа
     const document = await prisma.subjectDocument.create({
       data: {
-        subjectId: params.id,
+        subjectId: subjectId,
         type,
         fileName,
         fileUrl,

@@ -263,6 +263,7 @@ model Homework {
   materials   Json? // Дополнительные материалы (массив объектов)
   subjectId   String
   groupId     String?
+  status      String   @default("ACTIVE") // DRAFT, ACTIVE, ARCHIVED
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -275,6 +276,7 @@ model Homework {
   @@index([groupId])
   @@index([deadline])
   @@index([isActive])
+  @@index([status])
   @@map("homework")
 }
 

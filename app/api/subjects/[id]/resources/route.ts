@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // GET /api/subjects/[id]/resources - Получить внешние ресурсы предмета
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: subjectId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -16,7 +17,7 @@ export async function GET(
 
     const resources = await prisma.externalResource.findMany({
       where: {
-        subjectId: params.id,
+        subjectId: subjectId,
         scheduleId: null, // Ресурсы предмета (не привязанные к конкретному занятию)
         isActive: true
       },
@@ -38,9 +39,10 @@ export async function GET(
 // POST /api/subjects/[id]/resources - Создать внешний ресурс
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: subjectId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -64,7 +66,7 @@ export async function POST(
 
     // Проверка существования предмета
     const subject = await prisma.subject.findUnique({
-      where: { id: params.id }
+      where: { id: subjectId }
     })
 
     if (!subject) {
@@ -77,7 +79,7 @@ export async function POST(
     // Создание ресурса
     const resource = await prisma.externalResource.create({
       data: {
-        subjectId: params.id,
+        subjectId: subjectId,
         type,
         title,
         url,

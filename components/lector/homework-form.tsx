@@ -41,10 +41,11 @@ const homeworkSchema = z.object({
   description: z.string().optional(),
   content: z.string().optional(),  // MDX контент
   taskUrl: z.string().url('Некорректная ссылка').optional().or(z.literal('')),
-  deadline: z.string().min(1, 'Дедлайн обязателен'),
+  deadline: z.date({ message: 'Дедлайн обязателен' }),
   materials: z.array(materialSchema).optional(),
   subjectId: z.string().min(1, 'Предмет обязателен'),
   groupId: z.string().min(1).optional().or(z.literal('')), // Allow empty string or valid groupId
+  status: z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']).optional(),
 })
 
 interface HomeworkFormProps {
@@ -69,10 +70,11 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
       description: '',
       content: '',  // MDX контент
       taskUrl: '',
-      deadline: '',
+      deadline: undefined,
       materials: [],
       subjectId: '',
       groupId: '',
+      status: 'DRAFT',
     },
   })
 
@@ -112,16 +114,16 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
   // Заполняем форму при редактировании
   useEffect(() => {
     if (homework) {
-      const deadline = new Date(homework.deadline)
       form.reset({
         title: homework.title || '',
         description: homework.description || '',
         content: homework.content || '',  // MDX контент
         taskUrl: homework.taskUrl || '',
-        deadline: deadline.toISOString().split('T')[0] + 'T' + deadline.toTimeString().split(' ')[0].slice(0, 5),
+        deadline: homework.deadline ? new Date(homework.deadline) : undefined,
         materials: homework.materials || [],
         subjectId: homework.subjectId || '',
         groupId: homework.groupId || '',
+        status: homework.status || 'DRAFT',
       })
     } else {
       form.reset({
@@ -129,10 +131,11 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
         description: '',
         content: '',  // MDX контент
         taskUrl: '',
-        deadline: '',
+        deadline: undefined,
         materials: [],
         subjectId: '',
         groupId: '',
+        status: 'DRAFT',
       })
     }
   }, [homework, form])
@@ -171,12 +174,15 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
       const method = isEditing ? 'PUT' : 'POST'
 
       // Convert empty strings to undefined for optional fields
+      // Convert Date to ISO string for API
       const cleanedData = {
         ...data,
+        deadline: data.deadline instanceof Date ? data.deadline.toISOString() : data.deadline,
         groupId: data.groupId || undefined,
         taskUrl: data.taskUrl || undefined,
         description: data.description || undefined,
         content: data.content || undefined,
+        status: data.status || 'DRAFT',
       }
 
       const body = isEditing ? { ...cleanedData, id: homework.id } : cleanedData
@@ -362,22 +368,48 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
               />
             </div>
             
-            <FormField
-              control={form.control}
-              name="deadline"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Дедлайн *</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="datetime-local" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="deadline"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Дедлайн *</FormLabel>
+                    <FormControl>
+                      <DateTimePicker
+                        value={field.value instanceof Date ? field.value : undefined}
+                        onChange={field.onChange}
+                        placeholder="Выберите дату и время"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Статус</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || 'DRAFT'}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите статус" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="DRAFT">Черновик</SelectItem>
+                        <SelectItem value="ACTIVE">Активное</SelectItem>
+                        <SelectItem value="ARCHIVED">В архиве</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Дополнительные материалы */}
             <div className="space-y-4">

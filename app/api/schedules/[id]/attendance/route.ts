@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // GET /api/schedules/[id]/attendance - Получить список посещаемости занятия
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: scheduleId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -16,7 +17,7 @@ export async function GET(
 
     const attendance = await prisma.attendance.findMany({
       where: {
-        scheduleId: params.id
+        scheduleId: scheduleId
       },
       include: {
         student: {
@@ -55,9 +56,10 @@ export async function GET(
 // POST /api/schedules/[id]/attendance - Отметить посещаемость (массовая отметка)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: scheduleId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -81,7 +83,7 @@ export async function POST(
 
     // Проверка существования занятия
     const schedule = await prisma.schedule.findUnique({
-      where: { id: params.id }
+      where: { id: scheduleId }
     })
 
     if (!schedule) {
@@ -100,7 +102,7 @@ export async function POST(
         const existing = await prisma.attendance.findUnique({
           where: {
             scheduleId_userId: {
-              scheduleId: params.id,
+              scheduleId: scheduleId,
               userId
             }
           }
@@ -132,7 +134,7 @@ export async function POST(
           // Создание
           return prisma.attendance.create({
             data: {
-              scheduleId: params.id,
+              scheduleId: scheduleId,
               userId,
               status,
               notes: notes || null,

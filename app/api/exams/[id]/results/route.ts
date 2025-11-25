@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // GET /api/exams/[id]/results - Получить результаты экзамена
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: examId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -16,7 +17,7 @@ export async function GET(
 
     const results = await prisma.examResult.findMany({
       where: {
-        examId: params.id
+        examId: examId
       },
       include: {
         student: {
@@ -56,9 +57,10 @@ export async function GET(
 // POST /api/exams/[id]/results - Внести результат для студента
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: examId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
@@ -82,7 +84,7 @@ export async function POST(
 
     // Проверка существования экзамена
     const exam = await prisma.exam.findUnique({
-      where: { id: params.id }
+      where: { id: examId }
     })
 
     if (!exam) {
@@ -96,7 +98,7 @@ export async function POST(
     const existing = await prisma.examResult.findUnique({
       where: {
         examId_userId: {
-          examId: params.id,
+          examId: examId,
           userId
         }
       }
@@ -130,7 +132,7 @@ export async function POST(
       // Создание нового результата
       result = await prisma.examResult.create({
         data: {
-          examId: params.id,
+          examId: examId,
           userId,
           grade: grade || null,
           status,
