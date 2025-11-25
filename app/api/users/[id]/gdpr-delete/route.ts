@@ -87,7 +87,8 @@ export async function POST(
         canHelp: null,
         lookingFor: null,
         groupId: null,
-        mentorGroupIds: runtime.objectEnumValues.instances.DbNull,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        mentorGroupIds: runtime.objectEnumValues.instances.DbNull as any,
         isActive: false,
         // Сохраняем роль для целостности учебных данных
         // Роль остается для связи с учебными записями
