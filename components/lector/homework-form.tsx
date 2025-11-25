@@ -45,6 +45,7 @@ const homeworkSchema = z.object({
   materials: z.array(materialSchema).optional(),
   subjectId: z.string().min(1, 'Предмет обязателен'),
   groupId: z.string().min(1).optional().or(z.literal('')), // Allow empty string or valid groupId
+  status: z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']).optional(),
 })
 
 interface HomeworkFormProps {
@@ -73,6 +74,7 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
       materials: [],
       subjectId: '',
       groupId: '',
+      status: 'DRAFT',
     },
   })
 
@@ -121,6 +123,7 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
         materials: homework.materials || [],
         subjectId: homework.subjectId || '',
         groupId: homework.groupId || '',
+        status: homework.status || 'DRAFT',
       })
     } else {
       form.reset({
@@ -132,6 +135,7 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
         materials: [],
         subjectId: '',
         groupId: '',
+        status: 'DRAFT',
       })
     }
   }, [homework, form])
@@ -178,6 +182,7 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
         taskUrl: data.taskUrl || undefined,
         description: data.description || undefined,
         content: data.content || undefined,
+        status: data.status || 'DRAFT',
       }
 
       const body = isEditing ? { ...cleanedData, id: homework.id } : cleanedData
@@ -363,23 +368,48 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
               />
             </div>
             
-            <FormField
-              control={form.control}
-              name="deadline"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Дедлайн *</FormLabel>
-                  <FormControl>
-                    <DateTimePicker
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="Выберите дату и время"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="deadline"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Дедлайн *</FormLabel>
+                    <FormControl>
+                      <DateTimePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Выберите дату и время"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Статус</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || 'DRAFT'}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите статус" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="DRAFT">Черновик</SelectItem>
+                        <SelectItem value="ACTIVE">Активное</SelectItem>
+                        <SelectItem value="ARCHIVED">В архиве</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Дополнительные материалы */}
             <div className="space-y-4">

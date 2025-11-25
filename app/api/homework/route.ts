@@ -17,7 +17,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const subjectId = searchParams.get('subjectId')
     const groupId = searchParams.get('groupId')
-    const status = searchParams.get('status')
+    const status = searchParams.get('status')  // Статус сдачи студента
+    const homeworkStatus = searchParams.get('homeworkStatus')  // Статус самого задания (DRAFT, ACTIVE, ARCHIVED)
     const lector = searchParams.get('lector') === 'true'
     const mentor = searchParams.get('mentor') === 'true'
     const page = parseInt(searchParams.get('page') || '1')
@@ -25,6 +26,14 @@ export async function GET(request: NextRequest) {
 
     const where: any = {
       isActive: true
+    }
+
+    // Фильтрация по статусу задания
+    if (homeworkStatus) {
+      where.status = homeworkStatus
+    } else if (session.user.role === 'student') {
+      // Студенты видят только активные задания
+      where.status = 'ACTIVE'
     }
 
     // Фильтрация по предмету
@@ -200,7 +209,8 @@ export async function POST(request: NextRequest) {
         deadline: new Date(body.deadline),
         materials: body.materials || [],
         subjectId: body.subjectId,
-        groupId: body.groupId
+        groupId: body.groupId,
+        status: body.status || 'DRAFT'  // По умолчанию создаем как черновик
       },
       include: {
         subject: true,

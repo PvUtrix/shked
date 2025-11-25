@@ -14,10 +14,16 @@ import {
   ExternalLink,
   Filter,
   Search,
-  Eye
+  Eye,
+  Copy,
+  Check,
+  Power,
+  PowerOff,
+  Archive
 } from 'lucide-react'
-import { Homework } from '@/lib/types'
+import { Homework, HOMEWORK_STATUS_TYPES, HomeworkStatus } from '@/lib/types'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
 // Временные типы для совместимости
 type Subject = {
@@ -39,7 +45,9 @@ export default function LectorHomeworkPage() {
   const [loading, setLoading] = useState(true)
   const [filterSubject, setFilterSubject] = useState<string>('')
   const [filterGroup, setFilterGroup] = useState<string>('')
+  const [filterStatus, setFilterStatus] = useState<string>('')
   const [searchTerm, setSearchTerm] = useState<string>('')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -112,14 +120,61 @@ export default function LectorHomeworkPage() {
     return `Сдано: ${submissions.length}`
   }
 
+  const getHomeworkStatusColor = (status: HomeworkStatus) => {
+    switch (status) {
+      case 'DRAFT':
+        return 'secondary'
+      case 'ACTIVE':
+        return 'default'
+      case 'ARCHIVED':
+        return 'outline'
+      default:
+        return 'secondary'
+    }
+  }
+
+  const copyHomeworkLink = async (homeworkId: string) => {
+    const url = `${window.location.origin}/student/homework/${homeworkId}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopiedId(homeworkId)
+      toast.success('Ссылка скопирована')
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch {
+      toast.error('Не удалось скопировать ссылку')
+    }
+  }
+
+  const updateHomeworkStatus = async (homeworkId: string, newStatus: HomeworkStatus) => {
+    try {
+      const response = await fetch(`/api/homework/${homeworkId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+
+      if (response.ok) {
+        setHomework(prev => prev.map(hw =>
+          hw.id === homeworkId ? { ...hw, status: newStatus } : hw
+        ))
+        toast.success(`Статус изменен на "${HOMEWORK_STATUS_TYPES[newStatus]}"`)
+      } else {
+        toast.error('Не удалось изменить статус')
+      }
+    } catch {
+      toast.error('Произошла ошибка')
+    }
+  }
+
   const filteredHomework = Array.isArray(homework) ? homework.filter(hw => {
     const matchesSubject = !filterSubject || hw.subjectId === filterSubject
     const matchesGroup = !filterGroup || hw.groupId === filterGroup
-    const matchesSearch = !searchTerm || 
+    const matchesStatus = !filterStatus || hw.status === filterStatus
+    const matchesSearch = !searchTerm ||
       hw.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       hw.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    return matchesSubject && matchesGroup && matchesSearch
+
+    return matchesSubject && matchesGroup && matchesStatus && matchesSearch
   }) : []
 
   if (loading) {
@@ -199,6 +254,20 @@ export default function LectorHomeworkPage() {
                 ))}
               </select>
             </div>
+
+            <div className="flex items-center gap-2">
+              <Power className="h-4 w-4 text-gray-500" />
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm"
+              >
+                <option value="">Все статусы</option>
+                <option value="DRAFT">Черновик</option>
+                <option value="ACTIVE">Активное</option>
+                <option value="ARCHIVED">В архиве</option>
+              </select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -223,20 +292,85 @@ export default function LectorHomeworkPage() {
       ) : (
         <div className="grid gap-6">
           {filteredHomework.map((hw) => (
-            <Card key={hw.id} className="card-hover">
+            <Card key={hw.id} className={`card-hover ${hw.status === 'ARCHIVED' ? 'opacity-60' : ''}`}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-lg line-clamp-2">
-                      {hw.title}
-                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-lg line-clamp-2">
+                        {hw.title}
+                      </CardTitle>
+                      <Badge variant={getHomeworkStatusColor(hw.status || 'ACTIVE')}>
+                        {HOMEWORK_STATUS_TYPES[hw.status || 'ACTIVE']}
+                      </Badge>
+                    </div>
                     {hw.description && (
                       <CardDescription className="line-clamp-2 mt-1">
                         {hw.description}
                       </CardDescription>
                     )}
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1">
+                    {/* Кнопка копирования ссылки */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyHomeworkLink(hw.id)}
+                      title="Копировать ссылку"
+                    >
+                      {copiedId === hw.id ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+
+                    {/* Кнопки смены статуса */}
+                    {hw.status === 'DRAFT' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => updateHomeworkStatus(hw.id, 'ACTIVE')}
+                        title="Активировать"
+                        className="text-green-600 hover:text-green-700"
+                      >
+                        <Power className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {hw.status === 'ACTIVE' && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => updateHomeworkStatus(hw.id, 'DRAFT')}
+                          title="В черновик"
+                          className="text-yellow-600 hover:text-yellow-700"
+                        >
+                          <PowerOff className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => updateHomeworkStatus(hw.id, 'ARCHIVED')}
+                          title="В архив"
+                          className="text-gray-500 hover:text-gray-600"
+                        >
+                          <Archive className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                    {hw.status === 'ARCHIVED' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => updateHomeworkStatus(hw.id, 'ACTIVE')}
+                        title="Восстановить"
+                        className="text-green-600 hover:text-green-700"
+                      >
+                        <Power className="h-4 w-4" />
+                      </Button>
+                    )}
+
                     <Button variant="ghost" size="sm" asChild>
                       <Link href={`/lector/homework/${hw.id}`}>
                         <Eye className="h-4 w-4" />
