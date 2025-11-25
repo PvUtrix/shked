@@ -41,7 +41,7 @@ const homeworkSchema = z.object({
   description: z.string().optional(),
   content: z.string().optional(),  // MDX контент
   taskUrl: z.string().url('Некорректная ссылка').optional().or(z.literal('')),
-  deadline: z.string().min(1, 'Дедлайн обязателен'),
+  deadline: z.date({ required_error: 'Дедлайн обязателен' }),
   materials: z.array(materialSchema).optional(),
   subjectId: z.string().min(1, 'Предмет обязателен'),
   groupId: z.string().min(1).optional().or(z.literal('')), // Allow empty string or valid groupId
@@ -69,7 +69,7 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
       description: '',
       content: '',  // MDX контент
       taskUrl: '',
-      deadline: '',
+      deadline: undefined,
       materials: [],
       subjectId: '',
       groupId: '',
@@ -112,13 +112,12 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
   // Заполняем форму при редактировании
   useEffect(() => {
     if (homework) {
-      const deadline = new Date(homework.deadline)
       form.reset({
         title: homework.title || '',
         description: homework.description || '',
         content: homework.content || '',  // MDX контент
         taskUrl: homework.taskUrl || '',
-        deadline: deadline.toISOString().split('T')[0] + 'T' + deadline.toTimeString().split(' ')[0].slice(0, 5),
+        deadline: homework.deadline ? new Date(homework.deadline) : undefined,
         materials: homework.materials || [],
         subjectId: homework.subjectId || '',
         groupId: homework.groupId || '',
@@ -129,7 +128,7 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
         description: '',
         content: '',  // MDX контент
         taskUrl: '',
-        deadline: '',
+        deadline: undefined,
         materials: [],
         subjectId: '',
         groupId: '',
@@ -171,8 +170,10 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
       const method = isEditing ? 'PUT' : 'POST'
 
       // Convert empty strings to undefined for optional fields
+      // Convert Date to ISO string for API
       const cleanedData = {
         ...data,
+        deadline: data.deadline instanceof Date ? data.deadline.toISOString() : data.deadline,
         groupId: data.groupId || undefined,
         taskUrl: data.taskUrl || undefined,
         description: data.description || undefined,
@@ -369,9 +370,10 @@ export function HomeworkForm({ open, onOpenChange, homework, onSuccess }: Homewo
                 <FormItem>
                   <FormLabel>Дедлайн *</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="datetime-local" 
-                      {...field} 
+                    <DateTimePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Выберите дату и время"
                     />
                   </FormControl>
                   <FormMessage />

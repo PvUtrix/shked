@@ -82,7 +82,7 @@ export type HomeworkFormData = {
   description?: string
   content?: string  // MDX контент задания
   taskUrl?: string
-  deadline: string
+  deadline: Date | string  // Date в форме, string в API
   materials?: Array<{
     name: string
     url: string
