@@ -26,6 +26,7 @@ export default function StudentHomeworkDetailPage({ params }: { params: Promise<
   const [homework, setHomework] = useState<Homework | null>(null)
   const [submission, setSubmission] = useState<HomeworkSubmission | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchHomework = useCallback(async () => {
     try {
@@ -39,11 +40,11 @@ export default function StudentHomeworkDetailPage({ params }: { params: Promise<
           setSubmission(data.submissions[0])
         }
       } else {
-        router.push('/student/homework')
+        setError(`Ошибка загрузки: ${response.status} ${response.statusText}`)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Ошибка при получении домашнего задания:', error)
-      router.push('/student/homework')
+      setError('Произошла ошибка при загрузке задания')
     } finally {
       setLoading(false)
     }
@@ -94,6 +95,18 @@ export default function StudentHomeworkDetailPage({ params }: { params: Promise<
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Загружаем домашнее задание...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-600">
+        <p>Произошла ошибка: {error}</p>
+        <p>ID: {id}</p>
+        <Button asChild className="mt-4">
+          <Link href="/student/homework">Вернуться к списку</Link>
+        </Button>
       </div>
     )
   }
