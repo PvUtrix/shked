@@ -202,7 +202,7 @@
     "tailwind-scrollbar-hide": "1.1.7",
     "vaul": "1.1.2",
     "webpack": "5.103.0",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz",
     "yup": "1.7.1",
     "zod": "^4.1.12",
     "zustand": "5.0.8"
