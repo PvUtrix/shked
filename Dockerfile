@@ -5,6 +5,9 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+# Обновление npm до версии 11
+RUN npm install -g npm@11
+
 # Копирование файлов зависимостей
 COPY package.json package-lock.json* ./
 RUN npm ci --only=production --ignore-scripts && npm cache clean --force
@@ -12,6 +15,9 @@ RUN npm ci --only=production --ignore-scripts && npm cache clean --force
 # Этап 2: Сборка приложения  
 FROM node:20-alpine AS builder
 WORKDIR /app
+
+# Обновление npm до версии 11
+RUN npm install -g npm@11
 
 # Установка OpenSSL для Prisma
 RUN apk add --no-cache openssl libc6-compat
