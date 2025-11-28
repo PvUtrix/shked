@@ -50,7 +50,15 @@ export default function LectorReviewSubmissionPage({
 }) {
   const router = useRouter()
   const [submission, setSubmission] = useState<Submission | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [formData, setFormData] = useState({
+    grade: '',
+    comment: '',
+    feedback: '',
+    status: 'SUBMITTED'
+  })
 
   useEffect(() => {
     const fetchSubmission = async () => {
