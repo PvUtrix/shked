@@ -60,7 +60,7 @@ export async function POST(
 
     // Проверка прав доступа (только admin, lector)
     if (!['admin', 'lector', 'assistant'].includes(session.user.role)) {
-      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+      return NextResponse.json({ error: 'У вас нет прав на добавление документов к этому предмету' }, { status: 403 })
     }
 
     const body = await request.json()

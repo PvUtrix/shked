@@ -50,14 +50,7 @@ export default function LectorReviewSubmissionPage({
 }) {
   const router = useRouter()
   const [submission, setSubmission] = useState<Submission | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState({
-    grade: '',
-    comment: '',
-    feedback: '',
-    status: 'SUBMITTED'
-  })
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchSubmission = async () => {
@@ -73,18 +66,28 @@ export default function LectorReviewSubmissionPage({
             status: data.status || 'SUBMITTED'
           })
         } else {
-          router.push(`/lector/homework/${params.id}`)
+          // Пытаемся получить сообщение об ошибке от сервера
+          let errorMessage = `Ошибка загрузки: ${response.status} ${response.statusText}`
+          try {
+            const errorData = await response.json()
+            if (errorData && errorData.error) {
+              errorMessage = errorData.error
+            }
+          } catch (e) {
+            // Если не удалось распарсить JSON, используем стандартное сообщение
+          }
+          setError(errorMessage)
         }
       } catch (error) {
         console.error('Ошибка при получении работы:', error)
-        router.push(`/lector/homework/${params.id}`)
+        setError('Произошла ошибка при загрузке работы')
       } finally {
         setLoading(false)
       }
     }
 
     fetchSubmission()
-  }, [params.id, params.submissionId, router])
+  }, [params.id, params.submissionId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -167,6 +170,27 @@ export default function LectorReviewSubmissionPage({
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+        <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg max-w-md w-full">
+          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+            Произошла ошибка
+          </h3>
+          <p className="text-red-600 dark:text-red-300 mb-6">
+            {error}
+          </p>
+          <Button asChild variant="outline">
+            <Link href={`/lector/homework/${params.id}`}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Вернуться к заданию
+            </Link>
+          </Button>
+        </div>
       </div>
     )
   }

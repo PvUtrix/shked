@@ -75,15 +75,15 @@ export async function GET(
       // Лекторы могут просматривать работы по своим предметам
       const isLector = submission.homework.subject?.lectors.some(l => l.userId === session.user.id)
       if (!isLector) {
-        return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+        return NextResponse.json({ error: 'Вы не являетесь преподавателем этого предмета' }, { status: 403 })
       }
     } else if (session.user.role === 'mentor') {
       // Менторы могут просматривать работы своих групп
       if (submission.homework.groupId !== session.user.groupId) {
-        return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+        return NextResponse.json({ error: 'Эта работа не относится к вашей группе' }, { status: 403 })
       }
     } else {
-      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+      return NextResponse.json({ error: 'У вас нет прав на просмотр этой работы' }, { status: 403 })
     }
 
     return NextResponse.json(submission)

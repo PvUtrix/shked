@@ -263,7 +263,7 @@ export async function PUT(request: NextRequest) {
       })
 
       if (!subjectWithLectors || subjectWithLectors.lectors.length === 0) {
-        return NextResponse.json({ error: 'Нет доступа к этому предмету' }, { status: 403 })
+        return NextResponse.json({ error: 'Вы не являетесь преподавателем этого предмета' }, { status: 403 })
       }
     }
 

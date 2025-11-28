@@ -82,7 +82,7 @@ export async function PATCH(
 
     // Проверка прав доступа
     if (!['admin', 'lector'].includes(session.user.role)) {
-      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+      return NextResponse.json({ error: 'У вас нет прав на редактирование этого экзамена' }, { status: 403 })
     }
 
     const body = await request.json()
@@ -137,7 +137,7 @@ export async function DELETE(
 
     // Проверка прав доступа
     if (!['admin'].includes(session.user.role)) {
-      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+      return NextResponse.json({ error: 'У вас нет прав на удаление этого экзамена' }, { status: 403 })
     }
 
     // Мягкое удаление
