@@ -40,7 +40,17 @@ export default function StudentHomeworkDetailPage({ params }: { params: Promise<
           setSubmission(data.submissions[0])
         }
       } else {
-        setError(`Ошибка загрузки: ${response.status} ${response.statusText}`)
+        // Пытаемся получить сообщение об ошибке от сервера
+        let errorMessage = `Ошибка загрузки: ${response.status} ${response.statusText}`
+        try {
+          const errorData = await response.json()
+          if (errorData && errorData.error) {
+            errorMessage = errorData.error
+          }
+        } catch (e) {
+          // Если не удалось распарсить JSON, используем стандартное сообщение
+        }
+        setError(errorMessage)
       }
     } catch (error: any) {
       console.error('Ошибка при получении домашнего задания:', error)
@@ -101,12 +111,18 @@ export default function StudentHomeworkDetailPage({ params }: { params: Promise<
 
   if (error) {
     return (
-      <div className="text-center py-8 text-red-600">
-        <p>Произошла ошибка: {error}</p>
-        <p>ID: {id}</p>
-        <Button asChild className="mt-4">
-          <Link href="/student/homework">Вернуться к списку</Link>
-        </Button>
+      <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+        <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg max-w-md w-full">
+          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+            Произошла ошибка
+          </h3>
+          <p className="text-red-600 dark:text-red-300 mb-6">
+            {error}
+          </p>
+          <Button asChild variant="outline">
+            <Link href="/student/homework">Вернуться к списку заданий</Link>
+          </Button>
+        </div>
       </div>
     )
   }

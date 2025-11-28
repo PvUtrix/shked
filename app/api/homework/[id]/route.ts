@@ -55,7 +55,7 @@ export async function GET(
       // 2. Задание для группы студента
       if (homework.groupId && homework.groupId !== session.user.groupId) {
         return NextResponse.json(
-          { error: 'Доступ запрещен' },
+          { error: 'Вы не состоите в группе, для которой назначено это задание' },
           { status: 403 }
         )
       }
