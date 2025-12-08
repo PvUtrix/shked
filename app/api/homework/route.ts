@@ -46,9 +46,19 @@ export async function GET(request: NextRequest) {
       where.groupId = groupId
     }
 
-    // Для студентов показываем только их группу
-    if (session.user.role === 'student' && session.user.groupId) {
-      where.groupId = session.user.groupId
+    // Для студентов показываем только их группу или общие задания
+    if (session.user.role === 'student') {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { groupId: true }
+      })
+      
+      const userGroupId = user?.groupId
+
+      where.OR = [
+        { groupId: null },  // Общие задания
+        { groupId: userGroupId }  // Задания для группы студента
+      ]
     }
 
     // Для преподавателей показываем только их предметы

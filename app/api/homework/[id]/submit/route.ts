@@ -42,11 +42,18 @@ export async function POST(
     }
 
     // Проверка, что студент принадлежит к группе задания
-    if (homework.groupId && homework.groupId !== session.user.groupId) {
-      return NextResponse.json(
-        { error: 'Вы не состоите в группе, для которой назначено это задание' },
-        { status: 403 }
-      )
+    if (homework.groupId) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { groupId: true }
+      })
+
+      if (homework.groupId !== user?.groupId) {
+        return NextResponse.json(
+          { error: 'Вы не состоите в группе, для которой назначено это задание' },
+          { status: 403 }
+        )
+      }
     }
 
     // Проверка, что дедлайн не истек

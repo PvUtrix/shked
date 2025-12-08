@@ -50,10 +50,17 @@ export async function GET(
 
     // Для студентов проверяем доступ к заданию
     if (session.user.role === 'student') {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { groupId: true }
+      })
+      
+      const userGroupId = user?.groupId
+
       // Студент может видеть задание если:
       // 1. Задание для всех групп (groupId === null)
       // 2. Задание для группы студента
-      if (homework.groupId && homework.groupId !== session.user.groupId) {
+      if (homework.groupId && homework.groupId !== userGroupId) {
         return NextResponse.json(
           { error: 'Вы не состоите в группе, для которой назначено это задание' },
           { status: 403 }
