@@ -6,6 +6,7 @@ import { getTranslations } from 'next-intl/server'
 import './globals.css'
 import { Providers } from '@/components/providers'
 import { Toaster } from '@/components/ui/toaster'
+import { Toaster as SonnerToaster } from '@/components/ui/sonner'
 import { initializeCronJobs } from '@/lib/cron/init'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -47,6 +48,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <Toaster />
+          <SonnerToaster />
         </Providers>
       </body>
     </html>
