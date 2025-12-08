@@ -56,13 +56,7 @@ export async function POST(
       }
     }
 
-    // Проверка, что дедлайн не истек
-    if (new Date() > homework.deadline) {
-      return NextResponse.json(
-        { error: 'Дедлайн истек' },
-        { status: 400 }
-      )
-    }
+
 
     // Проверяем, существует ли уже работа
     const existingSubmission = await prisma.homeworkSubmission.findUnique({
@@ -196,13 +190,7 @@ export async function PUT(
       )
     }
 
-    // Проверка, что дедлайн не истек
-    if (new Date() > existingSubmission.homework.deadline) {
-      return NextResponse.json(
-        { error: 'Дедлайн истек' },
-        { status: 400 }
-      )
-    }
+
 
     // Обновление работы студента
     const submission = await prisma.homeworkSubmission.update({
