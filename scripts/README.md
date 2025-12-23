@@ -140,7 +140,7 @@ npx tsx scripts/check-homework-access.ts
 ssh your-user@shked.innovators.moscow
 
 # 2. Перейдите в директорию проекта
-cd /path/to/smartschedule
+cd /path/to/shked
 
 # 3. Исправьте демо-студента
 npm run fix:demo-student

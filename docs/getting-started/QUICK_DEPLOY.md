@@ -22,7 +22,7 @@
 
 ### В панели Coolify:
 1. Откройте панель управления Coolify
-2. Найдите проект `smartschedule` или `shked`
+2. Найдите проект `shked`
 3. Смотрите логи деплоя в реальном времени
 4. Дождитесь статуса "Running" 🟢
 
@@ -45,7 +45,7 @@ curl https://shked.innovators.moscow/api/health
 ```bash
 # Подключитесь к серверу
 ssh your-user@shked.innovators.moscow
-cd /path/to/smartschedule
+cd /path/to/shked
 
 # Запустите скрипт
 npm run fix:demo-student

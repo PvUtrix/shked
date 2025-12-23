@@ -25,7 +25,7 @@
 ### Проверка статуса деплоя:
 
 - Откройте панель Coolify
-- Найдите проект `smartschedule` или `shked`
+- Найдите проект `shked`
 - Смотрите логи деплоя в реальном времени
 - Проверьте статус: должен быть "Running" 🟢
 
@@ -41,7 +41,7 @@
 
 ```bash
 # На сервере выполните:
-cd /path/to/smartschedule
+cd /path/to/shked
 bash scripts/deploy.sh
 ```
 
@@ -67,11 +67,11 @@ ssh user@your-server-ip
 ### Шаг 2: Перейдите в директорию проекта
 
 ```bash
-cd /path/to/smartschedule
+cd /path/to/shked
 # Обычно это:
-# cd /var/www/smartschedule
+# cd /var/www/shked
 # или
-# cd /home/user/apps/smartschedule
+# cd /home/user/apps/shked
 ```
 
 ### Шаг 3: Получите последние изменения
@@ -139,13 +139,13 @@ docker-compose logs -f
 
 #### Если используется systemd:
 ```bash
-sudo systemctl restart smartschedule
+sudo systemctl restart shked
 
 # Проверить статус
-sudo systemctl status smartschedule
+sudo systemctl status shked
 
 # Просмотреть логи
-sudo journalctl -u smartschedule -f
+sudo journalctl -u shked -f
 ```
 
 ---
@@ -362,7 +362,7 @@ pm2 logs shked --lines 100
 docker-compose logs -f --tail=100
 
 # Systemd
-sudo journalctl -u smartschedule -f -n 100
+sudo journalctl -u shked -f -n 100
 ```
 
 ### Проверка использования ресурсов:

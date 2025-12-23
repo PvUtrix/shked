@@ -72,6 +72,20 @@
 - [**SUMMARY.md**](implementation/SUMMARY.md) — Итоговый отчёт о реализации КТП (English)
 - [**FINAL_REPORT_RU.md**](implementation/FINAL_REPORT_RU.md) — Финальный отчёт (Russian)
 - [**KTP_REPORT_RU.md**](implementation/KTP_REPORT_RU.md) — Детальный отчёт реализации КТП (Russian)
+- [**codebase_compliance_report.md**](reports/codebase_compliance_report.md) — Отчёт о соответствии кодовой базы требованиям
+
+### 🧪 Тестирование (`testing/`)
+
+Документация по тестированию:
+
+- [**Acceptance_Testing_Template.md**](testing/Acceptance_Testing_Template.md) — Шаблон ПТИ
+
+### 📋 Требования (`requirements/`)
+
+Исходные требования и роли:
+
+- [**Roles_and_Functions_KTP_Variant_0.md**](requirements/Roles_and_Functions_KTP_Variant_0.md) — Роли и функции (Markdown)
+
 
 ## 💡 Как использовать документацию
 

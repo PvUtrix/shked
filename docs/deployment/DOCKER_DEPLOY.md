@@ -13,10 +13,10 @@
 
 ```bash
 # Локальная сборка
-docker build -t smartschedule:latest .
+docker build -t shked:latest .
 
 # Сборка с тегом версии
-docker build -t smartschedule:1.0.0 .
+docker build -t shked:1.0.0 .
 ```
 
 ## Тестирование локально
@@ -24,15 +24,15 @@ docker build -t smartschedule:1.0.0 .
 ```bash
 # Запуск контейнера с переменными окружения
 docker run -d \
-  --name smartschedule \
+  --name shked \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://user:password@host:5432/database" \
   -e NEXTAUTH_SECRET="your-secret-here" \
   -e NEXTAUTH_URL="http://localhost:3000" \
-  smartschedule:latest
+  shked:latest
 
 # Проверка логов
-docker logs -f smartschedule
+docker logs -f shked
 
 # Проверка health check
 curl http://localhost:3000/api/health
@@ -53,8 +53,8 @@ curl http://localhost:3000/api/health
 ### Вариант 2: Через Docker Registry
 1. Соберите и запушьте образ:
    ```bash
-   docker build -t your-registry/smartschedule:latest .
-   docker push your-registry/smartschedule:latest
+   docker build -t your-registry/shked:latest .
+   docker push your-registry/shked:latest
    ```
 
 2. Обновите образ в Coolify
@@ -92,26 +92,26 @@ NODE_ENV=production
 ### Если Prisma Client не найден:
 ```bash
 # Проверьте наличие файлов в контейнере
-docker exec -it smartschedule ls -la /app/node_modules/.prisma/client
-docker exec -it smartschedule ls -la /app/node_modules/@prisma/client
+docker exec -it shked ls -la /app/node_modules/.prisma/client
+docker exec -it shked ls -la /app/node_modules/@prisma/client
 ```
 
 ### Если миграции не применяются:
 ```bash
 # Проверьте DATABASE_URL
-docker exec -it smartschedule printenv DATABASE_URL
+docker exec -it shked printenv DATABASE_URL
 
 # Примените миграции вручную
-docker exec -it smartschedule npx prisma migrate deploy
+docker exec -it shked npx prisma migrate deploy
 ```
 
 ### Если приложение не запускается:
 ```bash
 # Проверьте полные логи
-docker logs smartschedule --tail 100
+docker logs shked --tail 100
 
 # Проверьте процессы
-docker exec -it smartschedule ps aux
+docker exec -it shked ps aux
 ```
 
 ## Архитектура Docker образа

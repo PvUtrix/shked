@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**SmartSchedule (Шкед)** is a comprehensive schedule management platform for MIPT (Moscow Institute of Physics and Technology). The platform manages schedules, homework, attendance, exams, and communication for all educational stakeholders.
+**Шкед** is a comprehensive schedule management platform for MIPT (Moscow Institute of Physics and Technology). The platform manages schedules, homework, attendance, exams, and communication for all educational stakeholders.
 
 **Tech Stack**: Next.js 16 (App Router), React 18, TypeScript, Prisma ORM, PostgreSQL, NextAuth.js, Tailwind CSS, Radix UI
 
