@@ -9,7 +9,7 @@ import { Users, TrendingUp, AlertCircle } from 'lucide-react'
 export default async function LectorAttendancePage({
   searchParams,
 }: {
-  searchParams: { subject?: string }
+  searchParams: Promise<{ subject?: string }>
 }) {
   const session = await getServerSession(authOptions)
 
@@ -17,8 +17,9 @@ export default async function LectorAttendancePage({
     redirect('/login')
   }
 
+  const resolvedParams = await searchParams
   const lectorId = session.user.id
-  const subjectId = searchParams.subject
+  const subjectId = resolvedParams.subject
 
   // Получаем расписание преподавателя
   const schedules = await prisma.schedule.findMany({

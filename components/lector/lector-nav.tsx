@@ -94,7 +94,7 @@ export function LectorNav({ user }: LectorNavProps) {
       badge: unreadCount > 0 ? unreadCount : undefined
     },
     {
-      label: t('lector.nav.documents'),
+      label: 'Документы',
       href: '/lector/documents',
       icon: FileText
     },
