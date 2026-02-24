@@ -85,6 +85,7 @@
 Исходные требования и роли:
 
 - [**Roles_and_Functions_KTP_Variant_0.md**](requirements/Roles_and_Functions_KTP_Variant_0.md) — Роли и функции (Markdown)
+- [**BUSINESS_PROCESSES_TO_BE.md**](requirements/BUSINESS_PROCESSES_TO_BE.md) — Полный реестр бизнес-процессов (To-Be)
 
 
 ## 💡 Как использовать документацию
