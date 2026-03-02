@@ -6,9 +6,10 @@ import { prisma } from '@/lib/db'
 // PUT /api/groups/[id]/students/[studentId]/subgroups - обновление подгрупп студента
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; studentId: string } }
+  { params }: { params: Promise<{ id: string; studentId: string }> }
 ) {
   try {
+    const { id, studentId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user || !['admin', 'mentor'].includes(session.user.role)) {
@@ -19,7 +20,7 @@ export async function PUT(
 
     // Проверяем существование группы
     const group = await prisma.group.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!group) {
@@ -31,7 +32,7 @@ export async function PUT(
 
     // Проверяем существование студента
     const student = await prisma.user.findUnique({
-      where: { id: params.studentId }
+      where: { id: studentId }
     })
 
     if (!student) {
@@ -42,7 +43,7 @@ export async function PUT(
     }
 
     // Проверяем, что студент принадлежит к этой группе
-    if (student.groupId !== params.id) {
+    if (student.groupId !== id) {
       return NextResponse.json(
         { error: 'Студент не принадлежит к этой группе' },
         { status: 400 }
@@ -53,36 +54,36 @@ export async function PUT(
     const existingUserGroup = await prisma.userGroup.findUnique({
       where: {
         userId_groupId: {
-          userId: params.studentId,
-          groupId: params.id
+          userId: studentId,
+          groupId: id
         }
       }
     })
 
-    const subgroupsData = {
-      subgroupCommerce: body.subgroupCommerce !== undefined ? body.subgroupCommerce : null,
-      subgroupTutorial: body.subgroupTutorial !== undefined ? body.subgroupTutorial : null,
-      subgroupFinance: body.subgroupFinance !== undefined ? body.subgroupFinance : null,
-      subgroupSystemThinking: body.subgroupSystemThinking !== undefined ? body.subgroupSystemThinking : null
-    }
+    // Prepare exactly only what's provided in the payload body
+    const subgroupsData: Record<string, any> = {}
+    if (body.subgroupCommerce !== undefined) subgroupsData.subgroupCommerce = body.subgroupCommerce
+    if (body.subgroupTutorial !== undefined) subgroupsData.subgroupTutorial = body.subgroupTutorial
+    if (body.subgroupFinance !== undefined) subgroupsData.subgroupFinance = body.subgroupFinance
+    if (body.subgroupSystemThinking !== undefined) subgroupsData.subgroupSystemThinking = body.subgroupSystemThinking
 
     if (existingUserGroup) {
       // Обновляем существующую запись
       await prisma.userGroup.update({
         where: {
           userId_groupId: {
-            userId: params.studentId,
-            groupId: params.id
+            userId: studentId,
+            groupId: id
           }
         },
         data: subgroupsData
       })
     } else {
-      // Создаем новую запись
+      // Создаем новую запись, недостающие поля станут null по умолчанию (или согласно схеме)
       await prisma.userGroup.create({
         data: {
-          userId: params.studentId,
-          groupId: params.id,
+          userId: studentId,
+          groupId: id,
           ...subgroupsData
         }
       })
