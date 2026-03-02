@@ -74,7 +74,7 @@ export default async function NewExamPage() {
           <ExamForm
             subjects={subjects}
             groups={groups}
-            onSuccess={() => redirect('/lector/exams')}
+            redirectPath="/lector/exams"
           />
         </CardContent>
       </Card>

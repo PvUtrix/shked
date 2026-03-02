@@ -46,6 +46,7 @@ interface ExamFormProps {
   initialData?: ExamFormValues & { id?: string }
   onSuccess?: () => void
   onCancel?: () => void
+  redirectPath?: string
 }
 
 export function ExamForm({
@@ -54,6 +55,7 @@ export function ExamForm({
   initialData,
   onSuccess,
   onCancel,
+  redirectPath,
 }: ExamFormProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -150,7 +152,11 @@ export function ExamForm({
 
       form.reset()
       router.refresh()
-      onSuccess?.()
+      if (redirectPath) {
+        router.push(redirectPath)
+      } else {
+        onSuccess?.()
+      }
     } catch (error) {
       if (isMounted) {
         toast({
