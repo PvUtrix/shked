@@ -74,7 +74,7 @@
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.39.1",
     "@jest/globals": "^30.2.0",
-    "@next/swc-wasm-nodejs": "13.5.1",
+    "@next/swc-wasm-nodejs": "16.0.5",
     "@playwright/test": "^1.56.0",
     "@release-it/conventional-changelog": "^10.0.2",
     "@testing-library/jest-dom": "^6.9.1",
