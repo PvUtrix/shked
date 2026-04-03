@@ -52,7 +52,7 @@ jobs:
 
       # Опциональный шаг: загрузка артефактов для анализа
       - name: Upload SARIF results as artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: scorecard-results
           path: results.sarif
