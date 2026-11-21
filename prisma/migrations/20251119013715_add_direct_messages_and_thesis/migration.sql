@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "bot_settings" ADD COLUMN     "telegramBotUsername" TEXT;
+ALTER TABLE "bot_settings" ADD COLUMN IF NOT EXISTS "telegramBotUsername" TEXT;
