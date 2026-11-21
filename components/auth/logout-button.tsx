@@ -15,6 +15,7 @@ export function LogoutButton({ collapsed = false }: LogoutButtonProps) {
   
   return (
     <Button
+      data-testid="logout-button"
       onClick={() => signOut()}
       variant="ghost"
       className={`w-full text-red-600 hover:text-red-700 hover:bg-red-50 ${

@@ -189,10 +189,6 @@ model UserGroup {
   id                     String   @id @default(cuid())
   userId                 String
   groupId                String
-  subgroupCommerce       Int?
-  subgroupTutorial       Int?
-  subgroupFinance        Int?
-  subgroupSystemThinking Int?
   createdAt              DateTime @default(now())
   group                  Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)

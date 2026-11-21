@@ -41,17 +41,9 @@ export async function GET(
         firstName: true,
         lastName: true,
         email: true,
-        userGroups: {
-          where: {
-            groupId: groupId
-          },
-          select: {
-            id: true,
-            subgroupCommerce: true,
-            subgroupTutorial: true,
-            subgroupFinance: true,
-            subgroupSystemThinking: true
-          }
+        subgroupMemberships: {
+          where: { subgroup: { groupId } },
+          select: { subgroupId: true, subgroup: { select: { subjectId: true } } }
         }
       },
       orderBy: [
@@ -61,19 +53,17 @@ export async function GET(
     })
 
     // Преобразуем данные в удобный формат
+    // subgroups maps a subject id ("_group" for group-wide subgroups) to the
+    // student's subgroup in it.
     const studentsWithSubgroups = students.map(student => ({
       id: student.id,
       name: student.name,
       firstName: student.firstName,
       lastName: student.lastName,
       email: student.email,
-      subgroups: student.userGroups[0] || {
-        subgroupCommerce: null,
-        subgroupTutorial: null,
-        subgroupFinance: null,
-        subgroupSystemThinking: null
-      },
-      userGroupId: student.userGroups[0]?.id
+      subgroups: Object.fromEntries(
+        student.subgroupMemberships.map((m) => [m.subgroup.subjectId ?? '_group', m.subgroupId])
+      ) as Record<string, string>
     }))
 
     return NextResponse.json({ students: studentsWithSubgroups })
@@ -153,11 +143,7 @@ export async function POST(
       await prisma.userGroup.create({
         data: {
           userId: body.userId,
-          groupId: groupId,
-          subgroupCommerce: body.subgroupCommerce,
-          subgroupTutorial: body.subgroupTutorial,
-          subgroupFinance: body.subgroupFinance,
-          subgroupSystemThinking: body.subgroupSystemThinking
+          groupId: groupId
         }
       })
     }
@@ -202,6 +188,11 @@ export async function DELETE(
         userId,
         groupId: groupId
       }
+    })
+
+    // Leaving the group also ends the student's subgroup memberships in it.
+    await prisma.subgroupStudent.deleteMany({
+      where: { userId, subgroup: { groupId } }
     })
 
     // Убираем groupId у пользователя

@@ -42,7 +42,6 @@
 
 - [**USER_ROLES.md**](features/USER_ROLES.md) — Роли пользователей и права доступа
 - [**ACTIVITY_LOG.md**](features/ACTIVITY_LOG.md) — Лог активности пользователей и аудит действий
-- [**SUBGROUPS.md**](features/SUBGROUPS.md) — Система управления подгруппами
 - [**TELEGRAM_BOT.md**](features/TELEGRAM_BOT.md) — Интеграция с Telegram
 - [**MDX_EDITOR_INTEGRATION.md**](features/MDX_EDITOR_INTEGRATION.md) — Rich text редактор для заданий
 

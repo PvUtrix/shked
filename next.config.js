@@ -5,6 +5,9 @@ const createNextIntlPlugin = require('next-intl/plugin')(
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  // Trace from this folder, so .next/standalone/server.js sits at the top even
+  // when the checkout is nested in another repository (a git worktree).
+  outputFileTracingRoot: __dirname,
   // Включаем детальные ошибки в development режиме
   reactStrictMode: true,
   // TypeScript strict checking enabled - all technical debt resolved!

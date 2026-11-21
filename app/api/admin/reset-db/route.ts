@@ -246,10 +246,6 @@ export async function POST(_request: NextRequest) {
           data: {
             userId: student.id,
             groupId: techPredGroup.id,
-            subgroupCommerce: studentData.Коммерциализация,
-            subgroupTutorial: studentData.Тьюториал,
-            subgroupFinance: studentData['Финансовое моделирование'],
-            subgroupSystemThinking: studentData['Системное мышление'],
           },
         })
         

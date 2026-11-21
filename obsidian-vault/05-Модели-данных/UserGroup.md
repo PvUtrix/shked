@@ -1,5 +1,7 @@
 # UserGroup (Модель данных)
 
+> **Since 2026-11-21** the subgroupCommerce, subgroupTutorial, subgroupFinance and subgroupSystemThinking columns are gone. Subgroup membership lives only in SubgroupStudent; see docs/features/SUBGROUPS_SYSTEM.md.
+
 > Связь студента с группой и его подгруппы по предметам
 
 ## Описание
@@ -480,7 +482,7 @@ ALTER TABLE "user_groups"
 
 ## Официальная документация
 
-- [docs/features/SUBGROUPS.md](../../docs/features/SUBGROUPS.md)
+- [docs/features/SUBGROUPS_SYSTEM.md](../../docs/features/SUBGROUPS_SYSTEM.md)
 
 ---
 

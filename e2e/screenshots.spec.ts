@@ -29,7 +29,7 @@ test.describe('Generate Screenshots for Tutorials', () => {
 
   test('Student Screenshots', async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[placeholder="Email"]', 'student123@demo.com');
+    await page.fill('input[placeholder="Email"]', 'student@demo.com');
     await page.fill('input[placeholder="Пароль"]', 'student123');
     await Promise.all([
       page.waitForURL('**/student**', { timeout: 20000 }),

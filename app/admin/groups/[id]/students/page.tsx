@@ -1,13 +1,18 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft, Save, UserPlus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Save } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+
+/** Key of a subgroup set: the subject id, or "_group" for group-wide subgroups. */
+type SetKey = string
+const GROUP_WIDE: SetKey = '_group'
 
 interface Student {
   id: string
@@ -15,138 +20,137 @@ interface Student {
   firstName?: string
   lastName?: string
   email: string
-  subgroups: {
-    subgroupCommerce: number | null
-    subgroupTutorial: number | null
-    subgroupFinance: number | null
-    subgroupSystemThinking: number | null
-  }
-  userGroupId?: string
+  subgroups: Record<SetKey, string>
+}
+
+interface Subgroup {
+  id: string
+  name: string
+  number: number
+  subjectId: string | null
+  subject: { id: string; name: string } | null
 }
 
 interface Group {
   id: string
   name: string
-  description?: string
+}
+
+interface SubgroupSet {
+  key: SetKey
+  label: string
+  subgroups: Subgroup[]
 }
 
 export default function GroupStudentsPage() {
+  const t = useTranslations('admin.groupStudents')
   const params = useParams()
-  const _router = useRouter()
   const groupId = params.id as string
 
   const [group, setGroup] = useState<Group | null>(null)
   const [students, setStudents] = useState<Student[]>([])
+  const [subgroups, setSubgroups] = useState<Subgroup[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [changes, setChanges] = useState<Map<string, any>>(new Map())
+  // studentId -> set key -> subgroup id (null removes the membership)
+  const [changes, setChanges] = useState<Map<string, Record<SetKey, string | null>>>(new Map())
 
   const fetchData = useCallback(async () => {
     try {
-      // Получаем информацию о группе
-      const groupResponse = await fetch('/api/groups')
-      if (groupResponse.ok) {
-        const groupsData = await groupResponse.json()
-        const currentGroup = groupsData.groups.find((g: Group) => g.id === groupId)
-        setGroup(currentGroup)
+      const [groupsRes, studentsRes, subgroupsRes] = await Promise.all([
+        fetch('/api/groups'),
+        fetch(`/api/groups/${groupId}/students`),
+        fetch(`/api/groups/${groupId}/subgroups`),
+      ])
+      if (groupsRes.ok) {
+        const data = await groupsRes.json()
+        setGroup((data.groups as Group[]).find((g) => g.id === groupId) ?? null)
       }
-
-      // Получаем студентов группы
-      const studentsResponse = await fetch(`/api/groups/${groupId}/students`)
-      if (studentsResponse.ok) {
-        const studentsData = await studentsResponse.json()
-        setStudents(studentsData.students || [])
-      }
+      if (studentsRes.ok) setStudents((await studentsRes.json()).students ?? [])
+      if (subgroupsRes.ok) setSubgroups(await subgroupsRes.json())
     } catch (error) {
-      console.error('Ошибка при загрузке данных:', error)
-      toast.error('Ошибка при загрузке данных')
+      console.error('Loading group students failed:', error)
+      toast.error(t('loadFailed'))
     } finally {
       setLoading(false)
     }
-  }, [groupId])
+  }, [groupId, t])
 
   useEffect(() => {
     fetchData()
   }, [fetchData])
 
-  const handleSubgroupChange = (studentId: string, subgroupType: string, value: string) => {
-    const numericValue = value === '' || value === 'none' ? null : parseInt(value)
-    
-    // Сохраняем изменения локально
-    const studentChanges = changes.get(studentId) || {}
-    studentChanges[subgroupType] = numericValue
-    
-    const newChanges = new Map(changes)
-    newChanges.set(studentId, studentChanges)
-    setChanges(newChanges)
+  /** One column per subject that has subgroups in this group. */
+  const sets = useMemo<SubgroupSet[]>(() => {
+    const byKey = new Map<SetKey, SubgroupSet>()
+    for (const sg of subgroups) {
+      const key = sg.subjectId ?? GROUP_WIDE
+      if (!byKey.has(key)) byKey.set(key, { key, label: sg.subject?.name ?? t('groupWide'), subgroups: [] })
+      byKey.get(key)!.subgroups.push(sg)
+    }
+    return [...byKey.values()]
+      .map((set) => ({ ...set, subgroups: [...set.subgroups].sort((a, b) => a.number - b.number) }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+  }, [subgroups, t])
 
-    // Обновляем локальное состояние студентов
-    setStudents(students.map(s => {
-      if (s.id === studentId) {
-        return {
-          ...s,
-          subgroups: {
-            ...s.subgroups,
-            [subgroupType]: numericValue
-          }
-        }
-      }
-      return s
-    }))
+  const handleChange = (studentId: string, key: SetKey, value: string) => {
+    const subgroupId = value === 'none' ? null : value
+    setChanges((prev) => {
+      const next = new Map(prev)
+      next.set(studentId, { ...(next.get(studentId) ?? {}), [key]: subgroupId })
+      return next
+    })
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s
+        const updated = { ...s.subgroups }
+        if (subgroupId) updated[key] = subgroupId
+        else delete updated[key]
+        return { ...s, subgroups: updated }
+      })
+    )
   }
 
   const saveChanges = async () => {
     if (changes.size === 0) {
-      toast.info('Нет изменений для сохранения')
+      toast.info(t('noChanges'))
       return
     }
-
     setSaving(true)
     try {
-      const promises = []
-      
-      for (const [studentId, subgroups] of changes.entries()) {
-        const promise = fetch(`/api/groups/${groupId}/students/${studentId}/subgroups`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(subgroups),
-        })
-        promises.push(promise)
-      }
-
-      const results = await Promise.all(promises)
-      const allSuccessful = results.every(r => r.ok)
-
-      if (allSuccessful) {
-        toast.success('Изменения сохранены')
+      const results = await Promise.all(
+        [...changes.entries()].map(([studentId, assignments]) =>
+          fetch(`/api/groups/${groupId}/students/${studentId}/subgroups`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ assignments }),
+          })
+        )
+      )
+      if (results.every((r) => r.ok)) {
+        toast.success(t('saved'))
         setChanges(new Map())
         await fetchData()
       } else {
-        toast.error('Не все изменения удалось сохранить')
+        toast.error(t('saveFailed'))
       }
     } catch (error) {
-      console.error('Ошибка при сохранении изменений:', error)
-      toast.error('Ошибка при сохранении')
+      console.error('Saving subgroup assignments failed:', error)
+      toast.error(t('saveFailed'))
     } finally {
       setSaving(false)
     }
   }
 
-  const getStudentDisplayName = (student: Student) => {
-    if (student.firstName || student.lastName) {
-      return `${student.lastName || ''} ${student.firstName || ''}`.trim()
-    }
-    return student.name || student.email
-  }
+  const displayName = (s: Student) =>
+    s.firstName || s.lastName ? `${s.lastName ?? ''} ${s.firstName ?? ''}`.trim() : s.name || s.email
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загружаем студентов...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     )
@@ -155,9 +159,9 @@ export default function GroupStudentsPage() {
   if (!group) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">Группа не найдена</p>
+        <p className="text-muted-foreground">{t('groupNotFound')}</p>
         <Button asChild className="mt-4">
-          <Link href="/admin/groups">Вернуться к группам</Link>
+          <Link href="/admin/groups">{t('backToGroups')}</Link>
         </Button>
       </div>
     )
@@ -165,166 +169,79 @@ export default function GroupStudentsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" asChild>
-              <Link href="/admin/groups">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Назад
-              </Link>
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Студенты группы: {group.name}
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Управление студентами и назначение подгрупп
-              </p>
-            </div>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" asChild>
+            <Link href="/admin/groups">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {t('back')}
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">{t('title', { group: group.name })}</h1>
+            <p className="text-muted-foreground mt-2">{t('subtitle')}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => toast.info('Функция добавления студентов будет реализована в следующей версии')}
-          >
-            <UserPlus className="h-4 w-4 mr-2" />
-            Добавить студента
+          <Button variant="outline" asChild>
+            <Link href="/admin/subgroups">{t('manageSubgroups')}</Link>
           </Button>
-          <Button
-            onClick={saveChanges}
-            disabled={saving || changes.size === 0}
-          >
+          <Button onClick={saveChanges} disabled={saving || changes.size === 0}>
             <Save className="h-4 w-4 mr-2" />
-            {saving ? 'Сохранение...' : `Сохранить изменения${changes.size > 0 ? ` (${changes.size})` : ''}`}
+            {saving ? t('saving') : changes.size > 0 ? t('saveCount', { count: changes.size }) : t('save')}
           </Button>
         </div>
       </div>
 
-      {/* Students Table */}
       {students.length === 0 ? (
         <Card>
-          <CardContent className="p-12">
-            <div className="text-center">
-              <p className="text-gray-500 text-lg mb-2">В группе пока нет студентов</p>
-              <p className="text-gray-400 mb-6">Добавьте студентов для начала работы</p>
-              <Button onClick={() => toast.info('Функция добавления студентов будет реализована в следующей версии')}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Добавить первого студента
-              </Button>
-            </div>
-          </CardContent>
+          <CardContent className="p-12 text-center text-muted-foreground">{t('empty')}</CardContent>
         </Card>
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Список студентов ({students.length})</CardTitle>
-            <CardDescription>
-              Назначьте подгруппы для каждого студента по разным предметам
-            </CardDescription>
+            <CardTitle>{t('listTitle', { count: students.length })}</CardTitle>
+            <CardDescription>{sets.length > 0 ? t('listDescription') : t('noSubgroups')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Студент</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm">Email</th>
-                    <th className="text-center py-3 px-4 font-semibold text-sm">Коммерция</th>
-                    <th className="text-center py-3 px-4 font-semibold text-sm">Семинары</th>
-                    <th className="text-center py-3 px-4 font-semibold text-sm">Финансы</th>
-                    <th className="text-center py-3 px-4 font-semibold text-sm">Сист. мышление</th>
-                    <th className="text-center py-3 px-4 font-semibold text-sm">Действия</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm">{t('student')}</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm">{t('email')}</th>
+                    {sets.map((set) => (
+                      <th key={set.key} className="text-center py-3 px-4 font-semibold text-sm">
+                        {set.label}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {students.map((student) => (
-                    <tr key={student.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">
-                        <div className="font-medium">{getStudentDisplayName(student)}</div>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {student.email}
-                      </td>
-                      <td className="py-3 px-4">
-                        <Select
-                          value={student.subgroups.subgroupCommerce?.toString() || 'none'}
-                          onValueChange={(value) => handleSubgroupChange(student.id, 'subgroupCommerce', value)}
-                        >
-                          <SelectTrigger className="w-24">
-                            <SelectValue placeholder="-" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">-</SelectItem>
-                            <SelectItem value="1">1</SelectItem>
-                            <SelectItem value="2">2</SelectItem>
-                            <SelectItem value="3">3</SelectItem>
-                            <SelectItem value="4">4</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Select
-                          value={student.subgroups.subgroupTutorial?.toString() || 'none'}
-                          onValueChange={(value) => handleSubgroupChange(student.id, 'subgroupTutorial', value)}
-                        >
-                          <SelectTrigger className="w-24">
-                            <SelectValue placeholder="-" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">-</SelectItem>
-                            <SelectItem value="1">1</SelectItem>
-                            <SelectItem value="2">2</SelectItem>
-                            <SelectItem value="3">3</SelectItem>
-                            <SelectItem value="4">4</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Select
-                          value={student.subgroups.subgroupFinance?.toString() || 'none'}
-                          onValueChange={(value) => handleSubgroupChange(student.id, 'subgroupFinance', value)}
-                        >
-                          <SelectTrigger className="w-24">
-                            <SelectValue placeholder="-" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">-</SelectItem>
-                            <SelectItem value="1">1</SelectItem>
-                            <SelectItem value="2">2</SelectItem>
-                            <SelectItem value="3">3</SelectItem>
-                            <SelectItem value="4">4</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Select
-                          value={student.subgroups.subgroupSystemThinking?.toString() || 'none'}
-                          onValueChange={(value) => handleSubgroupChange(student.id, 'subgroupSystemThinking', value)}
-                        >
-                          <SelectTrigger className="w-24">
-                            <SelectValue placeholder="-" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">-</SelectItem>
-                            <SelectItem value="1">1</SelectItem>
-                            <SelectItem value="2">2</SelectItem>
-                            <SelectItem value="3">3</SelectItem>
-                            <SelectItem value="4">4</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toast.info('Функция удаления студентов будет реализована в следующей версии')}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
-                      </td>
+                    <tr key={student.id} className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">{displayName(student)}</td>
+                      <td className="py-3 px-4 text-sm text-muted-foreground">{student.email}</td>
+                      {sets.map((set) => (
+                        <td key={set.key} className="py-3 px-4">
+                          <Select
+                            value={student.subgroups[set.key] ?? 'none'}
+                            onValueChange={(value) => handleChange(student.id, set.key, value)}
+                          >
+                            <SelectTrigger className="w-40" aria-label={`${displayName(student)}: ${set.label}`}>
+                              <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">—</SelectItem>
+                              {set.subgroups.map((sg) => (
+                                <SelectItem key={sg.id} value={sg.id}>
+                                  {sg.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
@@ -332,40 +249,24 @@ export default function GroupStudentsPage() {
             </div>
 
             {changes.size > 0 && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  ⚠️ У вас есть несохраненные изменения ({changes.size} студентов). Не забудьте сохранить!
-                </p>
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+                {t('unsaved', { count: changes.size })}
               </div>
             )}
           </CardContent>
         </Card>
       )}
 
-      {/* Info Card */}
       <Card>
         <CardHeader>
-          <CardTitle>О подгруппах</CardTitle>
+          <CardTitle>{t('aboutTitle')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm text-gray-600">
-          <p>
-            • Подгруппы позволяют разделять студентов для разных предметов
-          </p>
-          <p>
-            • Каждый студент может быть в разных подгруппах по разным предметам
-          </p>
-          <p>
-            • Расписание будет автоматически фильтроваться с учетом подгрупп студента
-          </p>
-          <p>
-            • Значение {'"'}-{'"'} означает, что студент не назначен ни в одну подгруппу по этому предмету
-          </p>
-          <p className="mt-4 text-blue-600">
-            📖 Подробнее см. в документации: <code>docs/SUBGROUPS.md</code>
-          </p>
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <p>• {t('about1')}</p>
+          <p>• {t('about2')}</p>
+          <p>• {t('about3')}</p>
         </CardContent>
       </Card>
     </div>
   )
 }
-
