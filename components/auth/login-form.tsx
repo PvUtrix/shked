@@ -10,6 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Mail, Lock, LogIn } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
+
+/** Demo logins are listed only on demo and test builds, never in production. */
+const SHOW_DEMO_ACCOUNTS = process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS === 'true'
 export function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -116,7 +119,8 @@ export function LoginForm() {
         <CardDescription>
           {t('auth.login.description')}
         </CardDescription>
-        <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
+        {SHOW_DEMO_ACCOUNTS && (
+        <div className="mt-4 p-3 bg-muted rounded-lg text-sm" data-testid="demo-accounts">
           <p className="font-medium mb-2">{t('auth.login.demoAccountsTitle')}</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
             <p><strong>{t('auth.login.admin')}:</strong> admin@shked.com / admin123</p>
@@ -129,6 +133,7 @@ export function LoginForm() {
             <p><strong>{t('auth.login.deptAdmin')}:</strong> deptadmin@demo.com / deptadmin123</p>
           </div>
         </div>
+        )}
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

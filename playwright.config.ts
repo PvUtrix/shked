@@ -90,6 +90,7 @@ export default defineConfig({
       NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
       NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'test-secret-for-e2e-tests',
       PORT: '3000',
+      NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS: 'true',
       HOSTNAME: '127.0.0.1',
     },
   },

@@ -16,7 +16,8 @@ echo "Prisma Client найден, продолжаем..."
 # Запуск миграций базы данных (только если DATABASE_URL установлен)
 if [ -n "$DATABASE_URL" ]; then
   echo "Применение миграций базы данных..."
-  npx prisma migrate deploy || echo "Предупреждение: миграции не удалось применить"
+  # Stop rather than serve the new code against an outdated schema.
+  prisma migrate deploy || { echo "Database migrations failed; not starting." >&2; exit 1; }
 else
   echo "DATABASE_URL не установлен, пропускаем миграции..."
 fi

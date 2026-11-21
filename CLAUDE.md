@@ -325,7 +325,12 @@ MAX_WEBHOOK_URL          # Max webhook URL (optional)
 GIGACHAT_API_KEY         # GigaChat key for the bot assistant (optional)
 APP_TIME_ZONE            # Time zone of the timetable (default Europe/Moscow)
 BOT_LOCALE               # Bot language: ru (default) or en
+NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS # "true" lists demo logins on /login (demo and test builds only; build time)
 ```
+
+The container runs `prisma migrate deploy` on start (`scripts/start.sh`) and
+exits if it fails, so new code never serves an outdated schema. Never change
+the production schema with `prisma db push`.
 
 Bot tokens and the GigaChat key are read from these variables first
 (`lib/bot-secrets.ts`). Values saved in the admin panel are a deprecated
