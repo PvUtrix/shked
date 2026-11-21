@@ -75,8 +75,12 @@ export default defineConfig({
   ],
 
   // Веб-сервер для тестов (запускать автоматически)
+  // CI tests the production build (E2E_PROD=1): `next dev` compiles each page
+  // on first visit, which made logins time out on CI runners.
+  timeout: process.env.CI ? 60 * 1000 : 30 * 1000,
+
   webServer: {
-    command: 'npm run dev',
+    command: process.env.E2E_PROD ? 'node .next/standalone/server.js' : 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
@@ -85,6 +89,8 @@ export default defineConfig({
       DATABASE_URL: process.env.DATABASE_URL || 'postgresql://test:test@localhost:5432/test_db',
       NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
       NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'test-secret-for-e2e-tests',
+      PORT: '3000',
+      HOSTNAME: '127.0.0.1',
     },
   },
 })
