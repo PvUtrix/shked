@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Settings, Database, Users, Bell, Shield, MessageSquare, Send, BarChart3, TestTube, Palette, Zap, AlertTriangle, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import packageJson from '@/package.json'
+import { SecretStatusHint } from '@/components/admin/secret-status-hint'
+import type { SecretStatus } from '@/lib/bot-secrets'
 
 export default function SettingsPage() {
   const [telegramConfig, setTelegramConfig] = useState({
@@ -33,6 +35,7 @@ export default function SettingsPage() {
     dailySummaryTime: '07:00'
   })
   const [maxStats, setMaxStats] = useState<any>(null)
+  const [secretInfo, setSecretInfo] = useState<Record<string, SecretStatus>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [maxSaving, setMaxSaving] = useState(false)
@@ -79,6 +82,7 @@ export default function SettingsPage() {
       if (response.ok) {
         const data = await response.json()
         setTelegramConfig(data)
+        setSecretInfo(prev => ({ ...prev, ...data.secrets }))
       }
     } catch (error) {
       console.error('Ошибка при получении конфигурации Telegram:', error)
@@ -105,6 +109,7 @@ export default function SettingsPage() {
       if (response.ok) {
         const data = await response.json()
         setMaxConfig(data)
+        setSecretInfo(prev => ({ ...prev, ...data.secrets }))
       }
     } catch (error) {
       console.error('Ошибка при получении конфигурации Max:', error)
@@ -338,6 +343,7 @@ export default function SettingsPage() {
                   value={telegramConfig.telegramBotToken}
                   onChange={(e) => setTelegramConfig(prev => ({ ...prev, telegramBotToken: e.target.value }))}
                 />
+                <SecretStatusHint status={secretInfo.telegramBotToken} envName="TELEGRAM_BOT_TOKEN" />
                 <p className="text-xs text-gray-500 mt-1">
                   Получите токен у @BotFather в Telegram
                 </p>
@@ -366,6 +372,7 @@ export default function SettingsPage() {
                   value={telegramConfig.openaiApiKey}
                   onChange={(e) => setTelegramConfig(prev => ({ ...prev, openaiApiKey: e.target.value }))}
                 />
+                <SecretStatusHint status={secretInfo.llmApiKey} envName="GIGACHAT_API_KEY" />
                 <p className="text-xs text-gray-500 mt-1">
                   Получите ключ на <a href="https://developers.sber.ru/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">developers.sber.ru</a>
                 </p>
@@ -453,6 +460,7 @@ export default function SettingsPage() {
                   value={maxConfig.maxBotToken}
                   onChange={(e) => setMaxConfig(prev => ({ ...prev, maxBotToken: e.target.value }))}
                 />
+                <SecretStatusHint status={secretInfo.maxBotToken} envName="MAX_BOT_TOKEN" />
                 <p className="text-xs text-gray-500 mt-1">
                   Получите токен на <a href="https://max.ru/masterbot" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">max.ru/masterbot</a>
                 </p>
@@ -467,6 +475,7 @@ export default function SettingsPage() {
                   value={maxConfig.openaiApiKey}
                   onChange={(e) => setMaxConfig(prev => ({ ...prev, openaiApiKey: e.target.value }))}
                 />
+                <SecretStatusHint status={secretInfo.llmApiKey} envName="GIGACHAT_API_KEY" />
                 <p className="text-xs text-gray-500 mt-1">
                   Получите ключ на <a href="https://developers.sber.ru/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">developers.sber.ru</a>
                 </p>

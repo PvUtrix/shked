@@ -51,8 +51,29 @@ jobs:
 
   e2e-tests:
     name: E2E Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Pinned: Playwright 1.56 does not support the ubuntu-latest image (26.04).
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d test_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: test-secret-for-e2e-tests
 
     steps:
       - name: Checkout code
@@ -70,11 +91,16 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Apply migrations and seed
+        run: |
+          npx prisma migrate deploy
+          npx prisma db seed
+
       - name: Install Playwright browsers
-        run: npm run playwright:install
+        run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: npm run test:e2e
+        run: npx playwright test --project=chromium
 
       - name: Upload Playwright test results
         if: always()

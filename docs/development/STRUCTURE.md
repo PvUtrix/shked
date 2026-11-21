@@ -41,7 +41,6 @@ GitHub **автоматически находит** следующие communit
 
 ### 🚀 Quick guides:
 - **`QUICK_DEPLOY.md`** - Быстрое развертывание
-- **`QUICK_MIGRATE.md`** - Быстрые миграции
 - **`DOCKER_DEPLOY.md`** - Деплой через Docker
 
 ### 📝 Дополнительные файлы:

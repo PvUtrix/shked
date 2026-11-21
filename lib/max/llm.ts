@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { getBotSettings } from './bot'
 import { prisma } from '@/lib/db'
+import { resolveSecret } from '@/lib/bot-secrets'
 
 export interface UserContext {
   userId: string
@@ -222,8 +223,8 @@ export async function getUserStats(): Promise<any> {
 export async function getGigaChatToken(): Promise<string | null> {
   const settings = await getBotSettings()
 
-  // Try to get key from DB settings first
-  const apiKey = settings?.openaiApiKey || process.env.GIGACHAT_API_KEY
+  // The environment variable wins; the stored value is a deprecated fallback.
+  const apiKey = settings?.openaiApiKey ?? resolveSecret('llmApiKey', null)
 
   if (!apiKey) {
     console.error('GigaChat API ключ не найден')

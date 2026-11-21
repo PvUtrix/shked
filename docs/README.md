@@ -17,7 +17,6 @@
 Документы для быстрого начала работы с проектом:
 
 - [**QUICK_DEPLOY.md**](getting-started/QUICK_DEPLOY.md) — Быстрое развертывание на сервере
-- [**QUICK_MIGRATE.md**](getting-started/QUICK_MIGRATE.md) — Быстрая миграция для inline комментариев
 
 ### 👨‍💻 Разработка (`development/`)
 

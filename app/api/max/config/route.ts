@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { setWebhook, getWebhookInfo, getBotInfo } from '@/lib/max/bot'
 import { logActivity } from '@/lib/activity-log'
+import { resolveSecret, secretStatus } from '@/lib/bot-secrets'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -18,9 +19,14 @@ export async function GET(_request: NextRequest) {
     })
 
     if (!settings) {
+      // Secret values are never returned; only whether each is set and where from.
       return NextResponse.json({
         maxBotToken: '',
         openaiApiKey: '',
+        secrets: {
+          maxBotToken: secretStatus('maxBotToken', null),
+          llmApiKey: secretStatus('llmApiKey', null)
+        },
         maxWebhookUrl: '',
         maxIsActive: false,
         notificationsEnabled: true,
@@ -32,12 +38,17 @@ export async function GET(_request: NextRequest) {
     }
 
     // Get additional bot info
-    const webhookInfo = settings.maxBotToken ? await getWebhookInfo() : null
-    const botInfo = settings.maxBotToken ? await getBotInfo() : null
+    const hasToken = resolveSecret('maxBotToken', settings.maxBotToken) !== null
+    const webhookInfo = hasToken ? await getWebhookInfo() : null
+    const botInfo = hasToken ? await getBotInfo() : null
 
     return NextResponse.json({
-      maxBotToken: settings.maxBotToken || '',
-      openaiApiKey: settings.openaiApiKey || '',
+      maxBotToken: '',
+      openaiApiKey: '',
+      secrets: {
+        maxBotToken: secretStatus('maxBotToken', settings.maxBotToken),
+        llmApiKey: secretStatus('llmApiKey', settings.openaiApiKey)
+      },
       maxWebhookUrl: settings.maxWebhookUrl || '',
       maxIsActive: settings.maxIsActive,
       notificationsEnabled: settings.notificationsEnabled,
@@ -123,7 +134,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Set webhook if bot token is provided and bot is active
-    if (maxBotToken && maxIsActive) {
+    if (maxIsActive && resolveSecret('maxBotToken', settings.maxBotToken)) {
       const webhookSuccess = await setWebhook(maxWebhookUrl)
       if (!webhookSuccess) {
         console.warn('Failed to set Max webhook')

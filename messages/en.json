@@ -65,6 +65,12 @@
     }
   },
   "admin": {
+    "secretStatus": {
+      "env": "Set by the environment variable {name}.",
+      "database": "Stored in the database (deprecated). Move it to the environment variable {name}.",
+      "missing": "Not set. Set the environment variable {name}.",
+      "keepHint": "A value is set. Leave this empty to keep it."
+    },
     "nav": {
       "schedule": "Schedule",
       "groups": "Groups",

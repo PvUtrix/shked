@@ -45,7 +45,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings 450",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky install",
+    "prepare": "husky",
     "release": "release-it",
     "release:patch": "release-it patch",
     "release:minor": "release-it minor",

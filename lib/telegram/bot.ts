@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db'
 import crypto from 'crypto'
+import { resolveSecret } from '@/lib/bot-secrets'
 
 export interface TelegramUpdate {
   update_id: number
@@ -89,7 +90,13 @@ export async function getBotSettings(): Promise<BotSettings | null> {
     const settings = await prisma.botSettings.findFirst({
       orderBy: { createdAt: 'desc' }
     })
-    return settings
+    if (!settings) return null
+
+    return {
+      ...settings,
+      telegramBotToken: resolveSecret('telegramBotToken', settings.telegramBotToken),
+      openaiApiKey: resolveSecret('llmApiKey', settings.openaiApiKey),
+    }
   } catch (error) {
     console.error('Ошибка при получении настроек бота:', error)
     return null
