@@ -628,5 +628,32 @@
       "deadline": "Дедлайн: {title}",
       "submitTo": "Куда сдавать: {target}"
     }
+  },
+  "educationOffice": {
+    "students": {
+      "loading": "Загрузка данных...",
+      "title": "Студенты",
+      "subtitle": "Просмотр списка студентов университета",
+      "counts": "Всего: {total} | Показано: {shown}",
+      "search": "Поиск по имени или email...",
+      "group": "Группа",
+      "allGroups": "Все группы",
+      "empty": "Студенты не найдены",
+      "name": "ФИО",
+      "email": "Email",
+      "groupColumn": "Группа",
+      "sex": "Пол",
+      "birthday": "Дата рождения",
+      "registered": "Дата регистрации",
+      "noName": "Без имени",
+      "male": "Мужской",
+      "female": "Женский",
+      "loadFailed": "Не удалось загрузить список студентов",
+      "loadError": "Произошла ошибка при загрузке"
+    },
+    "dashboard": {
+      "studentsTitle": "Студенты",
+      "studentsDescription": "Список студентов с поиском и фильтром по группе"
+    }
   }
 }

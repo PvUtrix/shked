@@ -3,12 +3,13 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { GraduationCap, FileText, Users, Calendar, Building2, BookOpen } from 'lucide-react'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 export default async function EducationOfficeDashboardPage() {
   const session = await getServerSession(authOptions)
+  const t = await getTranslations('educationOffice.dashboard')
 
   if (!session || session.user.role !== 'education_office_head') {
     redirect('/login')
@@ -79,6 +80,18 @@ export default async function EducationOfficeDashboardPage() {
 
       {/* Quick Actions */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="hover:bg-accent/5 transition-colors cursor-pointer">
+          <Link href="/education-office/students">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <GraduationCap className="h-5 w-5 text-primary" />
+                {t('studentsTitle')}
+              </CardTitle>
+              <CardDescription>{t('studentsDescription')}</CardDescription>
+            </CardHeader>
+          </Link>
+        </Card>
+
         <Card className="hover:bg-accent/5 transition-colors cursor-pointer">
           <Link href="/education-office/schedule">
             <CardHeader>

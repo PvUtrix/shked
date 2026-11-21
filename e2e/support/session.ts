@@ -14,6 +14,7 @@ export const ACCOUNTS = {
   student: { email: 'student@demo.com', password: 'student123', home: '/student' },
   lector: { email: 'lector@demo.com', password: 'lector123', home: '/lector' },
   mentor: { email: 'mentor@demo.com', password: 'mentor123', home: '/mentor' },
+  eduoffice: { email: 'eduoffice@demo.com', password: 'eduoffice123', home: '/education-office' },
 } as const
 
 export type Role = keyof typeof ACCOUNTS
