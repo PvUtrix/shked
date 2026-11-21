@@ -232,7 +232,6 @@ Telegram бот интегрирован в систему ШКЕД для пр�
 
 - Логи webhook: `console.log` в `/app/api/telegram/webhook/route.ts`
 - Логи cron: `console.log` в `/lib/cron/init.ts`
-- Логи уведомлений: `console.log` в `/lib/telegram/notifications.ts`
 
 ## Deployment
 
@@ -281,41 +280,40 @@ NEXTAUTH_URL=https://yourdomain.com
 - Популярные команды
 - Время ответа бота
 
-## Разработка
+## Architecture (since 2026-11)
 
-### Структура файлов:
+Telegram and Max share one bot core in `lib/bot/`; only the transport differs.
 
 ```
-lib/telegram/
-├── bot.ts              # Основной клиент Telegram
-├── llm.ts              # OpenAI интеграция
-├── commands.ts         # Обработка команд
-├── notifications.ts    # Система уведомлений
-└── helpers.ts         # Вспомогательные функции
-
-app/api/telegram/
-├── webhook/route.ts    # Webhook handler
-├── config/route.ts     # Конфигурация
-├── link/route.ts       # Привязка аккаунтов
-├── send/route.ts       # Отправка сообщений
-└── stats/route.ts      # Статистика
-
-lib/cron/
-└── init.ts            # Cron задачи
+lib/bot/
+├── channels.ts        # linked accounts per messenger, sendText, sendToUser
+├── commands.ts        # handleMessage: /start, /link, /schedule, ... and free text
+├── assistant.ts       # GigaChat answers with the user's schedule as context
+├── notifications.ts   # reminders, summaries, broadcasts (to every linked messenger)
+├── link-tokens.ts     # one-time account-linking tokens
+├── schedule-data.ts   # the user's classes, honouring subgroups
+├── webhook-secret.ts  # per-channel webhook secret derived from NEXTAUTH_SECRET
+└── i18n.ts            # bot texts from messages/{ru,en}.json ("bot" namespace)
+lib/telegram/bot.ts    # Telegram Bot API transport
+lib/max/bot.ts         # Max Bot API transport (platform-api2.max.ru)
+lib/schedule/          # time-zone math and the "who sees which class" rule
 ```
 
-### Добавление новых команд:
-
-1. Добавьте обработчик в `/lib/telegram/commands.ts`
-2. Зарегистрируйте команду в `routeCommand()`
-3. Обновите `/help` команду
-4. Добавьте тесты
-
-### Добавление новых уведомлений:
-
-1. Создайте функцию в `/lib/telegram/notifications.ts`
-2. Добавьте вызов в соответствующий cron job
-3. Обновите API для отправки из админки
+- **Texts** are in `messages/ru.json` and `messages/en.json` under `bot`;
+  `BOT_LOCALE` picks the language (default `ru`).
+- **Times** are wall-clock times in `APP_TIME_ZONE` (default `Europe/Moscow`)
+  whatever zone the server runs in; cron jobs run in that zone too.
+- **Webhook security:** both webhooks reject requests without the channel's
+  secret header (`X-Telegram-Bot-Api-Secret-Token`, `X-Max-Bot-Api-Secret`).
+  The secret is registered when the bot settings are saved. After upgrading,
+  or after rotating `NEXTAUTH_SECRET`, open the bot settings and save them once
+  so the webhook is registered again with the secret.
+- **Adding a command:** add a handler to the `handlers` map in
+  `lib/bot/commands.ts`, its texts under `bot` in both message files, a line
+  in `bot.help`, and a test in `__tests__/unit/lib/bot/commands.test.ts`.
+- **Adding a notification:** add a function to `lib/bot/notifications.ts`
+  that renders once and calls `sendToUser` or `broadcastToGroup`, then call
+  it from `lib/cron/init.ts` or the code path that triggers it.
 
 ## Поддержка
 

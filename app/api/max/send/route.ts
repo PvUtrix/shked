@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { broadcastToAll, broadcastToGroup, sendTestMessage } from '@/lib/max/notifications'
+import { broadcastToAll, broadcastToGroup, sendTestMessage } from '@/lib/bot/notifications'
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        const testSuccess = await sendTestMessage(testUserId)
+        const testSuccess = await sendTestMessage(testUserId, 'max')
         result = {
           success: testSuccess,
           message: testSuccess ? 'Тестовое сообщение отправлено' : 'Ошибка отправки'
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'broadcast_all': {
-        const allResult = await broadcastToAll(message, targetRole)
+        const allResult = await broadcastToAll(message, targetRole, 'max')
         result = {
           success: allResult.sent > 0,
           sent: allResult.sent,
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        const groupResult = await broadcastToGroup(targetGroup, message)
+        const groupResult = await broadcastToGroup(targetGroup, message, 'max')
         result = {
           success: groupResult.sent > 0,
           sent: groupResult.sent,

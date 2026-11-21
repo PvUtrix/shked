@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { generateLinkToken, saveLinkToken } from '@/lib/telegram/commands'
+import { generateLinkToken, saveLinkToken } from '@/lib/bot/link-tokens'
 import { prisma } from '@/lib/db'
 
 export async function GET(_request: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(_request: NextRequest) {
     const token = generateLinkToken()
 
     // Сохраняем токен в БД
-    await saveLinkToken(userId, token)
+    await saveLinkToken('telegram', userId, token)
 
     // Получаем настройки бота из БД
     const botSettings = await prisma.botSettings.findFirst({

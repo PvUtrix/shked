@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev                    # Start development server (http://localhost:3000)
 npm run build                  # Build production (includes prisma generate)
 npm start                      # Start production server
-npm run lint                   # Run ESLint (max 500 warnings allowed)
+npm run lint                   # Run ESLint (warning budget in package.json; lower it, never raise it)
 ```
 
 ### Database Operations
@@ -185,19 +185,16 @@ lib/
 
 ## Bot Integrations
 
-### Telegram Bot
-- **Location**: `lib/telegram/`
-- **Webhook**: `/api/telegram/webhook` (POST endpoint)
-- **Config API**: `/api/telegram/config` (GET/POST)
-- **Features**: Schedule notifications, homework reminders, OpenAI integration
-- **Settings**: Stored in `BotSettings` model
-
-### Max Messenger Bot
-- **Location**: `lib/max/`
-- **Webhook**: `/api/max/webhook` (POST endpoint)
-- **Package**: `@maxhub/max-bot-api`
-- **Features**: Native Russian messenger integration, similar to Telegram
-- **Important**: Max uses string IDs (`chatId` is string, not number)
+- **Shared core**: `lib/bot/` holds commands, notifications, the GigaChat
+  assistant and account linking for every messenger. Add behaviour there, once.
+- **Transports**: `lib/telegram/bot.ts` (Telegram Bot API) and `lib/max/bot.ts`
+  (Max Bot API at platform-api2.max.ru, token in the Authorization header).
+- **Webhooks**: `/api/telegram/webhook` and `/api/max/webhook` reject requests
+  without the channel secret header (`lib/bot/webhook-secret.ts`).
+- **Texts**: `messages/{ru,en}.json` under `bot`; never hard-code bot text.
+- **Times**: wall-clock times in `APP_TIME_ZONE` via `lib/schedule/time.ts`.
+- **Settings**: `BotSettings` model; secrets come from env first (`lib/bot-secrets.ts`).
+- Details: `docs/features/TELEGRAM_BOT.md`, "Architecture".
 
 ### Cron Jobs
 - **Initialization**: `lib/cron/init.ts`
@@ -314,6 +311,8 @@ TELEGRAM_WEBHOOK_URL     # Telegram webhook URL (optional)
 MAX_BOT_TOKEN            # Max messenger token (optional)
 MAX_WEBHOOK_URL          # Max webhook URL (optional)
 GIGACHAT_API_KEY         # GigaChat key for the bot assistant (optional)
+APP_TIME_ZONE            # Time zone of the timetable (default Europe/Moscow)
+BOT_LOCALE               # Bot language: ru (default) or en
 ```
 
 Bot tokens and the GigaChat key are read from these variables first

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { getNotificationStats } from '@/lib/max/notifications'
+import { getNotificationStats } from '@/lib/bot/notifications'
 import { prisma } from '@/lib/db'
 
 // Указываем, что этот route должен быть динамическим
@@ -16,7 +16,7 @@ export async function GET(_request: NextRequest) {
     }
 
     // Получаем статистику уведомлений
-    const notificationStats = await getNotificationStats()
+    const notificationStats = await getNotificationStats('max')
 
     // Получаем статистику по группам
     const groupStats = await prisma.group.findMany({

@@ -123,7 +123,6 @@ const mockFetch = jest.fn()
 global.fetch = mockFetch as any
 
 import { describe, it, expect, beforeEach, beforeAll, jest } from '@jest/globals'
-import crypto from 'crypto'
 import { testBotSettings } from '../../../fixtures'
 
 // Импортируем prisma из замоканного модуля
@@ -131,7 +130,6 @@ import { prisma } from '@/lib/db'
 
 // Динамически импортируем функции после установки моков
 let getBotSettings: any
-let verifyWebhookSignature: any
 let sendMessage: any
 let editMessage: any
 let answerCallbackQuery: any
@@ -142,7 +140,6 @@ let getBotInfo: any
 beforeAll(async () => {
   const botModule = await import('@/lib/telegram/bot')
   getBotSettings = botModule.getBotSettings
-  verifyWebhookSignature = botModule.verifyWebhookSignature
   sendMessage = botModule.sendMessage
   editMessage = botModule.editMessage
   answerCallbackQuery = botModule.answerCallbackQuery
@@ -255,44 +252,6 @@ describe('lib/telegram/bot.ts', () => {
       mockBotSettingsFindFirst.mockResolvedValue(mockSettings)
       const settings = await getBotSettings()
       expect(settings?.telegramBotToken).toBe('new-token')
-    })
-  })
-
-  describe('verifyWebhookSignature', () => {
-    it('должен корректно проверять валидную подпись', () => {
-      const body = JSON.stringify({ test: 'data' })
-      const secretToken = 'test-secret'
-
-      const expectedSignature = crypto
-        .createHmac('sha256', secretToken)
-        .update(body)
-        .digest('hex')
-
-      const signature = `sha256=${expectedSignature}`
-
-      const isValid = verifyWebhookSignature(body, signature, secretToken)
-
-      expect(isValid).toBe(true)
-    })
-
-    it('должен отклонить невалидную подпись', () => {
-      const body = JSON.stringify({ test: 'data' })
-      const secretToken = 'test-secret'
-      const signature = 'sha256=invalid-signature'
-
-      const isValid = verifyWebhookSignature(body, signature, secretToken)
-
-      expect(isValid).toBe(false)
-    })
-
-    it('должен отклонить подпись с неверным форматом', () => {
-      const body = JSON.stringify({ test: 'data' })
-      const secretToken = 'test-secret'
-      const signature = 'invalid-format'
-
-      const isValid = verifyWebhookSignature(body, signature, secretToken)
-
-      expect(isValid).toBe(false)
     })
   })
 

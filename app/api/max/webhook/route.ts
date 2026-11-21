@@ -1,117 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MaxUpdate } from '@/lib/max/bot'
-import { routeCommand } from '@/lib/max/commands'
-import { sendMessage } from '@/lib/max/bot'
-import { prisma } from '@/lib/db'
+import { MaxUpdate, sendMessage } from '@/lib/max/bot'
+import { handleMessage } from '@/lib/bot/commands'
+import { refreshProfile } from '@/lib/bot/channels'
+import { isValidWebhookRequest } from '@/lib/bot/webhook-secret'
 
+/**
+ * MAX webhook (POST /subscriptions points here). Handles message_created and
+ * bot_started; the payload shape follows the MAX Update object docs.
+ */
 export async function POST(request: NextRequest) {
+  if (!isValidWebhookRequest('max', request.headers)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    const body = await request.text()
-    const update: MaxUpdate = JSON.parse(body)
+    const update: MaxUpdate = await request.json()
 
-    console.error('Received Max update:', JSON.stringify(update, null, 2))
+    let platformUserId: string | undefined
+    let chatId: string | undefined
+    let text: string | undefined
+    let profile: { username?: string; firstName?: string; lastName?: string } = {}
 
-    // Handle regular messages
-    if (update.message) {
-      const { from, chat, text } = update.message
-
-      if (!text) {
-        return NextResponse.json({ ok: true })
-      }
-
-      // Update user info in DB
-      await updateUserInfo(from.id.toString(), chat.id.toString(), from)
-
-      // Handle commands
-      let response: string
-
-      if (text.startsWith('/')) {
-        const [_command, ...args] = text.split(' ')
-        response = await routeCommand(from.id.toString(), chat.id, text, args)
-      } else {
-        // Handle natural language
-        const [_command, ...args] = text.split(' ')
-        response = await routeCommand(from.id.toString(), chat.id, text, args)
-      }
-
-      // Send response
-      await sendMessage({
-        chat_id: chat.id,
-        text: response,
-        parse_mode: 'Markdown'
-      })
+    if (update.update_type === 'message_created' && update.message?.sender) {
+      const { sender, recipient, body } = update.message
+      platformUserId = String(sender.user_id)
+      chatId = recipient.chat_id != null ? String(recipient.chat_id) : undefined
+      text = body?.text ?? undefined
+      profile = { username: sender.username ?? undefined, firstName: sender.first_name, lastName: sender.last_name ?? undefined }
+    } else if (update.update_type === 'bot_started' && update.user && update.chat_id != null) {
+      // The start button; a deep-link payload carries a link token like Telegram's /start.
+      platformUserId = String(update.user.user_id)
+      chatId = String(update.chat_id)
+      text = update.payload ? `/start ${update.payload}` : '/start'
+      profile = { username: update.user.username ?? undefined, firstName: update.user.first_name, lastName: update.user.last_name ?? undefined }
     }
 
-    // Handle callback queries (buttons)
-    if (update.callback_query) {
-      const { id: _id, from, data } = update.callback_query
-
-      // Update user info
-      await updateUserInfo(from.id.toString(), from.id.toString(), from)
-
-      // Note: Max may handle callbacks differently
-      // This needs to be updated based on actual Max API
-
-      // Handle callback data
-      if (data) {
-        console.error('Callback data:', data)
-      }
+    if (platformUserId && chatId && text) {
+      await refreshProfile('max', platformUserId, chatId, profile)
+      const reply = await handleMessage({ channel: 'max', platformUserId, chatId, text, profile })
+      await sendMessage({ chat_id: chatId, text: reply, parse_mode: 'Markdown' })
     }
 
     return NextResponse.json({ ok: true })
   } catch (error) {
-    console.error('Error in Max webhook:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
-
-/**
- * Update user info in DB
- */
-async function updateUserInfo(
-  maxId: string,
-  chatId: string,
-  from: {
-    id: string
-    first_name: string
-    last_name?: string
-    username?: string
-  }
-) {
-  try {
-    // Check if user already exists
-    const existingUser = await prisma.maxUser.findUnique({
-      where: { maxId }
-    })
-
-    if (existingUser) {
-      // Update existing user
-      await prisma.maxUser.update({
-        where: { maxId },
-        data: {
-          chatId,
-          username: from.username,
-          firstName: from.first_name,
-          lastName: from.last_name,
-          isActive: true
-        }
-      })
-    } else {
-      // Create new user (without web account link)
-      await prisma.maxUser.create({
-        data: {
-          maxId,
-          chatId,
-          username: from.username,
-          firstName: from.first_name,
-          lastName: from.last_name,
-          isActive: true,
-          notifications: true,
-          userId: 'temp_' + maxId // temporary ID until linked
-        }
-      })
-    }
-  } catch (error) {
-    console.error('Error updating Max user info:', error)
+    console.error('Max webhook error:', error)
+    return NextResponse.json({ ok: false })
   }
 }

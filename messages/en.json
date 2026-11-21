@@ -121,6 +121,103 @@
       "save": "Save",
       "cancel": "Cancel"
     }
+  },
+  "bot": {
+    "appName": "Shked",
+    "notLinked": "❌ Your account is not linked to {app}.\nUse /link to link it.",
+    "userFallbackName": "there",
+    "start": {
+      "alreadyLinked": "Hi, {name}! 👋\n\nYou are already connected to {app}.\nUse /help to see the available commands.",
+      "linked": "✅ Welcome to {app}, {name}! 🎓\n\nYour account is now linked.\nYou will receive schedule and homework notifications.\n\nUse /help to see the available commands.",
+      "linkFailed": "❌ Could not link your account. Try again later or use /link.",
+      "linkInvalid": "❌ The link is invalid or has expired.\n\nPlease get a new link in the {app} web app.",
+      "welcomeTelegram": "Welcome to {app}! 🎓\n\nTo connect your Telegram account:\n1. Sign in to the {app} web app\n2. Open your profile\n3. Get a linking link\n4. Open the link and press \"Start\"\n\nOr use /link [token] to link manually.\n\nUse /help to see all commands.",
+      "welcomeMax": "Welcome to {app}! 🎓\n\nTo connect your Max account:\n1. Sign in to the {app} web app\n2. Open your profile\n3. Get a linking token\n4. Send /link [token]\n\nUse /help to see all commands."
+    },
+    "link": {
+      "usage": "To link your account, send:\n/link [token]\n\nYou can get a token in your profile in the {app} web app.",
+      "invalidToken": "❌ The linking token is invalid or has expired.\nPlease get a new one in the {app} web app.",
+      "alreadyLinked": "✅ Your account is already linked to {app}.",
+      "success": "✅ Your account is now linked to {app}!\nYou will receive schedule notifications.\n\nUse /help to see the available commands.",
+      "failed": "❌ Could not link your account. Try again later."
+    },
+    "schedule": {
+      "todayTitle": "📅 *Today:*",
+      "tomorrowTitle": "📅 *Tomorrow:*",
+      "weekTitle": "📅 *This week:*",
+      "noneToday": "📅 No classes today.",
+      "noneTomorrow": "📅 No classes tomorrow.",
+      "noneWeek": "📅 No classes this week.",
+      "weekday": {
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday",
+        "7": "Sunday"
+      }
+    },
+    "settings": {
+      "text": "⚙️ *Notification settings*\n\n🔔 Notifications: {status}\n📱 {platform} ID: {platformId}\n👤 User: {name}\n🎓 Group: {group}\n\nAsk an administrator to change these settings.",
+      "on": "On",
+      "off": "Off",
+      "noGroup": "not set"
+    },
+    "status": {
+      "reviewed": "✅ Reviewed",
+      "submitted": "📤 Submitted",
+      "notSubmitted": "❌ Not submitted"
+    },
+    "homework": {
+      "listTitle": "📝 *Your homework:*",
+      "none": "📝 *Homework*\n\nYou have no open homework right now.",
+      "dueTitle": "📝 *Due in the next 3 days:*",
+      "dueNone": "📝 *Upcoming deadlines*\n\nNothing is due in the next 3 days.",
+      "deadline": "⏰ Due: {deadline}",
+      "hoursLeft": "⏰ Time left: {hours} h",
+      "status": "📊 Status: {status}",
+      "grade": "🎯 Grade: {grade}"
+    },
+    "help": "📚 *Commands:*\n\n/start - Welcome and instructions\n/link [token] - Link your account\n/schedule - Today\n/tomorrow - Tomorrow\n/week - This week\n/homework - My homework\n/homework_due - Upcoming deadlines\n/settings - Notification settings\n/help - This help\n\n💬 *Plain language:*\nYou can also just ask:\n• \"When is my next class?\"\n• \"What do I have tomorrow?\"\n• \"Show this week\"\n• \"What homework do I have?\"\n\n🤖 The bot understands Russian and English.",
+    "assistant": {
+      "unavailable": "Sorry, the assistant is unavailable: the GigaChat key is not configured.",
+      "error": "Sorry, something went wrong while answering your question.",
+      "empty": "Could not process the request.",
+      "systemPrompt": "You are the {app} bot: schedules and the study process.\n\nUser: {role} ({name})\nGroup: {group}\nSubgroups: {subgroups}\nToday: {date}\n\nAnswer questions about the schedule and help the user find their way. Reply in English, friendly and to the point. If the context does not contain the answer, say you do not know.\n\nCommands: /schedule, /tomorrow, /week, /homework, /homework_due, /settings, /help.",
+      "todayHeader": "Today:",
+      "noClasses": "No classes",
+      "nextClass": "Next class: {subject} ({date}, {time})",
+      "noNextClass": "No upcoming classes",
+      "question": "User question: {query}",
+      "notSet": "not set"
+    },
+    "notify": {
+      "locationUnknown": "Room not set",
+      "instructorUnknown": "Instructor not set",
+      "reminderTitle": "🔔 *Class reminder*",
+      "reminderStarts": "⏰ Starts in {minutes} minutes ({time})",
+      "reminderFooter": "Have a good class! 🎓",
+      "changeTitle": "📢 *Schedule change*",
+      "changeFooter": "Please note the change!",
+      "morning": "🌅 *Good morning!*",
+      "morningNone": "📅 No classes today.\nHave a nice day! 😊",
+      "dayFooter": "Have a good day! 🎓",
+      "testTitle": "🧪 *Test message*",
+      "testBody": "This is a test message from {app}.\nIf you received it, notifications work! ✅\n\nTime: {time}",
+      "deadlineTitle": "📝 *Homework reminder*",
+      "deadlineIn": "⏰ Due in {hours} h",
+      "deadlinePending": "⚠️ Remember to submit on time!",
+      "deadlineDone": "✅ Already submitted!",
+      "openTask": "🔗 [Open the assignment]({url})",
+      "newHomeworkTitle": "📝 *New homework*",
+      "newHomeworkFooter": "Good luck! 🎓",
+      "reviewedTitle": "📝 *Homework reviewed*",
+      "reviewedGrade": "🎯 Grade: {grade}/5",
+      "reviewedComment": "💬 Instructor comment:\n{comment}",
+      "weeklyTitle": "📝 *Homework this week*",
+      "weeklyNone": "📝 *Homework summary*\n\n📅 No homework due this week.\nHave a good week! 😊",
+      "weekFooter": "Have a good week! 🎓"
+    }
   }
 }
-
