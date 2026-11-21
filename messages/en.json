@@ -65,6 +65,54 @@
     }
   },
   "admin": {
+    "timetable": {
+      "title": "Timetable import",
+      "subtitle": "Timetable, deadlines and subgroup placement from the programme spreadsheet. Importing again updates the entries and shows what changed.",
+      "sourceTitle": "1. Source",
+      "file": ".xlsx file",
+      "url": "or a Google Sheets link",
+      "urlHint": "The sheet must be shared with anyone who has the link. Otherwise download it as .xlsx and upload the file.",
+      "read": "Read the workbook",
+      "reading": "Reading...",
+      "setupTitle": "2. What to import",
+      "group": "Group",
+      "semesterNumber": "Semester number",
+      "semesterTitle": "Semester title",
+      "timetableSheet": "Timetable sheet",
+      "deadlinesSheet": "Deadlines sheet",
+      "placementSheet": "Placement sheet",
+      "notUsed": "Do not import",
+      "events": "{count} events",
+      "preview": "Preview changes",
+      "previewing": "Working out the changes...",
+      "resultTitle": "3. Changes",
+      "firstImport": "First import of this semester: the changes are not posted to the updates feed.",
+      "schedules": "Classes",
+      "deadlines": "Deadlines",
+      "added": "{count} added",
+      "changed": "{count} changed",
+      "removed": "{count} removed",
+      "unchanged": "{count} unchanged",
+      "subjectsCreated": "New subjects: {list}",
+      "subgroupsCreated": "New subgroups: {list}",
+      "placements": "Placement: {matched} of {students} students found, {changed} changes",
+      "unmatched": "Not found in the group (check the names): {list}",
+      "warnings": "Warnings",
+      "changes": "Changes",
+      "apply": "Apply",
+      "applying": "Applying...",
+      "applied": "Import done",
+      "error": "Import failed",
+      "kind": {
+        "SCHEDULE_ADDED": "New class",
+        "SCHEDULE_CHANGED": "Class changed",
+        "SCHEDULE_REMOVED": "Class removed",
+        "DEADLINE_ADDED": "New deadline",
+        "DEADLINE_CHANGED": "Deadline changed",
+        "DEADLINE_REMOVED": "Deadline removed"
+      },
+      "more": "and {count} more"
+    },
     "groupStudents": {
       "loading": "Loading students...",
       "groupNotFound": "Group not found",
@@ -100,6 +148,7 @@
       "keepHint": "A value is set. Leave this empty to keep it."
     },
     "nav": {
+      "timetable": "Timetable import",
       "schedule": "Schedule",
       "groups": "Groups",
       "subjects": "Subjects",
@@ -114,6 +163,44 @@
     "role": "Administrator"
   },
   "student": {
+    "deadlines": {
+      "title": "Deadlines",
+      "subtitle": "What is due, when, and where to submit it. Taken from the programme spreadsheet and from lecturers.",
+      "empty": "No open deadlines.",
+      "due": "Due: {date}",
+      "submit": "Where to submit",
+      "naming": "File naming",
+      "links": "Links",
+      "changesTitle": "Changes in the last 2 weeks",
+      "noChanges": "Nothing changed.",
+      "source": {
+        "SHEET_IMPORT": "from the programme spreadsheet",
+        "LECTURER": "from the lecturer",
+        "MANUAL": "added by hand"
+      },
+      "channel": {
+        "FORM": "Form",
+        "DRIVE": "Google Drive",
+        "YANDEX_DISK": "Yandex Disk",
+        "EMAIL": "Email",
+        "CHAT": "Chat",
+        "TELEGRAM": "Telegram",
+        "WEB": "On the site",
+        "OTHER": "Link"
+      }
+    },
+    "calendarFeed": {
+      "title": "Calendar on your phone",
+      "description": "Subscribe to your calendar: your subgroups' classes and your deadlines appear and stay up to date in Google, Apple or Outlook.",
+      "create": "Get the link",
+      "rotate": "Replace the link",
+      "rotateHint": "The old link stops working.",
+      "copy": "Copy",
+      "copied": "Link copied",
+      "howTo": "Google Calendar: Other calendars → From URL. Apple: File → New Calendar Subscription. Outlook: Add calendar → Subscribe from web.",
+      "private": "The link is personal: it shows your timetable. Do not share it.",
+      "error": "Could not get the link"
+    },
     "profileGroup": {
       "title": "Your group",
       "semester": "Semester:",
@@ -124,6 +211,7 @@
       "noGroup": "You are not in a group yet. Ask an administrator."
     },
     "nav": {
+      "deadlines": "Deadlines",
       "schedule": "Schedule",
       "homework": "Homework",
       "exams": "Exams",
@@ -160,6 +248,11 @@
     }
   },
   "bot": {
+    "calendar": {
+      "name": "Studies ({app})",
+      "deadline": "Due: {title}",
+      "submitTo": "Submit to: {target}"
+    },
     "appName": "Shked",
     "notLinked": "❌ Your account is not linked to {app}.\nUse /link to link it.",
     "userFallbackName": "there",

@@ -16,7 +16,8 @@ import {
   ClipboardList,
   ChevronLeft,
   ChevronRight,
-  MessageCircle
+  MessageCircle,
+  AlarmClock
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { getFullName } from '@/lib/utils'
@@ -74,6 +75,11 @@ export function StudentNav({ user }: StudentNavProps) {
       label: t('student.nav.calendar'),
       href: '/student/calendar',
       icon: CalendarDays
+    },
+    {
+      label: t('student.nav.deadlines'),
+      href: '/student/deadlines',
+      icon: AlarmClock
     },
     {
       label: 'Сообщения',

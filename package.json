@@ -43,7 +43,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings 184",
+    "lint": "eslint . --max-warnings 180",
     "lint:fix": "eslint . --fix",
     "prepare": "husky",
     "release": "release-it",

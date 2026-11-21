@@ -19,8 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  MessageCircle
-} from 'lucide-react'
+  MessageCircle, FileSpreadsheet } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { getFullName } from '@/lib/utils'
 import { useState, useEffect } from 'react'
@@ -85,6 +84,11 @@ export function AdminNav({ user }: AdminNavProps) {
       label: t('admin.nav.homework'),
       href: '/admin/homework',
       icon: ClipboardList
+    },
+    {
+      label: t('admin.nav.timetable'),
+      href: '/admin/timetable',
+      icon: FileSpreadsheet
     },
     {
       label: 'Сообщения',

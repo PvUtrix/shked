@@ -43,6 +43,7 @@
 - [**USER_ROLES.md**](features/USER_ROLES.md) — Роли пользователей и права доступа
 - [**ACTIVITY_LOG.md**](features/ACTIVITY_LOG.md) — Лог активности пользователей и аудит действий
 - [**TELEGRAM_BOT.md**](features/TELEGRAM_BOT.md) — Интеграция с Telegram
+- [**TIMETABLE_IMPORT.md**](features/TIMETABLE_IMPORT.md) — Timetable import, deadlines and the personal calendar feed
 - [**MDX_EDITOR_INTEGRATION.md**](features/MDX_EDITOR_INTEGRATION.md) — Rich text редактор для заданий
 
 ### 🏷️ Релизы и версионирование (`releases/`)
