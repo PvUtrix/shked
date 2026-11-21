@@ -156,15 +156,23 @@ const handlerTable = {
 function pickHandler(command: string): Handler | undefined {
   switch (command) {
     case '/start':
+      return handlerTable['/start']
     case '/link':
+      return handlerTable['/link']
     case '/schedule':
+      return handlerTable['/schedule']
     case '/tomorrow':
+      return handlerTable['/tomorrow']
     case '/week':
+      return handlerTable['/week']
     case '/settings':
+      return handlerTable['/settings']
     case '/homework':
+      return handlerTable['/homework']
     case '/homework_due':
+      return handlerTable['/homework_due']
     case '/help':
-      return handlerTable[command]
+      return handlerTable['/help']
     default:
       return undefined
   }
