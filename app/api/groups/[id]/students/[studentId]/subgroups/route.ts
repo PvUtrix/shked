@@ -50,49 +50,35 @@ export async function PUT(
       )
     }
 
-    // Обновляем или создаем запись в UserGroup
-    const existingUserGroup = await prisma.userGroup.findUnique({
-      where: {
-        userId_groupId: {
-          userId: studentId,
-          groupId: id
-        }
-      }
+    // Body: { assignments: { [subjectId | "_group"]: subgroupId | null } }.
+    // Each key replaces the student's membership among that subject's
+    // subgroups in this group; null removes it.
+    const assignments: Record<string, string | null> =
+      body && typeof body.assignments === 'object' && body.assignments !== null ? body.assignments : {}
+
+    const groupSubgroups = await prisma.subgroup.findMany({
+      where: { groupId: id, isActive: true },
+      select: { id: true, subjectId: true }
     })
+    const subjectKey = (subjectId: string | null) => subjectId ?? '_group'
 
-    // Prepare exactly only what's provided in the payload body
-    const subgroupsData: Record<string, any> = {}
-    if (body.subgroupCommerce !== undefined) subgroupsData.subgroupCommerce = body.subgroupCommerce
-    if (body.subgroupTutorial !== undefined) subgroupsData.subgroupTutorial = body.subgroupTutorial
-    if (body.subgroupFinance !== undefined) subgroupsData.subgroupFinance = body.subgroupFinance
-    if (body.subgroupSystemThinking !== undefined) subgroupsData.subgroupSystemThinking = body.subgroupSystemThinking
-
-    if (existingUserGroup) {
-      // Обновляем существующую запись
-      await prisma.userGroup.update({
-        where: {
-          userId_groupId: {
-            userId: studentId,
-            groupId: id
-          }
-        },
-        data: subgroupsData
-      })
-    } else {
-      // Создаем новую запись, недостающие поля станут null по умолчанию (или согласно схеме)
-      await prisma.userGroup.create({
-        data: {
-          userId: studentId,
-          groupId: id,
-          ...subgroupsData
-        }
-      })
+    for (const [key, subgroupId] of Object.entries(assignments)) {
+      const inSubject = groupSubgroups.filter((sg) => subjectKey(sg.subjectId) === key)
+      if (subgroupId !== null && !inSubject.some((sg) => sg.id === subgroupId)) {
+        return NextResponse.json(
+          { error: `Subgroup ${subgroupId} does not belong to subject ${key} in this group` },
+          { status: 400 }
+        )
+      }
+      await prisma.$transaction([
+        prisma.subgroupStudent.deleteMany({
+          where: { userId: studentId, subgroupId: { in: inSubject.map((sg) => sg.id) } }
+        }),
+        ...(subgroupId ? [prisma.subgroupStudent.create({ data: { userId: studentId, subgroupId } })] : [])
+      ])
     }
 
-    return NextResponse.json({ 
-      message: 'Подгруппы обновлены',
-      subgroups: subgroupsData
-    })
+    return NextResponse.json({ assignments })
 
   } catch (error) {
     console.error('Ошибка при обновлении подгрупп студента:', error)

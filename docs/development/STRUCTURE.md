@@ -36,7 +36,6 @@ GitHub **автоматически находит** следующие communit
 ### 🎯 Специфичная документация:
 - **`USER_ROLES.md`** - Описание ролей пользователей
 - **`TELEGRAM_BOT.md`** - Документация Telegram бота
-- **`SUBGROUPS.md`** - Система подгрупп
 - **`MDX_EDITOR_INTEGRATION.md`** - Интеграция MDX редактора
 
 ### 🚀 Quick guides:

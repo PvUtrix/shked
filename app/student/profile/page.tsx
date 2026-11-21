@@ -10,18 +10,17 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserCircle, Mail, User, Users, BookOpen, Calendar, Save, MessageSquare, Copy, Check, HandHeart, Search } from 'lucide-react'
 import { getFullName } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
-interface UserGroup {
-  subgroupCommerce?: number | null
-  subgroupTutorial?: number | null
-  subgroupFinance?: number | null
-  subgroupSystemThinking?: number | null
+interface Membership {
   group: {
     name: string
-    description?: string
-    semester?: string
-    year?: string
-  }
+    description?: string | null
+    semester?: string | null
+    year?: string | null
+  } | null
+  subgroups: Array<{ id: string; name: string; subject: string | null }>
+  classCount: number
 }
 
 interface TelegramUser {
@@ -49,7 +48,8 @@ interface MaxUser {
 export default function StudentProfilePage() {
   const { data: session } = useSession() || {}
   const [loading, setLoading] = useState(true)
-  const [userGroup, setUserGroup] = useState<UserGroup | null>(null)
+  const tg = useTranslations('student.profileGroup')
+  const [membership, setMembership] = useState<Membership | null>(null)
   const [scheduleCount, setScheduleCount] = useState(0)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
@@ -107,21 +107,13 @@ export default function StudentProfilePage() {
             }))
           }
 
-          // Здесь можно получить дополнительные данные пользователя
-          // Пока используем заглушку
-          setUserGroup({
-            subgroupCommerce: 1,
-            subgroupTutorial: 1,
-            subgroupFinance: 1,
-            subgroupSystemThinking: 1,
-            group: {
-              name: 'ТехПред МФТИ 2025-27',
-              description: 'Магистратура Технологическое предпринимательство',
-              semester: '1 семестр',
-              year: '2025-27'
-            }
-          })
-          setScheduleCount(15)
+          // The real group, subgroups and class count.
+          const membershipResponse = await fetch('/api/profile/membership')
+          if (membershipResponse.ok) {
+            const data: Membership = await membershipResponse.json()
+            setMembership(data)
+            setScheduleCount(data.classCount)
+          }
 
           // Проверяем статус Telegram подключения
           await checkTelegramStatus()
@@ -523,57 +515,57 @@ export default function StudentProfilePage() {
       </div>
 
       {/* Group Info */}
-      {userGroup && (
+      {membership && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
               <Users className="h-5 w-5 mr-2 text-green-600" />
-              Информация о группе
+              {tg('title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">
-                  {userGroup.group.name}
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {userGroup.group.description}
-                </p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-500">Семестр:</span>
-                    <span className="font-medium">{userGroup.group.semester}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-500">Год обучения:</span>
-                    <span className="font-medium">{userGroup.group.year}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Подгруппы:</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Коммерциализация:</span>
-                    <span className="font-medium">Подгруппа {userGroup.subgroupCommerce}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Тьюториал:</span>
-                    <span className="font-medium">Подгруппа {userGroup.subgroupTutorial}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Финансы:</span>
-                    <span className="font-medium">Подгруппа {userGroup.subgroupFinance}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Системное мышление:</span>
-                    <span className="font-medium">Подгруппа {userGroup.subgroupSystemThinking}</span>
+            {!membership.group ? (
+              <p className="text-sm text-muted-foreground">{tg('noGroup')}</p>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold mb-2">{membership.group.name}</h3>
+                  {membership.group.description && (
+                    <p className="text-muted-foreground mb-4">{membership.group.description}</p>
+                  )}
+                  <div className="space-y-2 text-sm">
+                    {membership.group.semester && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">{tg('semester')}</span>
+                        <span className="font-medium">{membership.group.semester}</span>
+                      </div>
+                    )}
+                    {membership.group.year && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">{tg('year')}</span>
+                        <span className="font-medium">{membership.group.year}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">{tg('subgroups')}</h4>
+                  {membership.subgroups.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{tg('noSubgroups')}</p>
+                  ) : (
+                    <div className="space-y-2 text-sm">
+                      {membership.subgroups.map((sg) => (
+                        <div key={sg.id} className="flex items-center justify-between">
+                          <span className="text-muted-foreground">{sg.subject ?? tg('groupWide')}</span>
+                          <span className="font-medium">{sg.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       )}

@@ -31,36 +31,6 @@ async function fixDemoStudent() {
     console.log(`   Имя: ${updatedStudent.firstName} ${updatedStudent.lastName}`)
     console.log(`   Группа ID: ${updatedStudent.groupId}`)
 
-    // Создаем или обновляем запись UserGroup для подгрупп
-    const userGroup = await prisma.userGroup.upsert({
-      where: {
-        userId_groupId: {
-          userId: updatedStudent.id,
-          groupId: group.id
-        }
-      },
-      update: {
-        subgroupCommerce: 1,
-        subgroupTutorial: 1,
-        subgroupFinance: 1,
-        subgroupSystemThinking: 1
-      },
-      create: {
-        userId: updatedStudent.id,
-        groupId: group.id,
-        subgroupCommerce: 1,
-        subgroupTutorial: 1,
-        subgroupFinance: 1,
-        subgroupSystemThinking: 1
-      }
-    })
-
-    console.log(`✅ Подгруппы назначены:`)
-    console.log(`   Коммерциализация: ${userGroup.subgroupCommerce}`)
-    console.log(`   Тьюториал: ${userGroup.subgroupTutorial}`)
-    console.log(`   Финансовое моделирование: ${userGroup.subgroupFinance}`)
-    console.log(`   Системное мышление: ${userGroup.subgroupSystemThinking}`)
-
     console.log('\n🎉 Готово! Теперь демо-студент может видеть домашние задания.')
 
   } catch (error) {

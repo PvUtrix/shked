@@ -65,6 +65,34 @@
     }
   },
   "admin": {
+    "groupStudents": {
+      "loading": "Loading students...",
+      "groupNotFound": "Group not found",
+      "backToGroups": "Back to groups",
+      "back": "Back",
+      "title": "Students of {group}",
+      "subtitle": "Assign students to subgroups per subject",
+      "save": "Save changes",
+      "saveCount": "Save changes ({count})",
+      "saving": "Saving...",
+      "noChanges": "Nothing to save",
+      "saved": "Changes saved",
+      "saveFailed": "Some changes could not be saved",
+      "loadFailed": "Could not load the data",
+      "empty": "This group has no students yet",
+      "listTitle": "Students ({count})",
+      "listDescription": "Pick the student's subgroup in every subject where the group is split",
+      "student": "Student",
+      "email": "Email",
+      "groupWide": "Whole group",
+      "noSubgroups": "This group has no subgroups yet. Create them on the Subgroups page.",
+      "manageSubgroups": "Subgroups",
+      "unsaved": "Unsaved changes for {count} students. Remember to save.",
+      "aboutTitle": "About subgroups",
+      "about1": "Subgroups are created per subject on the Subgroups page.",
+      "about2": "A student can be in different subgroups in different subjects.",
+      "about3": "The schedule, the calendar and the bot show a student the classes of the whole group and of their subgroups."
+    },
     "secretStatus": {
       "env": "Set by the environment variable {name}.",
       "database": "Stored in the database (deprecated). Move it to the environment variable {name}.",
@@ -86,6 +114,15 @@
     "role": "Administrator"
   },
   "student": {
+    "profileGroup": {
+      "title": "Your group",
+      "semester": "Semester:",
+      "year": "Year:",
+      "subgroups": "Subgroups:",
+      "groupWide": "Whole group",
+      "noSubgroups": "You are not in any subgroup yet.",
+      "noGroup": "You are not in a group yet. Ask an administrator."
+    },
     "nav": {
       "schedule": "Schedule",
       "homework": "Homework",
