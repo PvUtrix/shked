@@ -74,6 +74,8 @@ jobs:
       DATABASE_URL: postgresql://test:test@localhost:5432/test_db
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: test-secret-for-e2e-tests
+      # Inlined at build time; the login test checks the demo account list.
+      NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS: 'true'
 
     steps:
       - name: Checkout code

@@ -69,8 +69,10 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-# Копирование prisma CLI для миграций
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+# The Prisma CLI runs the migrations at start (scripts/start.sh). The
+# standalone output does not carry the CLI's own dependencies, so install it
+# with them, at the version in package.json.
+RUN npm install -g prisma@6.19.0 && prisma --version
 
 # Копирование скрипта запуска
 COPY --from=builder /app/scripts ./scripts
