@@ -168,7 +168,6 @@
 - `POST /api/admin/reset-db` - сброс БД к демо-состоянию
 - `GET /api/admin/reset-status` - статус последнего сброса
 - `POST /api/seed` - заполнить БД тестовыми данными
-- `POST /api/migrate` - миграции схемы
 - `POST /api/signup` - регистрация (если включена)
 
 ## 🔒 Защита и авторизация

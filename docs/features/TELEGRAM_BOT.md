@@ -247,7 +247,8 @@ Telegram бот интегрирован в систему ШКЕД для пр�
 ### Environment Variables:
 
 ```env
-# Опционально - можно хранить в БД
+# Takes precedence over a key saved in the admin panel (deprecated)
+TELEGRAM_BOT_TOKEN=
 GIGACHAT_API_KEY=ваш_ключ_gigachat
 NEXTAUTH_URL=https://yourdomain.com
 ```

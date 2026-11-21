@@ -313,8 +313,13 @@ TELEGRAM_BOT_TOKEN       # Telegram bot token (optional)
 TELEGRAM_WEBHOOK_URL     # Telegram webhook URL (optional)
 MAX_BOT_TOKEN            # Max messenger token (optional)
 MAX_WEBHOOK_URL          # Max webhook URL (optional)
-OPENAI_API_KEY           # OpenAI API key (optional, for bot)
+GIGACHAT_API_KEY         # GigaChat key for the bot assistant (optional)
 ```
+
+Bot tokens and the GigaChat key are read from these variables first
+(`lib/bot-secrets.ts`). Values saved in the admin panel are a deprecated
+fallback, and the config API never returns secret values to the browser,
+only whether each one is set and where it comes from.
 
 ## Common Patterns
 

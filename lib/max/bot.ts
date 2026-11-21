@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db'
 import { Bot } from '@maxhub/max-bot-api'
+import { resolveSecret } from '@/lib/bot-secrets'
 
 export interface MaxUpdate {
   update_id: number
@@ -65,8 +66,8 @@ export async function getBotSettings(): Promise<MaxBotSettings | null> {
 
     return {
       id: settings.id,
-      maxBotToken: settings.maxBotToken,
-      openaiApiKey: settings.openaiApiKey,
+      maxBotToken: resolveSecret('maxBotToken', settings.maxBotToken),
+      openaiApiKey: resolveSecret('llmApiKey', settings.openaiApiKey),
       maxWebhookUrl: settings.maxWebhookUrl,
       maxIsActive: settings.maxIsActive,
       notificationsEnabled: settings.notificationsEnabled,

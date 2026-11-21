@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { setWebhook, getWebhookInfo, getBotInfo } from '@/lib/telegram/bot'
 import { logActivity } from '@/lib/activity-log'
+import { resolveSecret, secretStatus } from '@/lib/bot-secrets'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -18,10 +19,15 @@ export async function GET(_request: NextRequest) {
     })
 
     if (!settings) {
+      // Secret values are never returned; only whether each is set and where from.
       return NextResponse.json({
         telegramBotToken: '',
         telegramBotUsername: '',
         openaiApiKey: '',
+        secrets: {
+          telegramBotToken: secretStatus('telegramBotToken', null),
+          llmApiKey: secretStatus('llmApiKey', null)
+        },
         webhookUrl: '',
         isActive: false,
         notificationsEnabled: true,
@@ -33,13 +39,18 @@ export async function GET(_request: NextRequest) {
     }
 
     // Получаем дополнительную информацию о боте
-    const webhookInfo = settings.telegramBotToken ? await getWebhookInfo() : null
-    const botInfo = settings.telegramBotToken ? await getBotInfo() : null
+    const hasToken = resolveSecret('telegramBotToken', settings.telegramBotToken) !== null
+    const webhookInfo = hasToken ? await getWebhookInfo() : null
+    const botInfo = hasToken ? await getBotInfo() : null
 
     return NextResponse.json({
-      telegramBotToken: settings.telegramBotToken || '',
+      telegramBotToken: '',
       telegramBotUsername: settings.telegramBotUsername || '',
-      openaiApiKey: settings.openaiApiKey || '',
+      openaiApiKey: '',
+      secrets: {
+        telegramBotToken: secretStatus('telegramBotToken', settings.telegramBotToken),
+        llmApiKey: secretStatus('llmApiKey', settings.openaiApiKey)
+      },
       webhookUrl: settings.webhookUrl || '',
       isActive: settings.isActive,
       notificationsEnabled: settings.notificationsEnabled,
@@ -142,7 +153,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Если токен бота указан, устанавливаем webhook
-    if (telegramBotToken && isActive) {
+    if (isActive && resolveSecret('telegramBotToken', settings.telegramBotToken)) {
       const webhookSuccess = await setWebhook(webhookUrl)
       if (!webhookSuccess) {
         console.warn('Не удалось установить webhook')
