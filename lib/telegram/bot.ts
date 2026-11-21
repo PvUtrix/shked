@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db'
-import crypto from 'crypto'
 import { resolveSecret } from '@/lib/bot-secrets'
+import { webhookSecret } from '@/lib/bot/webhook-secret'
 
 export interface TelegramUpdate {
   update_id: number
@@ -104,22 +104,6 @@ export async function getBotSettings(): Promise<BotSettings | null> {
 }
 
 /**
- * Проверить подпись webhook от Telegram
- */
-export function verifyWebhookSignature(
-  body: string,
-  signature: string,
-  secretToken: string
-): boolean {
-  const expectedSignature = crypto
-    .createHmac('sha256', secretToken)
-    .update(body)
-    .digest('hex')
-  
-  return signature === `sha256=${expectedSignature}`
-}
-
-/**
  * Отправить сообщение через Telegram Bot API
  */
 export async function sendMessage(message: TelegramMessage): Promise<boolean> {
@@ -220,8 +204,9 @@ export async function answerCallbackQuery(answer: TelegramCallbackAnswer): Promi
  */
 export async function setWebhook(webhookUrl: string): Promise<boolean> {
   const settings = await getBotSettings()
-  if (!settings?.telegramBotToken) {
-    console.error('Токен бота не настроен')
+  const secret = webhookSecret('telegram')
+  if (!settings?.telegramBotToken || !secret) {
+    console.error('Telegram bot token or NEXTAUTH_SECRET is not set')
     return false
   }
 
@@ -233,7 +218,9 @@ export async function setWebhook(webhookUrl: string): Promise<boolean> {
       },
       body: JSON.stringify({
         url: webhookUrl,
-        allowed_updates: ['message', 'callback_query']
+        allowed_updates: ['message', 'callback_query'],
+        // Telegram echoes this in X-Telegram-Bot-Api-Secret-Token on every update.
+        secret_token: secret
       })
     })
 

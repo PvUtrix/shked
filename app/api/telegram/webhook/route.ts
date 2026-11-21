@@ -1,122 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { TelegramUpdate } from '@/lib/telegram/bot'
-import { routeCommand } from '@/lib/telegram/commands'
-import { sendMessage, answerCallbackQuery } from '@/lib/telegram/bot'
-import { prisma } from '@/lib/db'
+import { TelegramUpdate, sendMessage, answerCallbackQuery } from '@/lib/telegram/bot'
+import { handleMessage } from '@/lib/bot/commands'
+import { refreshProfile } from '@/lib/bot/channels'
+import { isValidWebhookRequest } from '@/lib/bot/webhook-secret'
 
 export async function POST(request: NextRequest) {
+  // Only Telegram knows the secret set with setWebhook.
+  if (!isValidWebhookRequest('telegram', request.headers)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    const body = await request.text()
-    const update: TelegramUpdate = JSON.parse(body)
+    const update: TelegramUpdate = await request.json()
 
-    console.error('Received Telegram update:', JSON.stringify(update, null, 2))
-
-    // Обработка обычных сообщений
-    if (update.message) {
+    if (update.message?.text) {
       const { from, chat, text } = update.message
-      
-      if (!text) {
-        return NextResponse.json({ ok: true })
-      }
+      const profile = { username: from.username, firstName: from.first_name, lastName: from.last_name }
+      await refreshProfile('telegram', String(from.id), String(chat.id), profile)
 
-      // Обновляем информацию о пользователе в БД
-      await updateUserInfo(from.id.toString(), chat.id.toString(), from)
-
-      // Обработка команд
-      let response: string
-
-      if (text.startsWith('/')) {
-        const [command, ...args] = text.split(' ')
-        response = await routeCommand(from.id.toString(), chat.id, command, args)
-      } else {
-        // Обработка естественного языка
-        const [command, ...args] = text.split(' ')
-        response = await routeCommand(from.id.toString(), chat.id, text, args)
-      }
-
-      // Отправляем ответ
-      await sendMessage({
-        chat_id: chat.id,
-        text: response,
-        parse_mode: 'Markdown'
+      const reply = await handleMessage({
+        channel: 'telegram',
+        platformUserId: String(from.id),
+        chatId: String(chat.id),
+        text,
+        profile,
       })
+      await sendMessage({ chat_id: chat.id, text: reply, parse_mode: 'Markdown' })
     }
 
-    // Обработка callback queries (кнопки)
     if (update.callback_query) {
-      const { id, from, data } = update.callback_query
-      
-      // Обновляем информацию о пользователе
-      await updateUserInfo(from.id.toString(), from.id.toString(), from)
-
-      // Отвечаем на callback query
-      await answerCallbackQuery({
-        callback_query_id: id,
-        text: 'Обработано'
-      })
-
-      // Здесь можно добавить обработку различных callback data
-      if (data) {
-        // Обработка callback data
-        console.error('Callback data:', data)
-      }
+      // No inline keyboards are sent yet; acknowledge so the client stops waiting.
+      await answerCallbackQuery({ callback_query_id: update.callback_query.id })
     }
 
     return NextResponse.json({ ok: true })
   } catch (error) {
-    console.error('Ошибка в webhook:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
-
-/**
- * Обновить информацию о пользователе в БД
- */
-async function updateUserInfo(
-  telegramId: string,
-  chatId: string,
-  from: {
-    id: number
-    is_bot: boolean
-    first_name: string
-    last_name?: string
-    username?: string
-  }
-) {
-  try {
-    // Проверяем, есть ли уже такой пользователь
-    const existingUser = await prisma.telegramUser.findUnique({
-      where: { telegramId }
-    })
-
-    if (existingUser) {
-      // Обновляем существующего пользователя
-      await prisma.telegramUser.update({
-        where: { telegramId },
-        data: {
-          chatId,
-          username: from.username,
-          firstName: from.first_name,
-          lastName: from.last_name,
-          isActive: true
-        }
-      })
-    } else {
-      // Создаем нового пользователя (но без привязки к веб-аккаунту)
-      await prisma.telegramUser.create({
-        data: {
-          telegramId,
-          chatId,
-          username: from.username,
-          firstName: from.first_name,
-          lastName: from.last_name,
-          isActive: true,
-          notifications: true,
-          userId: 'temp_' + telegramId // временный ID до привязки
-        }
-      })
-    }
-  } catch (error) {
-    console.error('Ошибка при обновлении информации о пользователе:', error)
+    console.error('Telegram webhook error:', error)
+    // 200 so Telegram does not retry an update this code cannot handle.
+    return NextResponse.json({ ok: false })
   }
 }

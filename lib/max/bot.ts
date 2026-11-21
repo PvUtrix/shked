@@ -1,40 +1,31 @@
 import { prisma } from '@/lib/db'
-import { Bot } from '@maxhub/max-bot-api'
 import { resolveSecret } from '@/lib/bot-secrets'
+import { webhookSecret } from '@/lib/bot/webhook-secret'
 
+/**
+ * MAX Bot API transport, per https://dev.max.ru/docs-api (read 2026-11-21):
+ * requests go to platform-api2.max.ru with the token in the Authorization
+ * header (query-string tokens are no longer accepted), webhooks are
+ * registered with POST /subscriptions and come back with the secret in the
+ * X-Max-Bot-Api-Secret header.
+ */
+
+const MAX_API_URL = process.env.MAX_API_URL || 'https://platform-api2.max.ru'
+
+/** The part of a MAX update this app reads (see the Update object docs). */
 export interface MaxUpdate {
-  update_id: number
+  update_type: string
+  timestamp?: number
+  /** message_created */
   message?: {
-    message_id: string
-    from: {
-      id: string
-      first_name: string
-      last_name?: string
-      username?: string
-    }
-    chat: {
-      id: string
-      type: string
-    }
-    date: number
-    text?: string
+    sender?: { user_id: number; first_name?: string; last_name?: string | null; username?: string | null; name?: string }
+    recipient: { chat_id?: number | null; user_id?: number | null; chat_type?: string }
+    body?: { mid?: string; text?: string | null } | null
   }
-  callback_query?: {
-    id: string
-    from: {
-      id: string
-      first_name: string
-      last_name?: string
-      username?: string
-    }
-    message?: {
-      message_id: string
-      chat: {
-        id: string
-      }
-    }
-    data?: string
-  }
+  /** bot_started */
+  chat_id?: number
+  user?: { user_id: number; first_name?: string; last_name?: string | null; username?: string | null; name?: string }
+  payload?: string | null
 }
 
 export interface MaxBotSettings {
@@ -54,16 +45,10 @@ export interface MaxMessage {
   parse_mode?: 'Markdown' | 'HTML'
 }
 
-/**
- * Get bot settings from database
- */
 export async function getBotSettings(): Promise<MaxBotSettings | null> {
   try {
-    const settings = await prisma.botSettings.findFirst({
-      orderBy: { createdAt: 'desc' }
-    })
+    const settings = await prisma.botSettings.findFirst({ orderBy: { createdAt: 'desc' } })
     if (!settings) return null
-
     return {
       id: settings.id,
       maxBotToken: resolveSecret('maxBotToken', settings.maxBotToken),
@@ -80,119 +65,82 @@ export async function getBotSettings(): Promise<MaxBotSettings | null> {
   }
 }
 
-/**
- * Create Max bot instance
- */
-export async function createBot(): Promise<Bot | null> {
-  const settings = await getBotSettings()
-  if (!settings?.maxBotToken) {
-    console.error('Max bot token not configured')
-    return null
-  }
-
-  try {
-    return new Bot(settings.maxBotToken)
-  } catch (error) {
-    console.error('Error creating Max bot instance:', error)
-    return null
-  }
+async function maxRequest(
+  token: string,
+  method: 'GET' | 'POST' | 'DELETE',
+  path: string,
+  options: { query?: Record<string, string>; body?: unknown } = {}
+): Promise<Response> {
+  const url = new URL(path, MAX_API_URL)
+  for (const [k, v] of Object.entries(options.query ?? {})) url.searchParams.set(k, v)
+  return fetch(url, {
+    method,
+    headers: { Authorization: token, ...(options.body ? { 'Content-Type': 'application/json' } : {}) },
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  })
 }
 
-/**
- * Send message via Max Bot API
- */
+/** Send a text message to a chat. Returns false when it was not delivered. */
 export async function sendMessage(message: MaxMessage): Promise<boolean> {
   const settings = await getBotSettings()
-  if (!settings?.maxBotToken || !settings.maxIsActive) {
-    console.error('Max bot not configured or inactive')
-    return false
-  }
-
+  if (!settings?.maxBotToken || !settings.maxIsActive) return false
   try {
-    // Max bot API uses different approach - we need to use their API methods
-    // For now, we'll implement a basic HTTP approach similar to Telegram
-    // This may need to be updated based on actual Max API requirements
-
-    // Note: The @maxhub/max-bot-api library is event-based
-    // We may need to adjust this implementation
-
-    console.error('Sending message via Max bot:', message)
-    // TODO: Implement actual Max API send message logic
-    // The library uses ctx.reply() in event handlers, but we need a direct send method
-
+    const response = await maxRequest(settings.maxBotToken, 'POST', '/messages', {
+      query: { chat_id: message.chat_id },
+      body: { text: message.text.slice(0, 4000), format: message.parse_mode === 'HTML' ? 'html' : 'markdown' },
+    })
+    if (!response.ok) {
+      console.error('Max sendMessage failed:', response.status, await response.text())
+      return false
+    }
     return true
   } catch (error) {
-    console.error('Error sending Max message:', error)
+    console.error('Max sendMessage error:', error)
     return false
   }
 }
 
-/**
- * Set webhook URL for Max bot
- */
+/** Register the webhook, with the shared secret MAX sends back. */
 export async function setWebhook(webhookUrl: string): Promise<boolean> {
   const settings = await getBotSettings()
-  if (!settings?.maxBotToken) {
-    console.error('Max bot token not configured')
-    return false
-  }
-
+  const secret = webhookSecret('max')
+  if (!settings?.maxBotToken || !secret) return false
   try {
-    // Update webhook URL in database
-    await prisma.botSettings.updateMany({
-      data: { maxWebhookUrl: webhookUrl }
+    const response = await maxRequest(settings.maxBotToken, 'POST', '/subscriptions', {
+      body: { url: webhookUrl, update_types: ['message_created', 'bot_started'], secret },
     })
-
-    // Note: Max bot may use polling or different webhook setup
-    // This needs to be updated based on actual Max API requirements
-
+    if (!response.ok) {
+      console.error('Max setWebhook failed:', response.status, await response.text())
+      return false
+    }
+    await prisma.botSettings.updateMany({ data: { maxWebhookUrl: webhookUrl } })
     return true
   } catch (error) {
-    console.error('Error setting Max webhook:', error)
+    console.error('Max setWebhook error:', error)
     return false
   }
 }
 
-/**
- * Get webhook information
- */
-export async function getWebhookInfo(): Promise<any> {
+export async function getWebhookInfo(): Promise<unknown> {
   const settings = await getBotSettings()
-  if (!settings?.maxBotToken) {
-    return null
-  }
-
+  if (!settings?.maxBotToken) return null
   try {
-    // Note: Need to implement based on actual Max API
-    return {
-      url: settings.maxWebhookUrl,
-      has_custom_certificate: false,
-      pending_update_count: 0,
-    }
+    const response = await maxRequest(settings.maxBotToken, 'GET', '/subscriptions')
+    return response.ok ? await response.json() : null
   } catch (error) {
-    console.error('Error getting Max webhook info:', error)
+    console.error('Max getWebhookInfo error:', error)
     return null
   }
 }
 
-/**
- * Get bot information
- */
-export async function getBotInfo(): Promise<any> {
+export async function getBotInfo(): Promise<unknown> {
   const settings = await getBotSettings()
-  if (!settings?.maxBotToken) {
+  if (!settings?.maxBotToken) return null
+  try {
+    const response = await maxRequest(settings.maxBotToken, 'GET', '/me')
+    return response.ok ? await response.json() : null
+  } catch (error) {
+    console.error('Max getBotInfo error:', error)
     return null
-  }
-
-  // Note: Need to implement based on actual Max API
-  // The library may have a method to get bot info
-
-  return {
-    ok: true,
-    result: {
-      id: 'max_bot',
-      first_name: 'Max Bot',
-      username: 'maxbot',
-    }
   }
 }
