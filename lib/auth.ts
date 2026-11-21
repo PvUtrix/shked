@@ -24,7 +24,8 @@ export const authOptions: NextAuthOptions = {
           include: { group: true }
         })
 
-        if (!user) {
+        // Deactivated accounts cannot sign in.
+        if (!user || user.isActive === false) {
           return null
         }
 
