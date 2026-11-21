@@ -60,7 +60,7 @@ const requireLinked =
   async (ctx) =>
     ctx.account ? handler(ctx as Context & { account: LinkedAccount }) : ctx.t('notLinked')
 
-const handlers: Record<string, Handler> = {
+const handlerTable: Record<string, Handler> = {
   /** /start, with an optional deep-link payload: base64 of a link token. */
   '/start': async (ctx) => {
     const { t, account } = ctx
@@ -152,6 +152,9 @@ const handlers: Record<string, Handler> = {
   '/help': async ({ t }) => t('help'),
 }
 
+// A Map, so a user-typed command can only ever select one of the handlers above.
+const handlers = new Map<string, Handler>(Object.entries(handlerTable))
+
 /** Strip a "@botname" suffix Telegram adds to commands in group chats. */
 function normaliseCommand(word: string): string {
   return word.split('@')[0].toLowerCase()
@@ -164,7 +167,7 @@ export async function handleMessage(msg: IncomingMessage, t: BotT = botT()): Pro
 
   if (text.startsWith('/')) {
     const [first, ...args] = text.split(/\s+/)
-    const handler = handlers[normaliseCommand(first)]
+    const handler = handlers.get(normaliseCommand(first))
     if (handler) return handler({ msg, args, account, t })
     return t('help')
   }
