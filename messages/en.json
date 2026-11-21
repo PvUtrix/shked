@@ -349,5 +349,32 @@
       "weeklyNone": "📝 *Homework summary*\n\n📅 No homework due this week.\nHave a good week! 😊",
       "weekFooter": "Have a good week! 🎓"
     }
+  },
+  "educationOffice": {
+    "students": {
+      "loading": "Loading...",
+      "title": "Students",
+      "subtitle": "All students of the university",
+      "counts": "Total: {total} | Shown: {shown}",
+      "search": "Search by name or email...",
+      "group": "Group",
+      "allGroups": "All groups",
+      "empty": "No students found",
+      "name": "Full name",
+      "email": "Email",
+      "groupColumn": "Group",
+      "sex": "Sex",
+      "birthday": "Date of birth",
+      "registered": "Registered",
+      "noName": "No name",
+      "male": "Male",
+      "female": "Female",
+      "loadFailed": "Could not load the students",
+      "loadError": "Something went wrong while loading"
+    },
+    "dashboard": {
+      "studentsTitle": "Students",
+      "studentsDescription": "Student list with search and a group filter"
+    }
   }
 }
