@@ -74,6 +74,10 @@ model User {
   mentorMeetings      MentorMeeting[]      @relation("MentorMeetings")
   studentMeetings     MentorMeeting[]      @relation("StudentMeetings")
   forumTopics         ForumTopic[]
+  /// Secret token of the personal iCal feed (/api/calendar/<token>).
+  calendarToken       String?              @unique
+  announcements       Announcement[]       @relation("AnnouncementAuthor")
+  timetableImports    TimetableImport[]
   forumPosts          ForumPost[]
   subgroupMemberships SubgroupStudent[]
   activityLogs        ActivityLog[]
@@ -104,21 +108,25 @@ model VerificationToken {
 }
 
 model Group {
-  id          String       @id @default(cuid())
-  name        String       @unique
-  description String?
-  semester    String?
-  year        String?
-  isActive    Boolean      @default(true)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  schedules   Schedule[]
-  userGroups  UserGroup[]
-  users       User[]
-  homework    Homework[]
-  subgroups   Subgroup[]
-  exams       Exam[]
-  forumTopics ForumTopic[]
+  id            String            @id @default(cuid())
+  name          String            @unique
+  description   String?
+  semester      String?
+  year          String?
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  schedules     Schedule[]
+  userGroups    UserGroup[]
+  users         User[]
+  homework      Homework[]
+  subgroups     Subgroup[]
+  exams         Exam[]
+  forumTopics   ForumTopic[]
+  semesters     Semester[]
+  deadlines     Deadline[]
+  announcements Announcement[]
+  imports       TimetableImport[]
 
   @@index([isActive])
   @@index([year])
@@ -127,22 +135,24 @@ model Group {
 }
 
 model Subject {
-  id          String             @id @default(cuid())
-  name        String             @unique
-  description String?
-  instructor  String?
-  isActive    Boolean            @default(true)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  schedules   Schedule[]
-  homework    Homework[]
-  lectors     SubjectLector[]
-  assistants  SubjectAssistant[]
-  documents   SubjectDocument[]
-  resources   ExternalResource[]
-  subgroups   Subgroup[]
-  exams       Exam[]
-  forumTopics ForumTopic[]
+  id            String             @id @default(cuid())
+  name          String             @unique
+  description   String?
+  instructor    String?
+  isActive      Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  schedules     Schedule[]
+  homework      Homework[]
+  lectors       SubjectLector[]
+  assistants    SubjectAssistant[]
+  documents     SubjectDocument[]
+  resources     ExternalResource[]
+  subgroups     Subgroup[]
+  exams         Exam[]
+  forumTopics   ForumTopic[]
+  deadlines     Deadline[]
+  announcements Announcement[]
 
   departmentId   String?
   department     Department?     @relation("DepartmentSubjects", fields: [departmentId], references: [id])
@@ -167,6 +177,13 @@ model Schedule {
   videoUrl        String? // Ссылка на запись занятия (Яндекс.Диск)
   recordingStatus String? // NOT_RECORDED, RECORDING, UPLOADED, ERROR
   zoomMeetingId   String? // ID встречи Zoom
+  meetingUrl      String? // Link to join (Zoom, Telemost, ...)
+  semesterId      String?
+  /// Stable identity of an imported entry; re-imports update it in place.
+  externalKey     String?            @unique
+  sourceType      String? // MANUAL, SHEET_IMPORT
+  sourceRef       String? // e.g. the spreadsheet and row it came from
+  sourceAt        DateTime?
   isActive        Boolean            @default(true)
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
@@ -175,6 +192,8 @@ model Schedule {
   subgroup        Subgroup?          @relation(fields: [subgroupId], references: [id])
   attendance      Attendance[]
   resources       ExternalResource[]
+  semester        Semester?          @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+  announcements   Announcement[]
 
   @@index([subjectId])
   @@index([groupId])
@@ -186,12 +205,12 @@ model Schedule {
 }
 
 model UserGroup {
-  id                     String   @id @default(cuid())
-  userId                 String
-  groupId                String
-  createdAt              DateTime @default(now())
-  group                  Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  createdAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, groupId])
   @@map("user_groups")
@@ -267,6 +286,7 @@ model Homework {
   subject     Subject              @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   group       Group?               @relation(fields: [groupId], references: [id], onDelete: Cascade)
   submissions HomeworkSubmission[]
+  deadlines   Deadline[]
 
   @@index([subjectId])
   @@index([groupId])
@@ -409,13 +429,16 @@ model Subgroup {
   name        String // "Подгруппа 1", "Подгруппа Коммерция" и т.д.
   number      Int // 1, 2, 3...
   description String?
+  instructor  String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
 
-  group     Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  subject   Subject?          @relation(fields: [subjectId], references: [id])
-  students  SubgroupStudent[]
-  schedules Schedule[]
+  group         Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  subject       Subject?          @relation(fields: [subjectId], references: [id])
+  students      SubgroupStudent[]
+  schedules     Schedule[]
+  deadlines     Deadline[]
+  announcements Announcement[]
 
   @@unique([groupId, subjectId, number])
   @@index([groupId])
@@ -716,4 +739,117 @@ model ProgramCourse {
   credits    Int
 
   @@map("program_courses")
+}
+
+/// One semester of a group (cohort). Imports and deadlines belong to it.
+model Semester {
+  id        String    @id @default(cuid())
+  groupId   String
+  number    Int
+  title     String
+  /// Time zone of the timetable's wall-clock times.
+  timeZone  String    @default("Europe/Moscow")
+  startsOn  DateTime?
+  endsOn    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  group     Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  schedules Schedule[]
+  deadlines Deadline[]
+  imports   TimetableImport[]
+
+  @@unique([groupId, number])
+  @@map("semesters")
+}
+
+/// Anything due: homework, sign-ups, reports, exams. Says where and how to submit.
+model Deadline {
+  id                String    @id @default(cuid())
+  groupId           String
+  semesterId        String?
+  subjectId         String?
+  /// Set when only one subgroup (or an elective's students) must do it.
+  subgroupId        String?
+  kind              String    @default("HOMEWORK") // HOMEWORK, SIGNUP, REPORT, EXAM, OTHER
+  number            Int?
+  title             String
+  details           String?
+  dueAt             DateTime
+  allDay            Boolean   @default(true)
+  submissionChannel String? // WEB, FORM, DRIVE, YANDEX_DISK, EMAIL, CHAT, TELEGRAM, OTHER
+  submissionTarget  String? // the form, folder or address to submit to
+  namingRule        String?
+  links             Json? // [{ url }]
+  homeworkId        String?
+  externalKey       String?   @unique
+  sourceType        String    @default("MANUAL") // MANUAL, SHEET_IMPORT, LECTURER
+  sourceRef         String?
+  sourceAt          DateTime?
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  group         Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  semester      Semester?      @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+  subject       Subject?       @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  subgroup      Subgroup?      @relation(fields: [subgroupId], references: [id], onDelete: SetNull)
+  homework      Homework?      @relation(fields: [homeworkId], references: [id], onDelete: SetNull)
+  announcements Announcement[]
+
+  @@index([groupId])
+  @@index([dueAt])
+  @@index([subjectId])
+  @@index([isActive])
+  @@map("deadlines")
+}
+
+/// A dated change or notice, with where it came from. The change log students read.
+model Announcement {
+  id         String   @id @default(cuid())
+  groupId    String
+  subjectId  String?
+  subgroupId String?
+  kind       String // SCHEDULE_ADDED, SCHEDULE_CHANGED, SCHEDULE_REMOVED, DEADLINE_ADDED, DEADLINE_CHANGED, DEADLINE_REMOVED, NOTE
+  title      String
+  /// Structured details, e.g. { before, after } for a change.
+  details    Json?
+  scheduleId String?
+  deadlineId String?
+  importId   String?
+  sourceType String   @default("MANUAL") // MANUAL, SHEET_IMPORT, LECTURER
+  sourceRef  String?
+  authorId   String?
+  createdAt  DateTime @default(now())
+
+  group    Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  subject  Subject?         @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  subgroup Subgroup?        @relation(fields: [subgroupId], references: [id], onDelete: SetNull)
+  schedule Schedule?        @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  deadline Deadline?        @relation(fields: [deadlineId], references: [id], onDelete: SetNull)
+  import   TimetableImport? @relation(fields: [importId], references: [id], onDelete: SetNull)
+  author   User?            @relation("AnnouncementAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([groupId, createdAt])
+  @@map("announcements")
+}
+
+/// One run of the timetable importer: what it read and what it changed.
+model TimetableImport {
+  id           String   @id @default(cuid())
+  groupId      String
+  semesterId   String
+  sourceRef    String
+  importedById String?
+  /// Counts per kind and the warnings shown to the admin.
+  summary      Json
+  createdAt    DateTime @default(now())
+
+  group         Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  semester      Semester       @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  importedBy    User?          @relation(fields: [importedById], references: [id], onDelete: SetNull)
+  announcements Announcement[]
+
+  @@index([groupId, createdAt])
+  @@map("timetable_imports")
 }

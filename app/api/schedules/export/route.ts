@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createICalendar, createICalResponse, ICalEvent } from '@/lib/export/ical'
+import { classInstant } from '@/lib/schedule/time'
 
 // GET /api/schedules/export - Экспорт расписания в iCal формат
 export async function GET(request: NextRequest) {
@@ -119,15 +120,11 @@ export async function GET(request: NextRequest) {
     // Преобразовать в iCal события
     const events: ICalEvent[] = schedules.map((schedule) => {
       // Создать Date объекты для начала и конца занятия
-      const scheduleDate = new Date(schedule.date)
-      const [startHour, startMinute] = schedule.startTime.split(':').map(Number)
-      const [endHour, endMinute] = schedule.endTime.split(':').map(Number)
+      // Class times are wall-clock times in the timetable's zone, not the server's.
+      const startDate = classInstant(schedule.date, schedule.startTime)
+      const endDate = classInstant(schedule.date, schedule.endTime)
 
-      const startDate = new Date(scheduleDate)
-      startDate.setHours(startHour, startMinute, 0, 0)
 
-      const endDate = new Date(scheduleDate)
-      endDate.setHours(endHour, endMinute, 0, 0)
 
       // Сформировать описание
       let description = schedule.subject.description || ''

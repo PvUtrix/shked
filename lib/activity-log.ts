@@ -24,6 +24,7 @@ export type EntityType =
   | 'ForumPost'
   | 'Settings'
   | 'BotSettings'
+  | 'TimetableImport'
 
 // Результат операции
 export type ActivityResult = 'SUCCESS' | 'FAILURE'

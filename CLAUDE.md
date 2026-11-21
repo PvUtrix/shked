@@ -183,6 +183,18 @@ lib/
 - `User.mentorGroupIds` - JSON array of group IDs for mentors
 - All models use `cuid()` for IDs
 
+## Timetable, deadlines and calendar feed
+
+- `lib/timetable/` imports the programme workbook (timetable, deadlines,
+  subgroup placement) as a diff keyed by `externalKey`; never delete imported
+  rows, deactivate them. Admin page `/admin/timetable`.
+- `Deadline` and `Announcement` (the change log) are first-class models;
+  `Semester` groups a cohort's imports.
+- `lib/schedule/visibility.ts` is the one rule for which classes a student
+  sees; the web, the bot and the calendar feed all use it.
+- `/api/calendar/<token>` is the personal iCal feed (`lib/calendar/feed.ts`).
+- Details: `docs/features/TIMETABLE_IMPORT.md`.
+
 ## Bot Integrations
 
 - **Shared core**: `lib/bot/` holds commands, notifications, the GigaChat

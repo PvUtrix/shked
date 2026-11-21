@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { CalendarDays, Clock, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 import { ExportButton } from '@/components/export/export-button'
+import { CalendarSubscription } from '@/components/student/calendar-subscription'
 import { cn } from '@/lib/utils'
 import { 
   format, 
@@ -122,6 +123,8 @@ export default function StudentCalendarPage() {
           variant="default"
         />
       </div>
+
+      <CalendarSubscription />
 
       {/* Calendar */}
       <Card>

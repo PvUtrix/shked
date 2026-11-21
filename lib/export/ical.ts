@@ -10,6 +10,8 @@ export interface ICalEvent {
   location?: string
   start: Date
   end: Date
+  /** All-day event on start's calendar date (YYYY-MM-DD in allDayDate). */
+  allDayDate?: string
   url?: string
   organizer?: {
     name: string
@@ -56,25 +58,24 @@ function escapeICalText(text: string): string {
  * @returns Массив строк
  */
 function foldLine(line: string): string {
-  const maxLength = 75
-  if (line.length <= maxLength) {
-    return line
+  // RFC 5545: lines are at most 75 octets; continuation lines start with a space.
+  const encoder = new TextEncoder()
+  const out: string[] = []
+  let current = ''
+  let size = 0
+  for (const ch of line) {
+    const n = encoder.encode(ch).length
+    const limit = out.length === 0 ? 75 : 74
+    if (size + n > limit) {
+      out.push(current)
+      current = ''
+      size = 0
+    }
+    current += ch
+    size += n
   }
-
-  const lines: string[] = []
-  let currentLine = line.substring(0, maxLength)
-  let remaining = line.substring(maxLength)
-
-  lines.push(currentLine)
-
-  while (remaining.length > 0) {
-    const chunkLength = maxLength - 1 // -1 для пробела в начале
-    currentLine = ' ' + remaining.substring(0, chunkLength)
-    remaining = remaining.substring(chunkLength)
-    lines.push(currentLine)
-  }
-
-  return lines.join('\r\n')
+  out.push(current)
+  return out.map((l, i) => (i === 0 ? l : ' ' + l)).join('\r\n')
 }
 
 /**
@@ -93,14 +94,22 @@ export function createICalendar(events: ICalEvent[], calendarName: string = 'Р�
   ical += 'METHOD:PUBLISH\r\n'
   ical += foldLine(`X-WR-CALNAME:${escapeICalText(calendarName)}`) + '\r\n'
   ical += 'X-WR-TIMEZONE:Europe/Moscow\r\n'
-  ical += 'X-WR-CALDESC:Экспортированное расписание из системы ШКЭД\r\n'
+  ical += foldLine(`X-WR-CALDESC:${escapeICalText(calendarName)}`) + '\r\n'
 
   events.forEach((event) => {
     ical += 'BEGIN:VEVENT\r\n'
     ical += foldLine(`UID:${event.uid}@shked.ru`) + '\r\n'
     ical += `DTSTAMP:${now}\r\n`
-    ical += `DTSTART:${formatICalDate(event.start)}\r\n`
-    ical += `DTEND:${formatICalDate(event.end)}\r\n`
+    if (event.allDayDate) {
+      const day = event.allDayDate.replace(/-/g, '')
+      const next = new Date(`${event.allDayDate}T00:00:00Z`)
+      next.setUTCDate(next.getUTCDate() + 1)
+      ical += `DTSTART;VALUE=DATE:${day}\r\n`
+      ical += `DTEND;VALUE=DATE:${next.toISOString().slice(0, 10).replace(/-/g, '')}\r\n`
+    } else {
+      ical += `DTSTART:${formatICalDate(event.start)}\r\n`
+      ical += `DTEND:${formatICalDate(event.end)}\r\n`
+    }
     ical += foldLine(`SUMMARY:${escapeICalText(event.title)}`) + '\r\n'
 
     if (event.description) {
