@@ -7,6 +7,10 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   // Директория с тестами
   testDir: './e2e',
+
+  // screenshots.spec.ts regenerates docs/tutorials/assets; it is a docs tool,
+  // not a test. Run it with SCREENSHOTS=1 npx playwright test screenshots.
+  testIgnore: process.env.SCREENSHOTS ? [] : ['**/screenshots.spec.ts'],
   
   // Запускать тесты последовательно в одном файле
   fullyParallel: true,

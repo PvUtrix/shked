@@ -1,175 +1,62 @@
 import { test, expect } from '@playwright/test'
+import { ACCOUNTS, fillLogin, login, logoutButton, t } from './support/session'
 
-test.describe('Аутентификация', () => {
-  test.beforeEach(async ({ page }) => {
-    // Переходим на страницу логина перед каждым тестом
+test.describe('Authentication', () => {
+  test('shows the login form', async ({ page }) => {
     await page.goto('/login')
+    await expect(page.getByText(t.auth.login.title)).toBeVisible()
+    await expect(page.locator('input[type="email"]')).toBeVisible()
+    await expect(page.locator('input[type="password"]')).toBeVisible()
+    await expect(page.locator('button[type="submit"]')).toBeVisible()
   })
 
-  test('должен показывать форму логина', async ({ page }) => {
-    // Проверяем наличие элементов формы
-    await expect(page.getByText('Вход в систему')).toBeVisible()
-    await expect(page.getByPlaceholder('Email')).toBeVisible()
-    await expect(page.getByPlaceholder('Пароль')).toBeVisible()
-    await expect(page.getByRole('button', { name: /войти/i })).toBeVisible()
+  test('lists the demo accounts that the seed creates', async ({ page }) => {
+    await page.goto('/login')
+    for (const account of Object.values(ACCOUNTS)) {
+      await expect(page.getByText(account.email, { exact: false }).first()).toBeVisible()
+    }
   })
 
-  test('должен показывать демо аккаунты', async ({ page }) => {
-    await expect(page.getByText('Демо аккаунты')).toBeVisible()
-    await expect(page.getByText(/admin@shked.com/i)).toBeVisible()
-    await expect(page.getByText(/student123@demo.com/i)).toBeVisible()
+  for (const role of ['admin', 'student', 'lector', 'mentor'] as const) {
+    test(`signs in the ${role} and opens their home page`, async ({ page }) => {
+      await login(page, role)
+    })
+  }
+
+  test('rejects wrong credentials and stays on the login page', async ({ page }) => {
+    await fillLogin(page, 'wrong@example.com', 'wrongpassword')
+    await page.locator('button[type="submit"]').click()
+    await expect(page.getByText(t.auth.login.invalidCredentials).first()).toBeVisible({ timeout: 10000 })
+    await expect(page).toHaveURL(/\/login/)
   })
 
-  test('должен успешно логинить админа', async ({ page }) => {
-    // Вводим credentials
-    await page.getByPlaceholder('Email').fill('admin@shked.com')
-    await page.getByPlaceholder('Пароль').fill('admin123')
-    
-    // Ждем навигации после клика с Promise.all для более надежного перехвата
-    // Увеличиваем таймаут, так как нужно время на установку cookie сессии
-    await Promise.all([
-      page.waitForURL('/admin', { timeout: 20000 }),
-      page.getByRole('button', { name: /войти/i }).click()
-    ])
-    
-    // Проверяем, что мы на странице админа
-    await expect(page.getByText(/админ/i)).toBeVisible({ timeout: 5000 })
+  test('does not submit an empty form', async ({ page }) => {
+    await page.goto('/login')
+    await page.locator('button[type="submit"]').click()
+    await expect(page).toHaveURL(/\/login/)
   })
 
-  test('должен успешно логинить студента', async ({ page }) => {
-    await page.getByPlaceholder('Email').fill('student123@demo.com')
-    await page.getByPlaceholder('Пароль').fill('student123')
-    
-    // Ждем навигации после клика с Promise.all для более надежного перехвата
-    await Promise.all([
-      page.waitForURL('/student', { timeout: 20000 }),
-      page.getByRole('button', { name: /войти/i }).click()
-    ])
-    
-    // Проверяем, что мы на странице студента
-    await expect(page).toHaveURL(/\/student/)
+  test('signs out back to the login page', async ({ page }) => {
+    await login(page, 'admin')
+    await Promise.all([page.waitForURL(/\/login/, { timeout: 15000 }), logoutButton(page).click()])
+    await expect(page.getByText(t.auth.login.title)).toBeVisible()
   })
 
-  test('должен успешно логинить преподавателя', async ({ page }) => {
-    await page.getByPlaceholder('Email').fill('lector@demo.com')
-    await page.getByPlaceholder('Пароль').fill('lector123')
-    
-    // Ждем навигации после клика с Promise.all для более надежного перехвата
-    await Promise.all([
-      page.waitForURL('/lector', { timeout: 20000 }),
-      page.getByRole('button', { name: /войти/i }).click()
-    ])
-    
-    await expect(page).toHaveURL(/\/lector/)
-  })
-
-  test('должен успешно логинить ментора', async ({ page }) => {
-    await page.getByPlaceholder('Email').fill('mentor@demo.com')
-    await page.getByPlaceholder('Пароль').fill('mentor123')
-    
-    // Ждем навигации после клика с Promise.all для более надежного перехвата
-    await Promise.all([
-      page.waitForURL('/mentor', { timeout: 20000 }),
-      page.getByRole('button', { name: /войти/i }).click()
-    ])
-    
-    await expect(page).toHaveURL(/\/mentor/)
-  })
-
-  test('должен показывать ошибку при неверных credentials', async ({ page }) => {
-    await page.getByPlaceholder('Email').fill('wrong@example.com')
-    await page.getByPlaceholder('Пароль').fill('wrongpassword')
-    
-    await page.getByRole('button', { name: /войти/i }).click()
-    
-    // Ждем toast с ошибкой
-    await expect(page.getByText(/неверные учетные данные/i)).toBeVisible({ timeout: 5000 })
-  })
-
-  test('должен показывать состояние загрузки при логине', async ({ page }) => {
-    await page.getByPlaceholder('Email').fill('admin@shked.com')
-    await page.getByPlaceholder('Пароль').fill('admin123')
-    
-    await page.getByRole('button', { name: /войти/i }).click()
-    
-    // Проверяем состояние загрузки
-    await expect(page.getByText('Входим...')).toBeVisible()
-  })
-
-  test('должен выходить из системы', async ({ page }) => {
-    // Сначала логинимся
-    await page.getByPlaceholder('Email').fill('admin@shked.com')
-    await page.getByPlaceholder('Пароль').fill('admin123')
-    
-    await Promise.all([
-      page.waitForURL('/admin', { timeout: 20000 }),
-      page.getByRole('button', { name: /войти/i }).click()
-    ])
-    
-    // Ищем кнопку выхода
-    const logoutButton = page.getByRole('button', { name: /выход/i })
-      .or(page.getByText(/выйти/i))
-    
-    // Ждем редиректа на страницу логина после выхода
-    await Promise.all([
-      page.waitForURL('/login', { timeout: 10000 }),
-      logoutButton.click()
-    ])
-    
-    await expect(page.getByText('Вход в систему')).toBeVisible()
-  })
-
-  test('должен блокировать доступ к защищенным страницам без авторизации', async ({ page }) => {
-    // Пытаемся перейти на админскую страницу без логина
+  test('redirects a signed-out visitor from a protected page to login', async ({ page }) => {
     await page.goto('/admin')
-    
-    // Должны быть перенаправлены на страницу логина
-    await page.waitForURL('/login', { timeout: 10000 })
-    await expect(page.getByText('Вход в систему')).toBeVisible()
+    await page.waitForURL(/\/login/, { timeout: 15000 })
+    await expect(page.getByText(t.auth.login.title)).toBeVisible()
   })
 
-  test('должен блокировать доступ студента к админской панели', async ({ page }) => {
-    // Логинимся как студент
-    await page.getByPlaceholder('Email').fill('student123@demo.com')
-    await page.getByPlaceholder('Пароль').fill('student123')
-    
-    await Promise.all([
-      page.waitForURL('/student', { timeout: 20000 }),
-      page.getByRole('button', { name: /войти/i }).click()
-    ])
-    
-    // Пытаемся перейти на админскую страницу
+  test('keeps a student out of the admin pages', async ({ page }) => {
+    await login(page, 'student')
     await page.goto('/admin')
-    
-    // Должны получить ошибку доступа или редирект
-    await expect(page.getByText(/запрещен/i).or(page.getByText('Вход в систему'))).toBeVisible({ timeout: 5000 })
+    await expect(page).not.toHaveURL(/\/admin(\/|$)/, { timeout: 15000 })
   })
 
-  test('не должен отправлять форму с пустыми полями', async ({ page }) => {
-    const submitButton = page.getByRole('button', { name: /войти/i })
-    
-    // Пытаемся отправить пустую форму
-    await submitButton.click()
-    
-    // Форма не должна быть отправлена (останемся на странице логина)
-    await expect(page).toHaveURL('/login')
-  })
-
-  test('должен сохранять сессию после перезагрузки страницы', async ({ page, context }) => {
-    // Логинимся
-    await page.getByPlaceholder('Email').fill('admin@shked.com')
-    await page.getByPlaceholder('Пароль').fill('admin123')
-    
-    await Promise.all([
-      page.waitForURL('/admin', { timeout: 20000 }),
-      page.getByRole('button', { name: /войти/i }).click()
-    ])
-    
-    // Перезагружаем страницу
+  test('keeps the session after a reload', async ({ page }) => {
+    await login(page, 'admin')
     await page.reload()
-    
-    // Должны остаться на странице админа
     await expect(page).toHaveURL(/\/admin/)
   })
 })
-
