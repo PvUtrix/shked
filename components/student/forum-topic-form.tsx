@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { zodResolver } from '@/lib/forms/zod-resolver'
 import * as z from 'zod'
 import { Loader2, MessageSquare, Pin, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'

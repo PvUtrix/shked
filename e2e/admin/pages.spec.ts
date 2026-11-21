@@ -7,13 +7,14 @@ import { login, t } from '../support/session'
  */
 
 const PAGES = [
-  { path: '/admin/users', label: t.admin.nav.users },
-  { path: '/admin/groups', label: t.admin.nav.groups },
-  { path: '/admin/subjects', label: t.admin.nav.subjects },
-  { path: '/admin/schedule', label: t.admin.nav.schedule },
-  { path: '/admin/homework', label: t.admin.nav.homework },
-  { path: '/admin/subgroups', label: null },
-  { path: '/admin/settings', label: t.admin.nav.settings },
+  '/admin',
+  '/admin/users',
+  '/admin/groups',
+  '/admin/subjects',
+  '/admin/schedule',
+  '/admin/homework',
+  '/admin/subgroups',
+  '/admin/settings',
 ] as const
 
 test.describe('Admin pages', () => {
@@ -21,7 +22,7 @@ test.describe('Admin pages', () => {
     await login(page, 'admin')
   })
 
-  for (const { path } of PAGES) {
+  for (const path of PAGES) {
     test(`opens ${path}`, async ({ page }) => {
       const errors: string[] = []
       page.on('pageerror', (error) => errors.push(error.message))
@@ -33,10 +34,18 @@ test.describe('Admin pages', () => {
   }
 
   test('reaches each section from the sidebar', async ({ page }) => {
-    for (const { path, label } of PAGES) {
-      if (!label) continue
+    // The sidebar's schedule item is the admin home page.
+    const SIDEBAR = [
+      { label: t.admin.nav.users, url: /\/admin\/users(\/|$|\?)/ },
+      { label: t.admin.nav.groups, url: /\/admin\/groups(\/|$|\?)/ },
+      { label: t.admin.nav.subjects, url: /\/admin\/subjects(\/|$|\?)/ },
+      { label: t.admin.nav.homework, url: /\/admin\/homework(\/|$|\?)/ },
+      { label: t.admin.nav.settings, url: /\/admin\/settings(\/|$|\?)/ },
+      { label: t.admin.nav.schedule, url: /\/admin(\?|$)/ },
+    ]
+    for (const { label, url } of SIDEBAR) {
       await page.getByRole('link', { name: label, exact: true }).locator('visible=true').first().click()
-      await expect(page).toHaveURL(new RegExp(`${path}(/|$|\\?)`))
+      await expect(page).toHaveURL(url)
     }
   })
 })
